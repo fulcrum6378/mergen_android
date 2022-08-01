@@ -1,0 +1,34 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    compileSdk 32
+    buildToolsVersion '33.0.0'
+
+    defaultConfig {
+        applicationId "ir.mahdiparastesh.mergen"
+        minSdk 28
+        targetSdk 32
+        versionCode 1
+        versionName '0.0.1'
+        externalNativeBuild { cmake { cppFlags '' } }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    externalNativeBuild {
+        cmake {
+            path file('src/main/cpp/CMakeLists.txt')
+            version '3.22.1'
+        }
+    }
+    // buildFeatures { viewBinding true }
+    ndkVersion '25.0.8775105'
+}
+
+dependencies {
+    // implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+}

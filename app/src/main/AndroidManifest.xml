@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="ir.mahdiparastesh.mergen">
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Mergen"
+        tools:ignore="UnusedAttribute">
+
+    </application>
+</manifest>
