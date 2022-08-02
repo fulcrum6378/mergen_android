@@ -7,11 +7,17 @@ add_library(native_app_glue STATIC
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -Wall -Werror")
 set(CMAKE_SHARED_LINKER_FLAGS
         "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
-add_library(main SHARED main.cpp)
+add_library(main SHARED
+        main.cpp
+        camera_listeners.cpp
+        camera_manager.cpp
+        camera_utils.cpp
+        image_reader.cpp)
 
 target_include_directories(main PRIVATE
         ${ANDROID_NDK}/sources/android/native_app_glue)
 target_link_libraries(main
         android
+        camera2ndk
         log
         native_app_glue)

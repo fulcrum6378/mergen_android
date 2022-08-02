@@ -2,6 +2,7 @@ package ir.mahdiparastesh.mergen;
 
 import android.Manifest;
 import android.app.NativeActivity;
+import android.os.Bundle;
 
 import java.util.Arrays;
 
@@ -11,12 +12,12 @@ public class Main extends NativeActivity {
             new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO};
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         if (Arrays.stream(requiredPerms).anyMatch(s -> checkSelfPermission(s) < 0))
             requestPermissions(requiredPerms, permCode);
         else preview();
-    }
+    } // onResume() is never invoked!?!?
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -28,4 +29,8 @@ public class Main extends NativeActivity {
     }
 
     public native void preview();
+
+    static {
+        System.loadLibrary("main");
+    } // necessary for preview()
 }
