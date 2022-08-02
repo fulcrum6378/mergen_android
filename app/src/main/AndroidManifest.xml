@@ -3,16 +3,30 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="ir.mahdiparastesh.mergen">
 
+    <uses-feature android:name="android.hardware.camera.any" />
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
+        android:hasCode="true"
         android:icon="@mipmap/launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/launcher_round"
-        android:supportsRtl="true"
         android:theme="@style/Theme.Mergen"
         tools:ignore="UnusedAttribute">
 
+        <activity
+            android:name=".Main"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 </manifest>
