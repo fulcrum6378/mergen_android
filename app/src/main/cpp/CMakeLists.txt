@@ -1,23 +1,24 @@
-cmake_minimum_required(VERSION 3.22.1)
-project("mergen")
+cmake_minimum_required(VERSION 3.4.1)
 
-set(${CMAKE_C_FLAGS}, "${CMAKE_C_FLAGS}")
-add_library(native_app_glue STATIC
-        ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -Wall -Werror")
+set(CMAKE_VERBOSE_MAKEFILE on)
+set(COMMON_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../../common)
+
+# now build app's shared lib
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Werror")
+
+# Export ANativeActivity_onCreate(),
+# Refer to: https://github.com/android-ndk/ndk/issues/381.
 set(CMAKE_SHARED_LINKER_FLAGS
         "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
 add_library(main SHARED
-        main.cpp
-        camera_listeners.cpp
-        camera_manager.cpp
-        camera_utils.cpp
-        image_reader.cpp)
+        ${CMAKE_CURRENT_SOURCE_DIR}/android_main.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/camera_manager.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/camera_engine.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/camera_listeners.cpp
+        ${COMMON_SOURCE_DIR}/utils/camera_utils.cpp)
 
-target_include_directories(main PRIVATE
-        ${ANDROID_NDK}/sources/android/native_app_glue)
-target_link_libraries(main
-        android
-        camera2ndk
-        log
-        native_app_glue)
+# add include path
+target_include_directories(main PRIVATE ${COMMON_SOURCE_DIR})
+
+# add lib dependencies
+target_link_libraries(main dl android log m camera2ndk)
