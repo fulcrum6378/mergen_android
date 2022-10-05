@@ -3,13 +3,13 @@ plugins {
 }
 
 android {
-    compileSdk 32
+    compileSdk 33
     buildToolsVersion '33.0.0'
 
     defaultConfig {
         applicationId "ir.mahdiparastesh.mergen"
         minSdk 28
-        targetSdk 32
+        targetSdk 33
         versionCode 1
         versionName '0.0.3'
         externalNativeBuild { cmake { cppFlags '' } }
@@ -26,7 +26,7 @@ android {
         }
     }
     // buildFeatures { viewBinding true }
-    ndkVersion '25.0.8775105'
+    ndkVersion '25.1.8937393'
 }
 
 dependencies {
