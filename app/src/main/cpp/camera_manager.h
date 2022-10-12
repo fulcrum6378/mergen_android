@@ -24,26 +24,7 @@ struct ImageFormat {
     int32_t width;
     int32_t height;
 
-    int32_t format;  // Through out this demo, the format is fixed to
-    // YUV_420 format
-};
-
-template<typename T>
-class RangeValue {
-public:
-    T min_, max_;
-
-    /**
-     * return absolute value from relative value
-     * value: in percent (50 for 50%)
-     */
-    T value(int percent) {
-        return static_cast<T>(min_ + (max_ - min_) * percent / 100);
-    }
-
-    RangeValue() { min_ = max_ = static_cast<T>(0); }
-
-    bool Supported(void) const { return (min_ != max_); }
+    int32_t format;  // FIXME MAHDI: Through out this demo, the format is fixed to YUV_420 format
 };
 
 enum PREVIEW_INDICES {
@@ -74,15 +55,8 @@ private:
     std::vector<CaptureRequestInfo> requests_;
 
     ACaptureSessionOutputContainer *outputContainer_;
-    ACameraCaptureSession *captureSession_;
+    ACameraCaptureSession *captureSession_{};
     CaptureSessionState captureSessionState_;
-
-    // set up exposure control
-    int64_t exposureTime_;
-    RangeValue<uint64_t> exposureRange_;
-    int32_t sensitivity_;
-    RangeValue<int32_t> sensitivityRange_;
-    volatile bool valid_;
 
     ACameraManager_AvailabilityCallbacks *GetManagerListener();
 
@@ -112,8 +86,6 @@ public:
 
     bool GetSensorOrientation(int32_t *facing, int32_t *angle);
 
-    void OnCameraStatusChanged(const char *id, bool available);
-
     void OnDeviceState(ACameraDevice *dev);
 
     void OnDeviceError(ACameraDevice *dev, int err);
@@ -129,10 +101,6 @@ public:
     void StartPreview(bool start);
 
     bool TakePhoto(void);
-
-    bool GetExposureRange(int64_t *min, int64_t *max, int64_t *curVal);
-
-    bool GetSensitivityRange(int64_t *min, int64_t *max, int64_t *curVal);
 
     void UpdateCameraRequestParameter(int32_t code, int64_t val);
 };
@@ -156,4 +124,4 @@ public:
     explicit CameraId(void) { CameraId(""); }
 };
 
-#endif  // CAMERA_NATIVE_CAMERA_H
+#endif

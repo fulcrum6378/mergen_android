@@ -10,12 +10,9 @@
 
 #include "camera_manager.h"
 
-/**
- * CameraAppEngine
- */
 class CameraAppEngine {
 public:
-    explicit CameraAppEngine(JNIEnv *env, jobject instance, jint w, jint h);
+    explicit CameraAppEngine(JNIEnv *env, jint w, jint h);
 
     ~CameraAppEngine();
 
@@ -32,12 +29,11 @@ public:
 
 private:
     JNIEnv *env_;
-    jobject javaInstance_;
     int32_t requestWidth_;
     int32_t requestHeight_;
     jobject surface_;
     NDKCamera *camera_;
-    ImageFormat compatibleCameraRes_;
+    ImageFormat compatibleCameraRes_{};
 };
 
-#endif  // __CAMERA_ENGINE_H__
+#endif
