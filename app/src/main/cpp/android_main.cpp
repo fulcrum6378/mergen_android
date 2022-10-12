@@ -1,8 +1,9 @@
-#include <jni.h>
 #include <cstring>
-#include <utils/native_debug.h>
-#include "camera_manager.h"
-#include "camera_engine.h"
+#include <jni.h>
+
+#include "vis/camera_engine.h"
+#include "vis/camera_manager.h"
+#include "native_debug.h"
 
 // Application object: the top level camera application object, maintained by native code only.
 CameraAppEngine *pEngineObj = nullptr;

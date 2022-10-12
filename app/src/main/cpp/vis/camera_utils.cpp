@@ -1,12 +1,13 @@
-#include <vector>
-#include <string>
-#include <utility>
-#include <typeinfo>
+#include <camera/NdkCameraManager.h>
 #include <cinttypes>
 #include <media/NdkImage.h>
-#include <camera/NdkCameraManager.h>
-#include "utils/native_debug.h"
+#include <string>
+#include <typeinfo>
+#include <utility>
+#include <vector>
+
 #include "camera_utils.h"
+#include "../native_debug.h"
 
 #define MAKE_PAIR(val) std::make_pair(val, #val)
 

@@ -1,12 +1,12 @@
-#include <utility>
-#include <queue>
-#include <cinttypes>
-#include <thread>
-
 #include <camera/NdkCameraManager.h>
+#include <cinttypes>
+#include <queue>
+#include <thread>
+#include <utility>
+
 #include "camera_manager.h"
-#include "utils/native_debug.h"
-#include "utils/camera_utils.h"
+#include "camera_utils.h"
+#include "../native_debug.h"
 
 ACameraManager_AvailabilityCallbacks *NDKCamera::GetManagerListener() {
     static ACameraManager_AvailabilityCallbacks cameraMgrListener = {

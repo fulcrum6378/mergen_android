@@ -1,13 +1,14 @@
-#include <utility>
-#include <queue>
-#include <unistd.h>
+#include <camera/NdkCameraManager.h>
 #include <cinttypes>
 #include <cstring>
-#include <camera/NdkCameraManager.h>
 #include <media/NdkImage.h>
+#include <queue>
+#include <unistd.h>
+#include <utility>
+
 #include "camera_manager.h"
-#include "utils/native_debug.h"
-#include "utils/camera_utils.h"
+#include "camera_utils.h"
+#include "../native_debug.h"
 
 NDKCamera::NDKCamera()
         : cameraMgr_(nullptr),
