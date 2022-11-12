@@ -5,7 +5,7 @@
 #include "vis/camera_manager.h"
 #include "native_debug.h"
 
-// Application object: the top level camera application object, maintained by native code only.
+/** Application object: the top level camera application object, maintained by native code only. */
 CameraAppEngine *pEngineObj = nullptr;
 
 /**
@@ -22,9 +22,7 @@ CameraAppEngine *pEngineObj = nullptr;
  * @return application object instance ( not used in this sample )
  */
 extern "C" JNIEXPORT jlong JNICALL
-Java_ir_mahdiparastesh_mergen_Main_createCamera(JNIEnv *env,
-                                                jobject ,
-                                                jint width, jint height) {
+Java_ir_mahdiparastesh_mergen_Main_createCamera(JNIEnv *env, jobject, jint width, jint height) {
     pEngineObj = new CameraAppEngine(env, width, height);
     return reinterpret_cast<jlong>(pEngineObj);
 }
@@ -35,12 +33,8 @@ Java_ir_mahdiparastesh_mergen_Main_createCamera(JNIEnv *env,
  *   triggers native camera object be released
  */
 extern "C" JNIEXPORT void JNICALL
-Java_ir_mahdiparastesh_mergen_Main_deleteCamera(JNIEnv *,
-                                                jobject,
-                                                jlong ndkCameraObj, jobject) {
-    if (!pEngineObj || !ndkCameraObj) {
-        return;
-    }
+Java_ir_mahdiparastesh_mergen_Main_deleteCamera(JNIEnv *, jobject, jlong ndkCameraObj, jobject) {
+    if (!pEngineObj || !ndkCameraObj) return;
     auto *pApp = reinterpret_cast<CameraAppEngine *>(ndkCameraObj);
     ASSERT(pApp == pEngineObj, "NdkCamera Obj mismatch")
 
@@ -64,9 +58,7 @@ Java_ir_mahdiparastesh_mergen_Main_deleteCamera(JNIEnv *,
 extern "C" JNIEXPORT jobject JNICALL
 Java_ir_mahdiparastesh_mergen_Main_getMinimumCompatiblePreviewSize(
         JNIEnv *env, jobject, jlong ndkCameraObj) {
-    if (!ndkCameraObj) {
-        return nullptr;
-    }
+    if (!ndkCameraObj) return nullptr;
     auto *pApp = reinterpret_cast<CameraAppEngine *>(ndkCameraObj);
     jclass cls = env->FindClass("android/util/Size");
     jobject previewSize =
@@ -134,4 +126,17 @@ Java_ir_mahdiparastesh_mergen_Main_onPreviewSurfaceDestroyed(
     env->ReleaseStringUTFChars(appObjStr, appObjName);
 
     pApp->StartPreview(false);
+}
+
+
+
+extern "C" JNIEXPORT void JNICALL
+Java_ir_mahdiparastesh_mergen_Main_startRecording(JNIEnv *, jobject) {
+    if (pEngineObj == nullptr) return;
+    // TODO start gathering photos and audio through CameraAppEngine, through NDKCamera
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_ir_mahdiparastesh_mergen_Main_stopRecording(JNIEnv *, jobject) {
+    if (pEngineObj == nullptr) return;
 }

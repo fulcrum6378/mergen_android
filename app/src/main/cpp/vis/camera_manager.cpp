@@ -358,9 +358,8 @@ void NDKCamera::StartPreview(bool start) {
  * refer to WriteFile() for details
  */
 bool NDKCamera::TakePhoto() {
-    if (captureSessionState_ == CaptureSessionState::ACTIVE) {
+    if (captureSessionState_ == CaptureSessionState::ACTIVE)
         ACameraCaptureSession_stopRepeating(captureSession_);
-    }
 
     CALL_SESSION(capture(captureSession_, GetCaptureCallback(), 1,
                          &requests_[JPG_CAPTURE_REQUEST_IDX].request_,

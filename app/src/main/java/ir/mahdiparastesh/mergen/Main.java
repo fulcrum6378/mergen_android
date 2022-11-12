@@ -8,6 +8,7 @@ import android.util.DisplayMetrics;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
+import android.view.ViewGroup;
 
 import java.util.Arrays;
 
@@ -17,14 +18,14 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
             new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO};
     private DisplayMetrics dm;
     private long ndkCamera;
-    private TextureView textureView;
+    private TextureView preview;
     private Surface surface = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        textureView = findViewById(R.id.texturePreview);
+        preview = findViewById(R.id.preview);
         dm = getResources().getDisplayMetrics();
 
         if (Arrays.stream(requiredPerms).anyMatch(s -> checkSelfPermission(s) < 0))
@@ -42,22 +43,29 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     }
 
     private void preview() {
-        textureView.setSurfaceTextureListener(this); // don't make it in-line.
-        if (textureView.isAvailable())
-            onSurfaceTextureAvailable(textureView.getSurfaceTexture(),
-                    textureView.getWidth(), textureView.getHeight());
-        createCamera(dm.widthPixels, dm.heightPixels);
+        // Adjust the size of the TextureView and add click listeners
+        int dim = Math.min(dm.widthPixels, dm.heightPixels);
+        ViewGroup.LayoutParams previewLP = preview.getLayoutParams();
+        previewLP.width = dim;
+        previewLP.height = dim;
+        preview.setLayoutParams(previewLP);
+        preview.setOnClickListener(DoubleClickListener -> recording(!isRecording));
+
+        preview.setSurfaceTextureListener(this); // don't make it in-line.
+        if (preview.isAvailable()) onSurfaceTextureAvailable(
+                preview.getSurfaceTexture(), preview.getWidth(), preview.getHeight());
     }
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
-        ndkCamera = createCamera(dm.widthPixels, dm.heightPixels);
+        ndkCamera = createCamera(width, height);
         Size cameraPreviewSize = getMinimumCompatiblePreviewSize(ndkCamera);
 
         surfaceTexture.setDefaultBufferSize(
                 cameraPreviewSize.getWidth(), cameraPreviewSize.getHeight());
         surface = new Surface(surfaceTexture);
         onPreviewSurfaceCreated(ndkCamera, surface);
+        preview.setClickable(true);
     }
 
     @Override
@@ -70,11 +78,31 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
+        preview.setClickable(false);
+        recording(false);
         onPreviewSurfaceDestroyed(ndkCamera, surface);
         deleteCamera(ndkCamera, surface);
         ndkCamera = 0;
         surface = null;
         return true;
+    }
+
+    private boolean isRecording = false;
+
+    private void recording(boolean bb) {
+        if (bb == isRecording) return;
+        isRecording = bb;
+        if (isRecording) startRecording();
+        else stopRecording();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (isRecording) {
+            recording(false);
+            return;
+        }
+        super.onBackPressed();
     }
 
     @Override
@@ -93,6 +121,10 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     private native void onPreviewSurfaceCreated(long ndkCamera, Surface surface);
 
     private native void onPreviewSurfaceDestroyed(long ndkCamera, Surface surface);
+
+    private native void startRecording();
+
+    private native void stopRecording();
 
     private native void deleteCamera(long ndkCamera, Surface surface);
 
