@@ -1,24 +1,68 @@
+#include <cassert>
 #include <cstring>
 #include <jni.h>
+
+#include <SLES/OpenSLES.h>
+#include <SLES/OpenSLES_Android.h>
 
 #include "vis/camera_engine.h"
 #include "vis/camera_manager.h"
 #include "native_debug.h"
-
 //using namespace std;
 
 CameraEngine *cameraEngine = nullptr;
+static SLObjectItf audioEngineObject = nullptr;
+static SLEngineItf audioEngine;
+static SLObjectItf recorderObject = nullptr;
+static SLRecordItf recorderRecord;
+#define RECORDER_FRAMES (16000 * 5)
+static short recorderBuffer[RECORDER_FRAMES];
+static SLAndroidSimpleBufferQueueItf recorderBufferQueue;
+static pthread_mutex_t audioEngineLock = PTHREAD_MUTEX_INITIALIZER;
 
 
-extern "C" JNIEXPORT void JNICALL
+extern "C" JNIEXPORT jbyte JNICALL
 Java_ir_mahdiparastesh_mergen_Main_startRecording(JNIEnv *, jobject) {
-    if (cameraEngine == nullptr) return;
-    // TODO start gathering photos and audio through CameraEngine, through NDKCamera
+    if (cameraEngine == nullptr) return 1;
+    if (recorderRecord == nullptr) return 2;
+    // TODO start gathering photos through CameraEngine, through NDKCamera
+
+    SLresult result;
+    if (pthread_mutex_trylock(&audioEngineLock)) return 3;
+
+    // enqueue an empty buffer to be filled by the recorder
+    // (for streaming recording, we would enqueue at least 2 empty buffers to start things off)
+    result = (*recorderBufferQueue)->Enqueue(
+            recorderBufferQueue, recorderBuffer, RECORDER_FRAMES * sizeof(short));
+    // the most likely other result is SL_RESULT_BUFFER_INSUFFICIENT,
+    // which for this code example would indicate a programming error
+    assert(SL_RESULT_SUCCESS == result);
+    (void) result;
+
+    // start recording
+    result = (*recorderRecord)->SetRecordState(recorderRecord, SL_RECORDSTATE_RECORDING);
+    assert(SL_RESULT_SUCCESS == result);
+    (void) result;
+
+    return 0;
 }
 
-extern "C" JNIEXPORT void JNICALL
+extern "C" JNIEXPORT jbyte JNICALL
 Java_ir_mahdiparastesh_mergen_Main_stopRecording(JNIEnv *, jobject) {
-    if (cameraEngine == nullptr) return;
+    if (cameraEngine == nullptr) return 1;
+    if (recorderRecord == nullptr) return 2;
+    // TODO
+
+    // in case already recording, stop recording and clear buffer queue
+    SLresult result;
+    result = (*recorderRecord)->SetRecordState(recorderRecord, SL_RECORDSTATE_STOPPED);
+    assert(SL_RESULT_SUCCESS == result);
+    (void) result;
+    result = (*recorderBufferQueue)->Clear(recorderBufferQueue);
+    assert(SL_RESULT_SUCCESS == result);
+    (void) result;
+
+    return 0;
 }
 
 extern "C" JNIEXPORT jstring JNICALL
@@ -152,3 +196,92 @@ Java_ir_mahdiparastesh_mergen_Main_onPreviewSurfaceDestroyed(
 
     pApp->StartPreview(false);
 }
+
+/** This callback handler is called every time a buffer finishes recording. */
+void bqRecorderCallback(SLAndroidSimpleBufferQueueItf bq, void *context) {
+    assert(bq == recorderBufferQueue);
+    assert(nullptr == context);
+    (*recorderRecord)->SetRecordState(recorderRecord, SL_RECORDSTATE_STOPPED);
+    pthread_mutex_unlock(&audioEngineLock);
+}
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_ir_mahdiparastesh_mergen_Main_createAudioRecorder(JNIEnv *, jobject) {
+    SLresult result;
+
+    // create engine
+    result = slCreateEngine(&audioEngineObject, 0, nullptr,
+                            0, nullptr, nullptr);
+    assert(SL_RESULT_SUCCESS == result);
+    (void) result;
+
+    // realize the engine
+    result = (*audioEngineObject)->Realize(audioEngineObject, SL_BOOLEAN_FALSE);
+    assert(SL_RESULT_SUCCESS == result);
+    (void) result;
+
+    // get the engine interface, which is needed in order to create other objects
+    result = (*audioEngineObject)->GetInterface(audioEngineObject, SL_IID_ENGINE, &audioEngine);
+    assert(SL_RESULT_SUCCESS == result);
+    (void) result;
+
+    // configure audio source
+    SLDataLocator_IODevice loc_dev = {SL_DATALOCATOR_IODEVICE, SL_IODEVICE_AUDIOINPUT,
+                                      SL_DEFAULTDEVICEID_AUDIOINPUT, nullptr};
+    SLDataSource audioSrc = {&loc_dev, nullptr};
+
+    // configure audio sink
+    SLDataLocator_AndroidSimpleBufferQueue loc_bq = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
+    SLDataFormat_PCM format_pcm = {SL_DATAFORMAT_PCM, 1, SL_SAMPLINGRATE_16,
+                                   SL_PCMSAMPLEFORMAT_FIXED_16, SL_PCMSAMPLEFORMAT_FIXED_16,
+                                   SL_SPEAKER_FRONT_CENTER, SL_BYTEORDER_LITTLEENDIAN};
+    SLDataSink audioSnk = {&loc_bq, &format_pcm};
+
+    // create audio recorder (requires the RECORD_AUDIO permission)
+    const SLInterfaceID id[1] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE};
+    const SLboolean req[1] = {SL_BOOLEAN_TRUE};
+    result = (*audioEngine)->CreateAudioRecorder(
+            audioEngine, &recorderObject, &audioSrc, &audioSnk, 1, id, req);
+    if (SL_RESULT_SUCCESS != result) return JNI_FALSE;
+
+    // realize the audio recorder
+    result = (*recorderObject)->Realize(recorderObject, SL_BOOLEAN_FALSE);
+    if (SL_RESULT_SUCCESS != result) return JNI_FALSE;
+
+    // get the record interface
+    result = (*recorderObject)->GetInterface(recorderObject, SL_IID_RECORD, &recorderRecord);
+    assert(SL_RESULT_SUCCESS == result);
+    (void) result;
+
+    // get the buffer queue interface
+    result = (*recorderObject)->GetInterface(
+            recorderObject, SL_IID_ANDROIDSIMPLEBUFFERQUEUE, &recorderBufferQueue);
+    assert(SL_RESULT_SUCCESS == result);
+    (void) result;
+
+    // register callback on the buffer queue
+    result = (*recorderBufferQueue)->RegisterCallback(
+            recorderBufferQueue, bqRecorderCallback, nullptr);
+    assert(SL_RESULT_SUCCESS == result);
+    (void) result;
+    return JNI_TRUE;
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_ir_mahdiparastesh_mergen_Main_destroyAudioRecorder(JNIEnv *, jobject) {
+    // destroy audio recorder object, and invalidate all associated interfaces
+    if (recorderObject != nullptr) {
+        (*recorderObject)->Destroy(recorderObject);
+        recorderObject = nullptr;
+        recorderRecord = nullptr;
+        recorderBufferQueue = nullptr;
+    }
+
+    // destroy engine object, and invalidate all associated interfaces
+    if (audioEngineObject != nullptr) {
+        (*audioEngineObject)->Destroy(audioEngineObject);
+        audioEngineObject = nullptr;
+        audioEngine = nullptr;
+    }
+}
+

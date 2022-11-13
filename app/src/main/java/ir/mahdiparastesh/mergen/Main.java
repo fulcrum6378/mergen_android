@@ -13,6 +13,8 @@ import android.widget.Toast;
 
 import java.util.Arrays;
 
+import ir.mahdiparastesh.mergen.otr.DoubleClickListener;
+
 public class Main extends Activity implements TextureView.SurfaceTextureListener {
     private final int permCode = 372;
     private final String[] requiredPerms =
@@ -31,7 +33,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
 
         if (Arrays.stream(requiredPerms).anyMatch(s -> checkSelfPermission(s) < 0))
             requestPermissions(requiredPerms, permCode);
-        else preview();
+        else prepare();
 
         String tested = test();
         if (tested != null) Toast.makeText(this, tested, Toast.LENGTH_LONG).show();
@@ -41,23 +43,29 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == permCode) {
-            if (Arrays.stream(grantResults).sum() == 0) preview();
+            if (Arrays.stream(grantResults).sum() == 0) prepare();
             else onBackPressed();
         }
     }
 
-    private void preview() {
-        // Adjust the size of the TextureView and add click listeners
+    private void prepare() {
+        // preview: TextureView
         int dim = Math.min(dm.widthPixels, dm.heightPixels);
         ViewGroup.LayoutParams previewLP = preview.getLayoutParams();
         previewLP.width = dim;
         previewLP.height = dim;
         preview.setLayoutParams(previewLP);
-        preview.setOnClickListener(DoubleClickListener -> recording(!isRecording));
-
+        preview.setOnClickListener(new DoubleClickListener() {
+            @Override // never use it like lambda!
+            public void onDoubleClick() {
+                recording(!isRecording);
+            }
+        });
         preview.setSurfaceTextureListener(this); // don't make it in-line.
         if (preview.isAvailable()) onSurfaceTextureAvailable(
                 preview.getSurfaceTexture(), preview.getWidth(), preview.getHeight());
+
+        createAudioRecorder();
     }
 
     @Override
@@ -95,9 +103,14 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
 
     private void recording(boolean bb) {
         if (bb == isRecording) return;
+        byte res;
+        if (!isRecording) res = startRecording();
+        else res = stopRecording();
+        Toast.makeText(this,
+                (!isRecording ? "STARTED" : "STOPPED") + ": " + (int) res,
+                Toast.LENGTH_SHORT).show();
+        if (res != 0) return;
         isRecording = bb;
-        if (isRecording) startRecording();
-        else stopRecording();
     }
 
     @Override
@@ -112,13 +125,14 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     @Override
     protected void onDestroy() {
         surface.release();
+        destroyAudioRecorder();
         super.onDestroy();
     }
 
 
-    private native void startRecording();
+    private native byte startRecording();
 
-    private native void stopRecording();
+    private native byte stopRecording();
 
     private native String test();
 
@@ -134,6 +148,10 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     private native void onPreviewSurfaceDestroyed(long ndkCamera, Surface surface);
 
     private native void deleteCamera(long ndkCamera, Surface surface);
+
+    private native boolean createAudioRecorder();
+
+    private native void destroyAudioRecorder();
 
     static {
         System.loadLibrary("main");

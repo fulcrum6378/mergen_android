@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.4.1)
+project("Mergen")
 
 set(CMAKE_VERBOSE_MAKEFILE on)
 
@@ -17,6 +18,7 @@ target_link_libraries(main
 
         android
         camera2ndk
+        OpenSLES
         dl
         log
         m)
