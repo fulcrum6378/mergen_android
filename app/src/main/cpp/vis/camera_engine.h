@@ -10,11 +10,11 @@
 
 #include "camera_manager.h"
 
-class CameraAppEngine {
+class CameraEngine {
 public:
-    explicit CameraAppEngine(JNIEnv *env, jint w, jint h);
+    explicit CameraEngine(JNIEnv *env, jint w, jint h);
 
-    ~CameraAppEngine();
+    ~CameraEngine();
 
     // Manage NDKCamera Object
     void CreateCameraSession(jobject surface);

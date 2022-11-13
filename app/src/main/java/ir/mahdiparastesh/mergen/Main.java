@@ -9,6 +9,7 @@ import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import java.util.Arrays;
 
@@ -31,6 +32,9 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         if (Arrays.stream(requiredPerms).anyMatch(s -> checkSelfPermission(s) < 0))
             requestPermissions(requiredPerms, permCode);
         else preview();
+
+        String tested = test();
+        if (tested != null) Toast.makeText(this, tested, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -111,6 +115,13 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         super.onDestroy();
     }
 
+
+    private native void startRecording();
+
+    private native void stopRecording();
+
+    private native String test();
+
     private native long createCamera(int width, int height);
 
     private native Size getMinimumCompatiblePreviewSize(long ndkCamera);
@@ -121,10 +132,6 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     private native void onPreviewSurfaceCreated(long ndkCamera, Surface surface);
 
     private native void onPreviewSurfaceDestroyed(long ndkCamera, Surface surface);
-
-    private native void startRecording();
-
-    private native void stopRecording();
 
     private native void deleteCamera(long ndkCamera, Surface surface);
 

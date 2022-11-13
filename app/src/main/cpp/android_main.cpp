@@ -5,8 +5,33 @@
 #include "vis/camera_manager.h"
 #include "native_debug.h"
 
-/** Application object: the top level camera application object, maintained by native code only. */
-CameraAppEngine *pEngineObj = nullptr;
+//using namespace std;
+
+CameraEngine *cameraEngine = nullptr;
+
+
+extern "C" JNIEXPORT void JNICALL
+Java_ir_mahdiparastesh_mergen_Main_startRecording(JNIEnv *, jobject) {
+    if (cameraEngine == nullptr) return;
+    // TODO start gathering photos and audio through CameraEngine, through NDKCamera
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_ir_mahdiparastesh_mergen_Main_stopRecording(JNIEnv *, jobject) {
+    if (cameraEngine == nullptr) return;
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_ir_mahdiparastesh_mergen_Main_test(JNIEnv *, jobject) {
+    /*#include <chrono>
+    #include <ctime>
+    std::chrono::system_clock::time_point ts = std::chrono::system_clock::now();
+    ts.operator+=(std::chrono::duration<std::int64_t, std::ratio<31556952>>(1));
+    std::tm* lc = std::gmtime(reinterpret_cast<const time_t *>(ts.time_since_epoch().count()));
+    return env->NewStringUTF(std::to_string(lc->tm_year).c_str());*/
+    return nullptr;
+}
+
 
 /**
  * createCamera() Create application instance and NDK camera object
@@ -23,8 +48,8 @@ CameraAppEngine *pEngineObj = nullptr;
  */
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_createCamera(JNIEnv *env, jobject, jint width, jint height) {
-    pEngineObj = new CameraAppEngine(env, width, height);
-    return reinterpret_cast<jlong>(pEngineObj);
+    cameraEngine = new CameraEngine(env, width, height);
+    return reinterpret_cast<jlong>(cameraEngine);
 }
 
 /**
@@ -34,14 +59,14 @@ Java_ir_mahdiparastesh_mergen_Main_createCamera(JNIEnv *env, jobject, jint width
  */
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_deleteCamera(JNIEnv *, jobject, jlong ndkCameraObj, jobject) {
-    if (!pEngineObj || !ndkCameraObj) return;
-    auto *pApp = reinterpret_cast<CameraAppEngine *>(ndkCameraObj);
-    ASSERT(pApp == pEngineObj, "NdkCamera Obj mismatch")
+    if (!cameraEngine || !ndkCameraObj) return;
+    auto *pApp = reinterpret_cast<CameraEngine *>(ndkCameraObj);
+    ASSERT(pApp == cameraEngine, "NdkCamera Obj mismatch")
 
     delete pApp;
 
     // also reset the private global object
-    pEngineObj = nullptr;
+    cameraEngine = nullptr;
 }
 
 /**
@@ -59,7 +84,7 @@ extern "C" JNIEXPORT jobject JNICALL
 Java_ir_mahdiparastesh_mergen_Main_getMinimumCompatiblePreviewSize(
         JNIEnv *env, jobject, jlong ndkCameraObj) {
     if (!ndkCameraObj) return nullptr;
-    auto *pApp = reinterpret_cast<CameraAppEngine *>(ndkCameraObj);
+    auto *pApp = reinterpret_cast<CameraEngine *>(ndkCameraObj);
     jclass cls = env->FindClass("android/util/Size");
     jobject previewSize =
             env->NewObject(cls, env->GetMethodID(cls, "<init>", "(II)V"),
@@ -77,7 +102,7 @@ extern "C" JNIEXPORT jint JNICALL
 Java_ir_mahdiparastesh_mergen_Main_getCameraSensorOrientation(
         JNIEnv *, jobject, jlong ndkCameraObj) {
     ASSERT(ndkCameraObj, "NativeObject should not be null Pointer")
-    auto *pApp = reinterpret_cast<CameraAppEngine *>(ndkCameraObj);
+    auto *pApp = reinterpret_cast<CameraEngine *>(ndkCameraObj);
     return pApp->GetCameraSensorOrientation(ACAMERA_LENS_FACING_BACK);
 }
 
@@ -90,9 +115,9 @@ Java_ir_mahdiparastesh_mergen_Main_getCameraSensorOrientation(
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onPreviewSurfaceCreated(
         JNIEnv *, jobject, jlong ndkCameraObj, jobject surface) {
-    ASSERT(ndkCameraObj && (jlong) pEngineObj == ndkCameraObj,
+    ASSERT(ndkCameraObj && (jlong) cameraEngine == ndkCameraObj,
            "NativeObject should not be null Pointer")
-    auto *pApp = reinterpret_cast<CameraAppEngine *>(ndkCameraObj);
+    auto *pApp = reinterpret_cast<CameraEngine *>(ndkCameraObj);
     pApp->CreateCameraSession(surface);
     pApp->StartPreview(true);
 }
@@ -106,8 +131,8 @@ Java_ir_mahdiparastesh_mergen_Main_onPreviewSurfaceCreated(
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onPreviewSurfaceDestroyed(
         JNIEnv *env, jobject, jlong ndkCameraObj, jobject surface) {
-    auto *pApp = reinterpret_cast<CameraAppEngine *>(ndkCameraObj);
-    ASSERT(ndkCameraObj && pEngineObj == pApp, "NativeObject should not be null Pointer")
+    auto *pApp = reinterpret_cast<CameraEngine *>(ndkCameraObj);
+    ASSERT(ndkCameraObj && cameraEngine == pApp, "NativeObject should not be null Pointer")
     jclass cls = env->FindClass("android/view/Surface");
     jmethodID toString =
             env->GetMethodID(cls, "toString", "()Ljava/lang/String;");
@@ -126,17 +151,4 @@ Java_ir_mahdiparastesh_mergen_Main_onPreviewSurfaceDestroyed(
     env->ReleaseStringUTFChars(appObjStr, appObjName);
 
     pApp->StartPreview(false);
-}
-
-
-
-extern "C" JNIEXPORT void JNICALL
-Java_ir_mahdiparastesh_mergen_Main_startRecording(JNIEnv *, jobject) {
-    if (pEngineObj == nullptr) return;
-    // TODO start gathering photos and audio through CameraAppEngine, through NDKCamera
-}
-
-extern "C" JNIEXPORT void JNICALL
-Java_ir_mahdiparastesh_mergen_Main_stopRecording(JNIEnv *, jobject) {
-    if (pEngineObj == nullptr) return;
 }

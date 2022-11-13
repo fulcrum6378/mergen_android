@@ -4,7 +4,7 @@
 #include "camera_engine.h"
 #include "../native_debug.h"
 
-CameraAppEngine::CameraAppEngine(JNIEnv *env, jint w, jint h)
+CameraEngine::CameraEngine(JNIEnv *env, jint w, jint h)
         : env_(env),
           requestWidth_(w),
           requestHeight_(h),
@@ -17,7 +17,7 @@ CameraAppEngine::CameraAppEngine(JNIEnv *env, jint w, jint h)
                                      &compatibleCameraRes_);
 }
 
-CameraAppEngine::~CameraAppEngine() {
+CameraEngine::~CameraEngine() {
     if (camera_) {
         delete camera_;
         camera_ = nullptr;
@@ -29,18 +29,18 @@ CameraAppEngine::~CameraAppEngine() {
     }
 }
 
-void CameraAppEngine::CreateCameraSession(jobject surface) {
+void CameraEngine::CreateCameraSession(jobject surface) {
     surface_ = env_->NewGlobalRef(surface);
     camera_->CreateSession(ANativeWindow_fromSurface(env_, surface));
 }
 
-jobject CameraAppEngine::GetSurfaceObject() { return surface_; }
+jobject CameraEngine::GetSurfaceObject() { return surface_; }
 
-const ImageFormat &CameraAppEngine::GetCompatibleCameraRes() const {
+const ImageFormat &CameraEngine::GetCompatibleCameraRes() const {
     return compatibleCameraRes_;
 }
 
-int CameraAppEngine::GetCameraSensorOrientation(int32_t requestFacing) {
+int CameraEngine::GetCameraSensorOrientation(int32_t requestFacing) {
     ASSERT(requestFacing == ACAMERA_LENS_FACING_BACK,
            "Only support rear facing camera")
     int32_t facing = 0, angle = 0;
@@ -55,4 +55,4 @@ int CameraAppEngine::GetCameraSensorOrientation(int32_t requestFacing) {
  * @param start is true to start preview, false to stop preview
  * @return  true if preview started, false when error happened
  */
-void CameraAppEngine::StartPreview(bool start) { camera_->StartPreview(start); }
+void CameraEngine::StartPreview(bool start) { camera_->StartPreview(start); }
