@@ -1,18 +1,15 @@
 #ifndef __CAMERA_ENGINE_H__
 #define __CAMERA_ENGINE_H__
 
-#include <jni.h>
 #include <android/native_activity.h>
 #include <android/native_window_jni.h>
 #include <android/native_window.h>
-#include <functional>
-#include <thread>
 
 #include "camera_manager.h"
 
 class CameraEngine {
 public:
-    explicit CameraEngine(JNIEnv *env, jint w, jint h);
+    explicit CameraEngine(JNIEnv *env);
 
     ~CameraEngine();
 
@@ -23,14 +20,12 @@ public:
 
     const ImageFormat &GetCompatibleCameraRes() const;
 
-    int32_t GetCameraSensorOrientation(int32_t facing);
+    //int32_t GetCameraSensorOrientation(int32_t facing);
 
     jobject GetSurfaceObject();
 
 private:
     JNIEnv *env_;
-    int32_t requestWidth_;
-    int32_t requestHeight_;
     jobject surface_;
     NDKCamera *camera_;
     ImageFormat compatibleCameraRes_{};

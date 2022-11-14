@@ -4,17 +4,13 @@
 #include "camera_engine.h"
 #include "../native_debug.h"
 
-CameraEngine::CameraEngine(JNIEnv *env, jint w, jint h)
+CameraEngine::CameraEngine(JNIEnv *env)
         : env_(env),
-          requestWidth_(w),
-          requestHeight_(h),
           surface_(nullptr),
           camera_(nullptr) {
     memset(&compatibleCameraRes_, 0, sizeof(compatibleCameraRes_));
     camera_ = new NDKCamera();
     ASSERT(camera_, "Failed to Create CameraObject")
-    camera_->MatchCaptureSizeRequest(requestWidth_, requestHeight_,
-                                     &compatibleCameraRes_);
 }
 
 CameraEngine::~CameraEngine() {
@@ -40,7 +36,7 @@ const ImageFormat &CameraEngine::GetCompatibleCameraRes() const {
     return compatibleCameraRes_;
 }
 
-int CameraEngine::GetCameraSensorOrientation(int32_t requestFacing) {
+/*int CameraEngine::GetCameraSensorOrientation(int32_t requestFacing) {
     ASSERT(requestFacing == ACAMERA_LENS_FACING_BACK,
            "Only support rear facing camera")
     int32_t facing = 0, angle = 0;
@@ -49,7 +45,7 @@ int CameraEngine::GetCameraSensorOrientation(int32_t requestFacing) {
         return angle;
     }
     ASSERT(false, "Failed for GetSensorOrientation()")
-}
+}*/
 
 /**
  * @param start is true to start preview, false to stop preview

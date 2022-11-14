@@ -1,6 +1,5 @@
 #include <cassert>
-#include <cstdio>
-#include <__threading_support>
+#include <pthread.h>
 
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
@@ -15,14 +14,14 @@ static SLAndroidSimpleBufferQueueItf recorderBufferQueue;
 static pthread_mutex_t audioEngineLock = PTHREAD_MUTEX_INITIALIZER;
 
 /** This callback handler is called every time a buffer finishes recording. */
-void bqRecorderCallback(SLAndroidSimpleBufferQueueItf bq, void *context) {
+static void bqRecorderCallback(SLAndroidSimpleBufferQueueItf bq, void *context) {
     assert(bq == recorderBufferQueue);
     assert(nullptr == context);
     (*recorderRecord)->SetRecordState(recorderRecord, SL_RECORDSTATE_STOPPED);
     pthread_mutex_unlock(&audioEngineLock);
 }
 
-int8_t createAudioRecorder() {
+static int8_t createAudioRecorder() {
     SLresult result;
 
     // Create engine
@@ -84,7 +83,7 @@ int8_t createAudioRecorder() {
     return 0;
 }
 
-int8_t startRecording() {
+static int8_t startRecording() {
     if (recorderRecord == nullptr) return 1;
     SLresult result;
     if (pthread_mutex_trylock(&audioEngineLock)) return 2;
@@ -106,7 +105,7 @@ int8_t startRecording() {
     return 0;
 }
 
-int8_t stopRecording() {
+static int8_t stopRecording() {
     if (recorderRecord == nullptr) return 1;
     SLresult result;
 
@@ -124,7 +123,7 @@ int8_t stopRecording() {
     return 0;
 }
 
-void deleteAudioRecorder() {
+static void deleteAudioRecorder() {
     // Destroy audio recorder object, and invalidate all associated interfaces
     if (recorderObject != nullptr) {
         (*recorderObject)->Destroy(recorderObject);

@@ -12,7 +12,6 @@ add_library(main SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/vis/camera_engine.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/vis/camera_listeners.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/vis/camera_manager.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/vis/camera_utils.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/vis/recorder.cpp)
 #add_library(vis SHARED) # resulted in an error!
 

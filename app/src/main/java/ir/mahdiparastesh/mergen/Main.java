@@ -36,7 +36,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
 
         if (Arrays.stream(requiredPerms).anyMatch(s -> checkSelfPermission(s) < 0))
             requestPermissions(requiredPerms, permCode);
-        else prepare();
+        else permitted();
 
         String tested = test();
         if (tested != null) Toast.makeText(this, tested, Toast.LENGTH_LONG).show();
@@ -46,19 +46,19 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == permCode) {
-            if (Arrays.stream(grantResults).sum() == 0) prepare();
+            if (Arrays.stream(grantResults).sum() == 0) permitted();
             else onBackPressed();
         }
     }
 
-    private void prepare() {
+    private void permitted() {
         int dim = Math.min(dm.widthPixels, dm.heightPixels),
                 w = dim, h = dim;
         ViewGroup.LayoutParams previewLP = preview.getLayoutParams();
         previewLP.width = w;
         previewLP.height = h;
         preview.setLayoutParams(previewLP);
-        ndkCamera = prepare(w, h);
+        ndkCamera = prepare();
 
         onRecordingStopped();
         preview.setSurfaceTextureListener(this); // don't make it in-line.
@@ -143,7 +143,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     }
 
 
-    private native long prepare(int visWidth, int visHeight);
+    private native long prepare();
 
     private native byte start();
 
