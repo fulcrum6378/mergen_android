@@ -1,5 +1,5 @@
 #include "camera_engine.h"
-#include "camera_manager.h"
+#include "ndk_camera.h"
 #include "../native_debug.h"
 
 static CameraEngine *cameraEngine = nullptr;
@@ -20,6 +20,62 @@ static CameraEngine *cameraEngine = nullptr;
 static jlong createCamera(JNIEnv *env) {
     cameraEngine = new CameraEngine(env);
     return reinterpret_cast<jlong>(cameraEngine);
+}
+
+/**
+ * getCameraSensorOrientation()
+ * @ return camera sensor orientation angle relative to Android device's
+ * display orientation. This sample only deal to back facing camera.
+ */
+/*extern "C" JNIEXPORT jint JNICALL
+Java_ir_mahdiparastesh_mergen_Main_getCameraSensorOrientation(
+        JNIEnv *, jobject, jlong ndkCameraObj) {
+    ASSERT(ndkCameraObj, "NativeObject should not be null Pointer")
+    auto *pApp = reinterpret_cast<CameraEngine *>(ndkCameraObj);
+    return pApp->GetCameraSensorOrientation(ACAMERA_LENS_FACING_BACK);
+}*/
+
+/**
+ * OnPreviewSurfaceCreated()
+ *   Notification to native camera that java TextureView is ready
+ *   to preview video. Simply create cameraSession and
+ *   start camera preview
+ */
+static void onPreviewSurfaceCreated(jlong ndkCameraObj, jobject surface) {
+    ASSERT(ndkCameraObj && (jlong) cameraEngine == ndkCameraObj,
+           "NativeObject should not be null Pointer")
+    auto *pApp = reinterpret_cast<CameraEngine *>(ndkCameraObj);
+    pApp->CreateCameraSession(surface);
+    pApp->StartPreview(true);
+}
+
+/**
+ * OnPreviewSurfaceDestroyed()
+ *   Notification to native camera that java TextureView is destroyed
+ *   Native camera would:
+ *      * stop preview
+ */
+static void onPreviewSurfaceDestroyed(JNIEnv *env, jlong ndkCameraObj, jobject surface) {
+    auto *pApp = reinterpret_cast<CameraEngine *>(ndkCameraObj);
+    ASSERT(ndkCameraObj && cameraEngine == pApp, "NativeObject should not be null Pointer")
+    jclass cls = env->FindClass("android/view/Surface");
+    jmethodID toString =
+            env->GetMethodID(cls, "toString", "()Ljava/lang/String;");
+
+    auto destroyObjStr =
+            reinterpret_cast<jstring>(env->CallObjectMethod(surface, toString));
+    const char *destroyObjName = env->GetStringUTFChars(destroyObjStr, nullptr);
+
+    auto appObjStr = reinterpret_cast<jstring>(
+            env->CallObjectMethod(pApp->GetSurfaceObject(), toString));
+    const char *appObjName = env->GetStringUTFChars(appObjStr, nullptr);
+
+    ASSERT(!strcmp(destroyObjName, appObjName), "object Name MisMatch")
+
+    env->ReleaseStringUTFChars(destroyObjStr, destroyObjName);
+    env->ReleaseStringUTFChars(appObjStr, appObjName);
+
+    pApp->StartPreview(false);
 }
 
 static int8_t startStreaming() {

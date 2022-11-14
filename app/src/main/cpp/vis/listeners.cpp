@@ -4,8 +4,8 @@
 #include <thread>
 #include <utility>
 
-#include "camera_manager.h"
-#include "camera_utils.h"
+#include "ndk_camera.h"
+#include "utils.h"
 #include "../native_debug.h"
 
 ACameraManager_AvailabilityCallbacks *NDKCamera::GetManagerListener() {

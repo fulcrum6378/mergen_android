@@ -6,8 +6,8 @@
 #include <unistd.h>
 #include <utility>
 
-#include "camera_manager.h"
-#include "camera_utils.h"
+#include "ndk_camera.h"
+#include "utils.h"
 #include "../native_debug.h"
 
 NDKCamera::NDKCamera()

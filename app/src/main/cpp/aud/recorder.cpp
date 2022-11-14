@@ -1,4 +1,6 @@
 #include <cassert>
+#include <fstream>
+#include <iostream>
 #include <pthread.h>
 
 #include <SLES/OpenSLES.h>
@@ -114,6 +116,10 @@ static int8_t stopRecording() {
     (void) result;
 
     // TODO SAVE
+    std::ofstream myfile;
+    myfile.open ("/data/data/ir.mahdiparastesh.mergen/files/test.pcm");
+    myfile << recorderBufferQueue;
+    myfile.close();
 
     // Clear buffer queue
     result = (*recorderBufferQueue)->Clear(recorderBufferQueue);

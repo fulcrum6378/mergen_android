@@ -1,11 +1,11 @@
-#ifndef __CAMERA_ENGINE_H__
-#define __CAMERA_ENGINE_H__
+#ifndef CAMERA_ENGINE
+#define CAMERA_ENGINE
 
 #include <android/native_activity.h>
 #include <android/native_window_jni.h>
 #include <android/native_window.h>
 
-#include "camera_manager.h"
+#include "ndk_camera.h"
 
 class CameraEngine {
 public:
