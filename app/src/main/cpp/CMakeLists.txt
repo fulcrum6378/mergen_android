@@ -7,11 +7,13 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Werror")
 
 add_library(main SHARED
-        ${CMAKE_CURRENT_SOURCE_DIR}/android_main.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/aud/recorder.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/vis/camera_engine.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/vis/camera_listeners.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/vis/camera_manager.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/vis/camera_utils.cpp)
+        ${CMAKE_CURRENT_SOURCE_DIR}/vis/camera_utils.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/vis/recorder.cpp)
 #add_library(vis SHARED) # resulted in an error!
 
 target_link_libraries(main

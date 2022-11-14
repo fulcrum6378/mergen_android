@@ -52,25 +52,23 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     }
 
     private void prepare() {
-        // preview: TextureView
-        int dim = Math.min(dm.widthPixels, dm.heightPixels);
+        int dim = Math.min(dm.widthPixels, dm.heightPixels),
+                w = dim, h = dim;
         ViewGroup.LayoutParams previewLP = preview.getLayoutParams();
-        previewLP.width = dim;
-        previewLP.height = dim;
+        previewLP.width = w;
+        previewLP.height = h;
         preview.setLayoutParams(previewLP);
+        ndkCamera = prepare(w, h);
+
         onRecordingStopped();
         preview.setSurfaceTextureListener(this); // don't make it in-line.
         if (preview.isAvailable()) onSurfaceTextureAvailable(
                 preview.getSurfaceTexture(), preview.getWidth(), preview.getHeight());
-
-        createAudioRecorder();
     }
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
-        ndkCamera = createCamera(width, height);
         Size cameraPreviewSize = getMinimumCompatiblePreviewSize(ndkCamera);
-
         surfaceTexture.setDefaultBufferSize(
                 cameraPreviewSize.getWidth(), cameraPreviewSize.getHeight());
         surface = new Surface(surfaceTexture);
@@ -91,7 +89,6 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         preview.setClickable(false);
         recording(false);
         onPreviewSurfaceDestroyed(ndkCamera, surface);
-        deleteCamera(ndkCamera, surface);
         ndkCamera = 0;
         surface = null;
         return true;
@@ -100,8 +97,8 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     private void recording(boolean bb) {
         if (bb == isRecording) return;
         byte res;
-        if (!isRecording) res = startRecording();
-        else res = stopRecording();
+        if (!isRecording) res = start();
+        else res = stop();
         Toast.makeText(this,
                 (!isRecording ? "STARTED" : "STOPPED") + ": " + (int) res,
                 Toast.LENGTH_SHORT).show();
@@ -141,33 +138,26 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     @Override
     protected void onDestroy() {
         surface.release();
-        deleteAudioRecorder();
+        destroy(ndkCamera);
         super.onDestroy();
     }
 
 
-    private native byte startRecording();
+    private native long prepare(int visWidth, int visHeight);
 
-    private native byte stopRecording();
+    private native byte start();
+
+    private native byte stop();
+
+    private native void destroy(long ndkCamera);
 
     private native String test();
 
-    private native long createCamera(int width, int height);
-
     private native Size getMinimumCompatiblePreviewSize(long ndkCamera);
-
-    @SuppressWarnings("unused")
-    private native int getCameraSensorOrientation(long ndkCamera);
 
     private native void onPreviewSurfaceCreated(long ndkCamera, Surface surface);
 
     private native void onPreviewSurfaceDestroyed(long ndkCamera, Surface surface);
-
-    private native void deleteCamera(long ndkCamera, Surface surface);
-
-    private native byte createAudioRecorder();
-
-    private native void deleteAudioRecorder();
 
     static {
         System.loadLibrary("main");
