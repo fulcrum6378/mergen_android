@@ -18,8 +18,6 @@ void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq) {
     dataBuf->size_ = dataBuf->cap_;  // device only calls us when it is really full
     recQueue_->push(dataBuf);
 
-    myfile.write((char *) dataBuf->buf_, dataBuf->size_); // TODO
-
     sample_buf *freeBuf;
     while (freeQueue_->front(&freeBuf) && devShadowQueue_->push(freeBuf)) {
         freeQueue_->pop();
@@ -30,9 +28,27 @@ void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq) {
     ++audioBufCount;
 
     // should leave the device to sleep to save power if no buffers
-    /*if (devShadowQueue_->size() == 0)
+    /*TODO if (devShadowQueue_->size() == 0)
         (*recItf_)->SetRecordState(recItf_, SL_RECORDSTATE_STOPPED);*/
-    assert(devShadowQueue_->size() != 0);
+    // assert(devShadowQueue_->size() != 0);
+    LOGE("%s", ("Shadow: " + std::to_string(devShadowQueue_->size())).c_str());
+    /*02:47:15.082  E  Shadow: 4
+02:47:15.086  E  Shadow: 4
+02:47:15.090  E  Shadow: 4
+02:47:15.094  E  Shadow: 4
+02:47:15.098  E  Shadow: 4
+02:47:15.102  E  Shadow: 4
+02:47:15.106  E  Shadow: 4
+02:47:15.110  E  Shadow: 4
+02:47:15.114  E  Shadow: 4
+02:47:15.118  E  Shadow: 4
+02:47:15.123  E  Shadow: 4
+02:47:15.126  E  Shadow: 4
+02:47:15.130  E  Shadow: 3
+02:47:15.134  E  Shadow: 2
+02:47:15.138  E  Shadow: 1
+02:47:15.142  E  Shadow: 0
+     AND NOTHING ELSE*/
 }
 
 AudioRecorder::AudioRecorder(SampleFormat *sampleFormat, SLEngineItf slEngine)
@@ -87,9 +103,6 @@ AudioRecorder::AudioRecorder(SampleFormat *sampleFormat, SLEngineItf slEngine)
 
     devShadowQueue_ = new AudioQueue(DEVICE_SHADOW_BUFFER_QUEUE_LEN);
     assert(devShadowQueue_);
-
-    myfile = std::ofstream("/data/data/ir.mahdiparastesh.mergen/files/test.pcm",
-                           std::ios::binary | std::ios::out); // TODO
 }
 
 SLboolean AudioRecorder::Start() {
@@ -130,10 +143,8 @@ SLboolean AudioRecorder::Stop() {
     SLuint32 curState;
     SLresult result = (*recItf_)->GetRecordState(recItf_, &curState);
     SLASSERT(result);
-    if (curState == SL_RECORDSTATE_STOPPED) {
-        throw "WTF?";
-        //return SL_BOOLEAN_TRUE;
-    }
+    if (curState == SL_RECORDSTATE_STOPPED) return SL_BOOLEAN_TRUE;
+    assert(curState != SL_RECORDSTATE_STOPPED);
     result = (*recItf_)->SetRecordState(recItf_, SL_RECORDSTATE_STOPPED);
     SLASSERT(result);
 
@@ -143,7 +154,18 @@ SLboolean AudioRecorder::Stop() {
 }
 
 AudioRecorder::~AudioRecorder() {
-    myfile.close(); // TODO
+    /*myfile = std::ofstream(path, std::ios::binary | std::ios::out);
+    myfile.write((char *) dataBuf->buf_, dataBuf->size_);
+    myfile.close();*/
+    char path[] = "/data/data/ir.mahdiparastesh.mergen/files/test.txt";
+    remove(path);
+    std::ofstream text;
+    text.open(path);
+    text << "freeQueue_ size: " + std::to_string(freeQueue_->size()) + "\n";
+    text << "recQueue_ size: " + std::to_string(recQueue_->size()) + "\n";
+    text << "devShadowQueue_ size: " + std::to_string(devShadowQueue_->size()) + "\n";
+    text << "audioBufCount: " + std::to_string(audioBufCount) + "\n";
+    text.close();
 
     // destroy audio recorder object, and invalidate all associated interfaces
     if (recObjectItf_ != nullptr)
