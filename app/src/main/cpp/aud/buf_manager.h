@@ -1,5 +1,5 @@
-#ifndef NATIVE_AUDIO_BUF_MANAGER_H
-#define NATIVE_AUDIO_BUF_MANAGER_H
+#ifndef VIS_BUF_MANAGER
+#define VIS_BUF_MANAGER
 
 #include <sys/types.h>
 #include <SLES/OpenSLES.h>
@@ -20,10 +20,10 @@
 template<typename T>
 class ProducerConsumerQueue {
 public:
-    explicit ProducerConsumerQueue(int size)
+    explicit ProducerConsumerQueue(uint32_t size)
             : ProducerConsumerQueue(size, new T[size]) {}
 
-    explicit ProducerConsumerQueue(int size, T *buffer)
+    explicit ProducerConsumerQueue(uint32_t size, T *buffer)
             : size_(size), buffer_(buffer) {
         // This is necessary because we depend on twos-complement wraparound
         // to take care of overflow conditions.
@@ -153,12 +153,9 @@ struct sample_buf {
 using AudioQueue = ProducerConsumerQueue<sample_buf *>;
 
 __inline__ void releaseSampleBufs(sample_buf *bufs, uint32_t &count) {
-    if (!bufs || !count) {
-        return;
-    }
-    for (uint32_t i = 0; i < count; i++) {
+    if (!bufs || !count) return;
+    for (uint32_t i = 0; i < count; i++)
         if (bufs[i].buf_) delete[] bufs[i].buf_;
-    }
     delete[] bufs;
 }
 

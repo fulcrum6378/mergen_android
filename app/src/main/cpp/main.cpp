@@ -4,7 +4,6 @@
 #include "aud/audio_common.h"
 #include "aud/audio_recorder.h"
 #include "vis/recorder.cpp" // don't put these in namespace brackets.
-//#include "aud/recorder.cpp"
 
 struct EchoAudioEngine {
     SLmilliHertz fastPathSampleRate_;
@@ -25,10 +24,15 @@ struct EchoAudioEngine {
 static EchoAudioEngine engine;
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_ir_mahdiparastesh_mergen_Main_prepare(JNIEnv *env, jobject) {
+Java_ir_mahdiparastesh_mergen_Main_prepare(JNIEnv *env, jobject, jint sampleRate,
+                                           jint framesPerBuf) {
     //createAudioRecorder();
     SLresult result;
     memset(&engine, 0, sizeof(engine));
+
+    engine.fastPathSampleRate_ = static_cast<SLmilliHertz>(sampleRate) * 1000;
+    engine.fastPathFramesPerBuf_ = static_cast<uint32_t>(framesPerBuf);
+    engine.sampleChannels_ = AUDIO_SAMPLE_CHANNELS;
     engine.bitsPerSample_ = SL_PCMSAMPLEFORMAT_FIXED_16;
 
     result = slCreateEngine(
@@ -42,6 +46,22 @@ Java_ir_mahdiparastesh_mergen_Main_prepare(JNIEnv *env, jobject) {
     result = (*engine.slEngineObj_)->GetInterface(engine.slEngineObj_, SL_IID_ENGINE,
                                                   &engine.slEngineItf_);
     SLASSERT(result);
+
+    // compute the RECOMMENDED fast audio buffer size:
+    //   the lower latency required
+    //     *) the smaller the buffer should be (adjust it here) AND
+    //     *) the less buffering should be before starting player AFTER
+    //        receiving the recorder buffer
+    //   Adjust the bufSize here to fit your bill [before it busts]
+    uint32_t bufSize = engine.fastPathFramesPerBuf_ * engine.sampleChannels_ *
+                       engine.bitsPerSample_;
+    bufSize = (bufSize + 7) >> 3;  // bits --> byte
+    engine.bufCount_ = BUF_COUNT;
+    engine.bufs_ = allocateSampleBufs(engine.bufCount_, bufSize);
+    assert(engine.bufs_);
+    engine.freeBufQueue_ = new AudioQueue(engine.bufCount_);
+    engine.recBufQueue_ = new AudioQueue(engine.bufCount_);
+    assert(engine.freeBufQueue_ && engine.recBufQueue_);
     for (uint32_t i = 0; i < engine.bufCount_; i++)
         engine.freeBufQueue_->push(&engine.bufs_[i]);
 
@@ -53,8 +73,7 @@ Java_ir_mahdiparastesh_mergen_Main_prepare(JNIEnv *env, jobject) {
     sampleFormat.framesPerBuf_ = engine.fastPathFramesPerBuf_;
     engine.recorder_ = new AudioRecorder(&sampleFormat, engine.slEngineItf_);
     if (!engine.recorder_) return JNI_FALSE;
-    //engine.recorder_->SetBufQueues(engine.freeBufQueue_, engine.recBufQueue_);
-    //MAHDI engine.recorder_->RegisterCallback(EngineService, (void *) &engine);
+    engine.recorder_->SetBufQueues(engine.freeBufQueue_, engine.recBufQueue_);
 
     return createCamera(env);
 }
@@ -82,8 +101,16 @@ Java_ir_mahdiparastesh_mergen_Main_stop(JNIEnv *, jobject) {
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject, jlong ndkCameraObj) {
     //deleteAudioRecorder();
-    if (engine.recorder_) delete engine.recorder_;
+    delete engine.recorder_;
     engine.recorder_ = nullptr;
+    delete engine.recBufQueue_;
+    delete engine.freeBufQueue_;
+    releaseSampleBufs(engine.bufs_, engine.bufCount_);
+    if (engine.slEngineObj_ != nullptr) {
+        (*engine.slEngineObj_)->Destroy(engine.slEngineObj_);
+        engine.slEngineObj_ = nullptr;
+        engine.slEngineItf_ = nullptr;
+    }
 
     deleteCamera(ndkCameraObj);
 }
@@ -115,10 +142,10 @@ Java_ir_mahdiparastesh_mergen_Main_getMinimumCompatiblePreviewSize(
     if (!ndkCameraObj) return nullptr;
     auto *pApp = reinterpret_cast<CameraEngine *>(ndkCameraObj);
     jclass cls = env->FindClass("android/util/Size");
-    jobject previewSize =
-            env->NewObject(cls, env->GetMethodID(cls, "<init>", "(II)V"),
-                           pApp->GetCompatibleCameraRes().width,
-                           pApp->GetCompatibleCameraRes().height);
+    jobject previewSize = env->NewObject(
+            cls, env->GetMethodID(cls, "<init>", "(II)V"),
+            pApp->GetCompatibleCameraRes().width,
+            pApp->GetCompatibleCameraRes().height);
     return previewSize;
 }
 

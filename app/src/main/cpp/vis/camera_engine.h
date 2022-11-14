@@ -1,5 +1,5 @@
-#ifndef CAMERA_ENGINE
-#define CAMERA_ENGINE
+#ifndef AUD_CAMERA_ENGINE
+#define AUD_CAMERA_ENGINE
 
 #include <android/native_activity.h>
 #include <android/native_window_jni.h>

@@ -3,7 +3,9 @@ package ir.mahdiparastesh.mergen;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.SurfaceTexture;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Size;
@@ -58,7 +60,11 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         previewLP.width = w;
         previewLP.height = h;
         preview.setLayoutParams(previewLP);
-        ndkCamera = prepare();
+
+        AudioManager audioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        ndkCamera = prepare(
+                Integer.parseInt(audioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)),
+                Integer.parseInt(audioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER)));
 
         onRecordingStopped();
         preview.setSurfaceTextureListener(this); // don't make it in-line.
@@ -143,7 +149,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     }
 
 
-    private native long prepare();
+    private native long prepare(int sampleRate, int framesPerBuf);
 
     private native byte start();
 

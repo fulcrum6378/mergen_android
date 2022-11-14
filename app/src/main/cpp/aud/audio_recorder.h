@@ -1,13 +1,13 @@
-#ifndef NATIVE_AUDIO_AUDIO_RECORDER_H
-#define NATIVE_AUDIO_AUDIO_RECORDER_H
+#ifndef VIS_RECORDER
+#define VIS_RECORDER
 
+#include <fstream> // required for std::ofstream
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 #include <sys/types.h>
 
 #include "audio_common.h"
 #include "buf_manager.h"
-#include "debug_utils.h"
 
 class AudioRecorder {
     SLObjectItf recObjectItf_{};
@@ -25,6 +25,8 @@ class AudioRecorder {
 public:
     explicit AudioRecorder(SampleFormat *, SLEngineItf engineEngine);
 
+    std::ofstream myfile; // TODO
+
     ~AudioRecorder();
 
     SLboolean Start(void);
@@ -34,8 +36,6 @@ public:
     void SetBufQueues(AudioQueue *freeQ, AudioQueue *recQ);
 
     void ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq);
-
-    void RegisterCallback(ENGINE_CALLBACK cb, void *ctx);
 };
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef __CAMERA_CAMERA_UTILS_H__
-#define __CAMERA_CAMERA_UTILS_H__
+#ifndef AUD_UTILS
+#define AUD_UTILS
 
 #include <camera/NdkCameraError.h>
 #include <camera/NdkCameraManager.h>

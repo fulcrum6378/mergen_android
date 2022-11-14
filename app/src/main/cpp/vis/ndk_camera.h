@@ -1,5 +1,5 @@
-#ifndef NDK_CAMERA
-#define NDK_CAMERA
+#ifndef AUD_NDK_CAMERA
+#define AUD_NDK_CAMERA
 
 #include <camera/NdkCameraDevice.h>
 #include <camera/NdkCameraError.h>
