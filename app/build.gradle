@@ -5,6 +5,7 @@ plugins {
 android {
     compileSdk 33
     buildToolsVersion '33.0.0'
+    ndkVersion '25.1.8937393'
 
     defaultConfig {
         applicationId "ir.mahdiparastesh.mergen"
@@ -26,7 +27,6 @@ android {
         }
     }
     // buildFeatures { viewBinding true }
-    ndkVersion '25.1.8937393'
 }
 
 dependencies {

@@ -43,7 +43,8 @@ static int8_t createAudioRecorder() {
     (void) result;
 
     // Configure audio source
-    SLDataLocator_IODevice loc_dev = {SL_DATALOCATOR_IODEVICE, SL_IODEVICE_AUDIOINPUT,
+    SLDataLocator_IODevice loc_dev = {SL_DATALOCATOR_IODEVICE,
+                                      SL_IODEVICE_AUDIOINPUT,
                                       SL_DEFAULTDEVICEID_AUDIOINPUT, nullptr};
     SLDataSource audioSrc = {&loc_dev, nullptr};
 
