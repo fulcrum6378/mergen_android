@@ -14,6 +14,7 @@ class AudioRecorder {
     SLRecordItf recItf_{};
     SLAndroidSimpleBufferQueueItf recBufQueueItf_{};
 
+    SampleFormat sampleInfo_{};
     AudioQueue *freeQueue_;       // user
     AudioQueue *recQueue_;        // user
     AudioQueue *devShadowQueue_;  // owner

@@ -8,7 +8,7 @@
 #include <memory>
 #include <limits>
 
-#include "../native_debug.h"
+#include "../debug.h"
 
 #ifndef CACHE_ALIGN
 #define CACHE_ALIGN 64

@@ -2,7 +2,7 @@
 #include <cstring>
 
 #include "camera_engine.h"
-#include "../native_debug.h"
+#include "../debug.h"
 
 CameraEngine::CameraEngine(JNIEnv *env)
         : env_(env),

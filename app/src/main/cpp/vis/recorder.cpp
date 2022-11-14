@@ -1,6 +1,6 @@
 #include "camera_engine.h"
 #include "ndk_camera.h"
-#include "../native_debug.h"
+#include "../debug.h"
 
 static CameraEngine *cameraEngine = nullptr;
 

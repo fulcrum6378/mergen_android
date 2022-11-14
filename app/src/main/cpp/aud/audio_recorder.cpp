@@ -18,7 +18,7 @@ void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq) {
     dataBuf->size_ = dataBuf->cap_;  // device only calls us when it is really full
     recQueue_->push(dataBuf);
 
-    myfile.write((char*) dataBuf->buf_, dataBuf->size_); // TODO
+    myfile.write((char *) dataBuf->buf_, dataBuf->size_); // TODO
 
     sample_buf *freeBuf;
     while (freeQueue_->front(&freeBuf) && devShadowQueue_->push(freeBuf)) {
@@ -30,9 +30,9 @@ void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq) {
     ++audioBufCount;
 
     // should leave the device to sleep to save power if no buffers
-    /*TODO devShadowQueue_ is implemented exactly as AudioEcho
-     * if (devShadowQueue_->size() == 0)
+    /*if (devShadowQueue_->size() == 0)
         (*recItf_)->SetRecordState(recItf_, SL_RECORDSTATE_STOPPED);*/
+    assert(devShadowQueue_->size() != 0);
 }
 
 AudioRecorder::AudioRecorder(SampleFormat *sampleFormat, SLEngineItf slEngine)
@@ -41,14 +41,9 @@ AudioRecorder::AudioRecorder(SampleFormat *sampleFormat, SLEngineItf slEngine)
           devShadowQueue_(nullptr),
           callback_() {
     SLresult result;
-    /*sampleInfo_ = *sampleFormat;
+    sampleInfo_ = *sampleFormat;
     SLAndroidDataFormat_PCM_EX format_pcm;
-    ConvertToSLSampleFormat(&format_pcm, &sampleInfo_);*/
-
-    //SLDataLocator_AndroidSimpleBufferQueue loc_bq = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
-    SLDataFormat_PCM format_pcm = {SL_DATAFORMAT_PCM, 1, SL_SAMPLINGRATE_16,
-                                   SL_PCMSAMPLEFORMAT_FIXED_16, SL_PCMSAMPLEFORMAT_FIXED_16,
-                                   SL_SPEAKER_FRONT_CENTER, SL_BYTEORDER_LITTLEENDIAN};
+    ConvertToSLSampleFormat(&format_pcm, &sampleInfo_);
 
     // configure audio source
     SLDataLocator_IODevice loc_dev = {SL_DATALOCATOR_IODEVICE,
@@ -63,13 +58,21 @@ AudioRecorder::AudioRecorder(SampleFormat *sampleFormat, SLEngineItf slEngine)
     SLDataSink audioSnk = {&loc_bq, &format_pcm};
 
     // create audio recorder (requires the RECORD_AUDIO permission)
-    const SLInterfaceID id[1] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE};
-    const SLboolean req[1] = {SL_BOOLEAN_TRUE};
-    // MAHDI: I used the native-audio version of "id" and "req".
+    const SLInterfaceID id[2] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE, SL_IID_ANDROIDCONFIGURATION};
+    const SLboolean req[2] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
     result = (*slEngine)->CreateAudioRecorder(
             slEngine, &recObjectItf_, &audioSrc, &audioSnk, 1, id, req);
     SLASSERT(result);
 
+    // Configure the voice recognition preset which has no signal processing for lower latency.
+    SLAndroidConfigurationItf inputConfig;
+    result = (*recObjectItf_)->GetInterface(
+            recObjectItf_, SL_IID_ANDROIDCONFIGURATION, &inputConfig);
+    if (SL_RESULT_SUCCESS == result) {
+        SLuint32 presetValue = SL_ANDROID_RECORDING_PRESET_VOICE_RECOGNITION;
+        (*inputConfig)->SetConfiguration(
+                inputConfig, SL_ANDROID_KEY_RECORDING_PRESET, &presetValue, sizeof(SLuint32));
+    }
     result = (*recObjectItf_)->Realize(recObjectItf_, SL_BOOLEAN_FALSE);
     SLASSERT(result);
     result = (*recObjectItf_)->GetInterface(recObjectItf_, SL_IID_RECORD, &recItf_);

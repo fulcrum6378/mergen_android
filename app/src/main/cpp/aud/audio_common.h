@@ -4,12 +4,12 @@
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 
-#include "../native_debug.h" // do not include "recorder.h" here!
+#include "../debug.h" // do not include "recorder.h" here!
 
 /** Audio Sample Controls */
 #define AUDIO_SAMPLE_CHANNELS 1
 
-/** Sample Buffer Controls */
+// Sample Buffer Controls
 #define RECORD_DEVICE_KICKSTART_BUF_COUNT 2
 #define DEVICE_SHADOW_BUFFER_QUEUE_LEN 4
 #define BUF_COUNT 16
