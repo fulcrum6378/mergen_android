@@ -1,5 +1,5 @@
-#ifndef AUD_NDK_CAMERA
-#define AUD_NDK_CAMERA
+#ifndef VIS_NDK_CAMERA_H
+#define VIS_NDK_CAMERA_H
 
 #include <camera/NdkCameraDevice.h>
 #include <camera/NdkCameraError.h>
@@ -95,4 +95,4 @@ public:
     explicit CameraId(void) { CameraId(""); }
 };
 
-#endif
+#endif //VIS_NDK_CAMERA_H

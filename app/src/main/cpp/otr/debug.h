@@ -1,3 +1,6 @@
+#ifndef DEBUG_H
+#define DEBUG_H
+
 #include <android/log.h>
 
 #define LOG_TAG "ir.mahdiparastesh.mergen"
@@ -7,3 +10,4 @@
   if (!(cond)) {                                              \
     __android_log_assert(#cond, LOG_TAG, fmt, ##__VA_ARGS__); \
   }
+#endif

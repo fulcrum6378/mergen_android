@@ -17,6 +17,7 @@ struct EchoAudioEngine {
     AudioRecorder *recorder_;
     AudioQueue *freeBufQueue_;  // Owner of the queue
     AudioQueue *recBufQueue_;   // Owner of the queue
+    // recBufQueue_ is recQueue_ for the recorder and playQueue_ for the player.
 
     sample_buf *bufs_;
     uint32_t bufCount_;
@@ -155,3 +156,5 @@ Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
     if (available) onPreviewSurfaceCreated(ndkCameraObj, surface);
     else onPreviewSurfaceDestroyed(env, ndkCameraObj, surface);
 }
+
+// The idea of defining a JNI interface header sucks!

@@ -10,7 +10,6 @@ add_library(main SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/aud/audio_common.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/aud/audio_recorder.cpp
-        #${CMAKE_CURRENT_SOURCE_DIR}/aud/recorder.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/vis/camera_engine.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/vis/listeners.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/vis/ndk_camera.cpp

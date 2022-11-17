@@ -8,7 +8,7 @@
 
 #include "ndk_camera.h"
 #include "utils.h"
-#include "../debug.h"
+#include "../otr/debug.h"
 
 NDKCamera::NDKCamera()
         : cameraMgr_(nullptr),

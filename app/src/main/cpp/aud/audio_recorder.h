@@ -1,5 +1,5 @@
-#ifndef VIS_RECORDER
-#define VIS_RECORDER
+#ifndef AUD_RECORDER_H
+#define AUD_RECORDER_H
 
 #include <fstream> // required for std::ofstream
 #include <SLES/OpenSLES.h>
@@ -39,4 +39,4 @@ public:
     void ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq);
 };
 
-#endif
+#endif //AUD_RECORDER_H

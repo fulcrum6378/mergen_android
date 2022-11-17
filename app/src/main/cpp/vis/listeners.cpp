@@ -6,7 +6,7 @@
 
 #include "ndk_camera.h"
 #include "utils.h"
-#include "../debug.h"
+#include "../otr/debug.h"
 
 ACameraManager_AvailabilityCallbacks *NDKCamera::GetManagerListener() {
     static ACameraManager_AvailabilityCallbacks cameraMgrListener = {

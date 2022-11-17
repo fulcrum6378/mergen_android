@@ -1,5 +1,5 @@
-#ifndef AUD_CAMERA_ENGINE
-#define AUD_CAMERA_ENGINE
+#ifndef VIS_CAMERA_ENGINE_H
+#define VIS_CAMERA_ENGINE_H
 
 #include <android/native_activity.h>
 #include <android/native_window_jni.h>
@@ -31,4 +31,4 @@ private:
     ImageFormat compatibleCameraRes_{};
 };
 
-#endif
+#endif //VIS_CAMERA_ENGINE_H

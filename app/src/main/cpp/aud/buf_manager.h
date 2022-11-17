@@ -1,5 +1,5 @@
-#ifndef VIS_BUF_MANAGER
-#define VIS_BUF_MANAGER
+#ifndef AUD_BUF_MANAGER_H
+#define AUD_BUF_MANAGER_H
 
 #include <sys/types.h>
 #include <SLES/OpenSLES.h>
@@ -8,7 +8,7 @@
 #include <memory>
 #include <limits>
 
-#include "../debug.h"
+#include "../otr/debug.h"
 
 #ifndef CACHE_ALIGN
 #define CACHE_ALIGN 64
@@ -186,4 +186,4 @@ __inline__ sample_buf *allocateSampleBufs(uint32_t count, uint32_t sizeInByte) {
     return bufs;
 }
 
-#endif
+#endif //AUD_BUF_MANAGER_H

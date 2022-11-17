@@ -1,5 +1,5 @@
-#ifndef AUD_UTILS
-#define AUD_UTILS
+#ifndef VIS_UTILS_H
+#define VIS_UTILS_H
 
 #include <camera/NdkCameraError.h>
 #include <camera/NdkCameraManager.h>
@@ -18,4 +18,4 @@
 #define CALL_REQUEST(func) CALL_CAMERA(ACaptureRequest_##func)
 #define CALL_SESSION(func) CALL_CAMERA(ACameraCaptureSession_##func)
 
-#endif
+#endif //VIS_UTILS_H

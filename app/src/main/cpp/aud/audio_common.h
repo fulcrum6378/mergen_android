@@ -1,16 +1,17 @@
-#ifndef VIS_COMMON
-#define VIS_COMMON
+#ifndef AUD_COMMON_H
+#define AUD_COMMON_H
 
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 
-#include "../debug.h" // do not include "recorder.h" here!
+#include "../otr/debug.h" // do not include "recorder.h" here!
 
 /** Audio Sample Controls */
 #define AUDIO_SAMPLE_CHANNELS 1
 
 // Sample Buffer Controls
 #define RECORD_DEVICE_KICKSTART_BUF_COUNT 2
+#define PLAY_KICKSTART_BUFFER_COUNT 3
 #define DEVICE_SHADOW_BUFFER_QUEUE_LEN 4
 #define BUF_COUNT 16
 
@@ -32,4 +33,4 @@ void ConvertToSLSampleFormat(SLAndroidDataFormat_PCM_EX *pFormat, SampleFormat *
 
 typedef bool (*ENGINE_CALLBACK)(void *pCTX, uint32_t msg, void *pData);
 
-#endif
+#endif //AUD_COMMON_H
