@@ -7,7 +7,6 @@
 
 /** Called for every buffer is full; pass directly to handler. */
 void bqRecorderCallback(SLAndroidSimpleBufferQueueItf bq, void *recorder) {
-    //LOGE("bqRecorderCallback");
     (static_cast<AudioRecorder *>(recorder))->ProcessSLCallback(bq);
 }
 
@@ -18,6 +17,8 @@ void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq) {
     devShadowQueue_->pop();
     dataBuf->size_ = dataBuf->cap_;  // device only calls us when it is really full
     recQueue_->push(dataBuf);
+
+    myfile.write((char *) dataBuf->buf_, dataBuf->size_); // TODO
 
     sample_buf *freeBuf;
     while (freeQueue_->front(&freeBuf) && devShadowQueue_->push(freeBuf)) {
@@ -32,31 +33,13 @@ void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq) {
     /*TODO if (devShadowQueue_->size() == 0)
         (*recItf_)->SetRecordState(recItf_, SL_RECORDSTATE_STOPPED);*/
     // assert(devShadowQueue_->size() != 0);
-    LOGE("%s", ("Shadow: " + std::to_string(dataBuf->size_)).c_str());
-    /*02:47:15.082  E  Shadow: 4
-02:47:15.086  E  Shadow: 4
-02:47:15.090  E  Shadow: 4
-02:47:15.094  E  Shadow: 4
-02:47:15.098  E  Shadow: 4
-02:47:15.102  E  Shadow: 4
-02:47:15.106  E  Shadow: 4
-02:47:15.110  E  Shadow: 4
-02:47:15.114  E  Shadow: 4
-02:47:15.118  E  Shadow: 4
-02:47:15.123  E  Shadow: 4
-02:47:15.126  E  Shadow: 4
-02:47:15.130  E  Shadow: 3
-02:47:15.134  E  Shadow: 2
-02:47:15.138  E  Shadow: 1
-02:47:15.142  E  Shadow: 0
-     AND NOTHING ELSE*/
+    LOGE("%s", ("Shadow: " + std::to_string(devShadowQueue_->size())).c_str());
 
     AudioQueue *playQueue_ = recQueue_;
 
     // std::lock_guard<std::mutex> lock(stopMutex_);
 
-    // retrieve the finished device buf and put onto the free queue
-    // so recorder could re-use it
+    // retrieve the finished device buf and put onto the free queue so recorder could re-use it
     sample_buf *buf = dataBuf;
     //if (!devShadowQueue_->front(&buf)) {
     /*
@@ -180,10 +163,17 @@ SLboolean AudioRecorder::Start() {
 
     result = (*recItf_)->SetRecordState(recItf_, SL_RECORDSTATE_RECORDING);
 
+    // TODO
+    char path[] = "/data/data/ir.mahdiparastesh.mergen/files/test.pcm";
+    remove(path);
+    myfile = std::ofstream(path, std::ios::binary | std::ios::out);
+
     return (result == SL_RESULT_SUCCESS ? SL_BOOLEAN_TRUE : SL_BOOLEAN_FALSE);
 }
 
 SLboolean AudioRecorder::Stop() {
+    myfile.close(); // TODO
+
     // In case already recording, stop recording and clear buffer queue.
     SLuint32 curState;
     SLresult result = (*recItf_)->GetRecordState(recItf_, &curState);
@@ -202,7 +192,7 @@ AudioRecorder::~AudioRecorder() {
     /*myfile = std::ofstream(path, std::ios::binary | std::ios::out);
     myfile.write((char *) dataBuf->buf_, dataBuf->size_);
     myfile.close();*/
-    char path[] = "/data/data/ir.mahdiparastesh.mergen/files/test.txt";
+    /*char path[] = "/data/data/ir.mahdiparastesh.mergen/files/test.txt";
     remove(path);
     std::ofstream text;
     text.open(path);
@@ -210,7 +200,7 @@ AudioRecorder::~AudioRecorder() {
     text << "recQueue_ size: " + std::to_string(recQueue_->size()) + "\n";
     text << "devShadowQueue_ size: " + std::to_string(devShadowQueue_->size()) + "\n";
     text << "audioBufCount: " + std::to_string(audioBufCount) + "\n";
-    text.close();
+    text.close();*/
 
     // destroy audio recorder object, and invalidate all associated interfaces
     if (recObjectItf_ != nullptr)

@@ -118,6 +118,9 @@ NDKCamera::~NDKCamera() {
     cameras_.clear();
     if (cameraMgr_) {
         CALL_MGR(unregisterAvailabilityCallback(cameraMgr_, GetManagerListener()))
+        /* FIXME on destroy after exiting app
+          * ACameraManager_unregisterAvailabilityCallback: invalid argument! callback 0x79c6175df0, onCameraAvailable 0x0, onCameraUnavailable 0x0
+          * A  NativeObject should not be null Pointer*/
         ACameraManager_delete(cameraMgr_);
         cameraMgr_ = nullptr;
     }
