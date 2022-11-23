@@ -144,7 +144,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     @Override
     protected void onDestroy() {
         surface.release();
-        destroy(ndkCamera);
+        destroy();
         super.onDestroy();
     }
 
@@ -155,7 +155,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
 
     private native byte stop();
 
-    private native void destroy(long ndkCamera);
+    private native void destroy();
 
     private native String test();
 

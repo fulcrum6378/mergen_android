@@ -6,7 +6,7 @@
 
 #include "../otr/debug.h" // do not include "recorder.h" here!
 
-/** Audio Sample Controls */
+// Audio Sample Controls
 #define AUDIO_SAMPLE_CHANNELS 1
 
 // Sample Buffer Controls
@@ -30,7 +30,5 @@ void ConvertToSLSampleFormat(SLAndroidDataFormat_PCM_EX *pFormat, SampleFormat *
     assert(SL_RESULT_SUCCESS == (x)); \
     (void)(x);                        \
   } while (0)
-
-typedef bool (*ENGINE_CALLBACK)(void *pCTX, uint32_t msg, void *pData);
 
 #endif //AUD_COMMON_H

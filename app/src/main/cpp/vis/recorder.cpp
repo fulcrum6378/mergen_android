@@ -23,6 +23,22 @@ static jlong createCamera(JNIEnv *env) {
 }
 
 /**
+ * deleteCamera():
+ *   releases native application object, which
+ *   triggers native camera object be released
+ */
+static void deleteCamera(jlong ndkCameraObj) {
+    if (!cameraEngine || !ndkCameraObj) return;
+    auto *pApp = reinterpret_cast<CameraEngine *>(ndkCameraObj);
+    ASSERT(pApp == cameraEngine, "NdkCamera Obj mismatch")
+
+    delete pApp;
+
+    // also reset the private global object
+    cameraEngine = nullptr;
+}
+
+/**
  * getCameraSensorOrientation()
  * @ return camera sensor orientation angle relative to Android device's
  * display orientation. This sample only deal to back facing camera.
@@ -57,7 +73,10 @@ static void onPreviewSurfaceCreated(jlong ndkCameraObj, jobject surface) {
  */
 static void onPreviewSurfaceDestroyed(JNIEnv *env, jlong ndkCameraObj, jobject surface) {
     auto *pApp = reinterpret_cast<CameraEngine *>(ndkCameraObj);
-    ASSERT(ndkCameraObj && cameraEngine == pApp, "NativeObject should not be null Pointer")
+    ASSERT(ndkCameraObj && cameraEngine == pApp,
+           "%s", ("NativeObject should not be null Pointer: " +
+                  std::to_string(ndkCameraObj) + " == " +
+                  std::to_string(reinterpret_cast<jlong>(cameraEngine))).c_str())
     jclass cls = env->FindClass("android/view/Surface");
     jmethodID toString =
             env->GetMethodID(cls, "toString", "()Ljava/lang/String;");
@@ -76,6 +95,9 @@ static void onPreviewSurfaceDestroyed(JNIEnv *env, jlong ndkCameraObj, jobject s
     env->ReleaseStringUTFChars(appObjStr, appObjName);
 
     pApp->StartPreview(false);
+
+    // Don't put this in Main.destroy()
+    deleteCamera(ndkCameraObj);
 }
 
 static int8_t startStreaming() {
@@ -88,20 +110,4 @@ static int8_t stopStreaming() {
     if (cameraEngine == nullptr) return 1;
     // TODO
     return 0;
-}
-
-/**
- * deleteCamera():
- *   releases native application object, which
- *   triggers native camera object be released
- */
-static void deleteCamera(jlong ndkCameraObj) {
-    if (!cameraEngine || !ndkCameraObj) return;
-    auto *pApp = reinterpret_cast<CameraEngine *>(ndkCameraObj);
-    ASSERT(pApp == cameraEngine, "NdkCamera Obj mismatch")
-
-    delete pApp;
-
-    // also reset the private global object
-    cameraEngine = nullptr;
 }

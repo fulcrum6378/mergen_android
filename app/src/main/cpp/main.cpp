@@ -100,7 +100,7 @@ Java_ir_mahdiparastesh_mergen_Main_stop(JNIEnv *, jobject) {
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject, jlong ndkCameraObj) {
+Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
     //deleteAudioRecorder();
     delete engine.recorder_;
     engine.recorder_ = nullptr;
@@ -112,8 +112,6 @@ Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject, jlong ndkCameraObj
         engine.slEngineObj_ = nullptr;
         engine.slEngineItf_ = nullptr;
     }
-
-    deleteCamera(ndkCameraObj);
 }
 
 extern "C" JNIEXPORT jstring JNICALL

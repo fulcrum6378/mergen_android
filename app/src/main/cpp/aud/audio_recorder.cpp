@@ -5,20 +5,18 @@
 
 #include "audio_recorder.h"
 
-/** Called for every buffer is full; pass directly to handler. */
+// Called for every buffer is full; pass directly to handler.
 void bqRecorderCallback(SLAndroidSimpleBufferQueueItf bq, void *recorder) {
     (static_cast<AudioRecorder *>(recorder))->ProcessSLCallback(bq);
 }
 
 void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq) {
     assert(bq == recBufQueueItf_);
-    sample_buf *dataBuf = nullptr;
-    devShadowQueue_->front(&dataBuf);
+    sample_buf *buf = nullptr;
+    devShadowQueue_->front(&buf);
     devShadowQueue_->pop();
-    dataBuf->size_ = dataBuf->cap_;  // device only calls us when it is really full
-    recQueue_->push(dataBuf);
-
-    myfile.write((char *) dataBuf->buf_, dataBuf->size_); // TODO
+    buf->size_ = buf->cap_;  // device only calls us when it is really full
+    recQueue_->push(buf);
 
     sample_buf *freeBuf;
     while (freeQueue_->front(&freeBuf) && devShadowQueue_->push(freeBuf)) {
@@ -30,60 +28,44 @@ void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq) {
     ++audioBufCount;
 
     // should leave the device to sleep to save power if no buffers
-    /*TODO if (devShadowQueue_->size() == 0)
-        (*recItf_)->SetRecordState(recItf_, SL_RECORDSTATE_STOPPED);*/
-    // assert(devShadowQueue_->size() != 0);
+    assert(devShadowQueue_->size() != 0);
+    // (*recItf_)->SetRecordState(recItf_, SL_RECORDSTATE_STOPPED);
     LOGE("%s", ("Shadow: " + std::to_string(devShadowQueue_->size())).c_str());
 
-    AudioQueue *playQueue_ = recQueue_;
-
-    // std::lock_guard<std::mutex> lock(stopMutex_);
-
-    // retrieve the finished device buf and put onto the free queue so recorder could re-use it
-    sample_buf *buf = dataBuf;
-    //if (!devShadowQueue_->front(&buf)) {
-    /*
-     * This should not happen: we got a callback,
-     * but we have no buffer in deviceShadowedQueue
-     * we lost buffers this way...(ERROR)
-     */
-    //    return;
-    //}
     devShadowQueue_->pop();
 
-    //if (buf != &silentBuf_) {
-    buf->size_ = 0;
-    freeQueue_->push(buf);
+    if (buf != &silentBuf_) {
+        myfile.write((char *) buf->buf_, buf->size_); // TODO
 
-    if (!playQueue_->front(&buf)) return;
+        buf->size_ = 0;
+        freeQueue_->push(buf);
 
-    devShadowQueue_->push(buf);
-    (*bq)->Enqueue(bq, buf->buf_, buf->size_);
-    playQueue_->pop();
-    return;
-    //}
+        if (!recQueue_->front(&buf)) return;
 
-    if (playQueue_->size() < PLAY_KICKSTART_BUFFER_COUNT) {
+        devShadowQueue_->push(buf);
         (*bq)->Enqueue(bq, buf->buf_, buf->size_);
-        // FIXME devShadowQueue_->push(&silentBuf_);
+        recQueue_->pop();
+        return;
+    }
+
+    if (recQueue_->size() < PLAY_KICKSTART_BUFFER_COUNT) {
+        (*bq)->Enqueue(bq, buf->buf_, buf->size_);
+        devShadowQueue_->push(&silentBuf_);
         return;
     }
 
     assert(PLAY_KICKSTART_BUFFER_COUNT <=
            (DEVICE_SHADOW_BUFFER_QUEUE_LEN - devShadowQueue_->size()));
     for (int32_t idx = 0; idx < PLAY_KICKSTART_BUFFER_COUNT; idx++) {
-        playQueue_->front(&buf);
-        playQueue_->pop();
+        recQueue_->front(&buf);
+        recQueue_->pop();
         devShadowQueue_->push(buf);
         (*bq)->Enqueue(bq, buf->buf_, buf->size_);
     }
 }
 
 AudioRecorder::AudioRecorder(SampleFormat *sampleFormat, SLEngineItf slEngine)
-        : freeQueue_(nullptr),
-          recQueue_(nullptr),
-          devShadowQueue_(nullptr),
-          callback_() {
+        : freeQueue_(nullptr), recQueue_(nullptr), devShadowQueue_(nullptr) {
     SLresult result;
     sampleInfo_ = *sampleFormat;
     SLAndroidDataFormat_PCM_EX format_pcm;
@@ -131,6 +113,12 @@ AudioRecorder::AudioRecorder(SampleFormat *sampleFormat, SLEngineItf slEngine)
 
     devShadowQueue_ = new AudioQueue(DEVICE_SHADOW_BUFFER_QUEUE_LEN);
     assert(devShadowQueue_);
+
+    silentBuf_.cap_ = (format_pcm.containerSize >> 3) * format_pcm.numChannels *
+                      sampleInfo_.framesPerBuf_;
+    silentBuf_.buf_ = new uint8_t[silentBuf_.cap_];
+    memset(silentBuf_.buf_, 0, silentBuf_.cap_);
+    silentBuf_.size_ = silentBuf_.cap_;
 }
 
 SLboolean AudioRecorder::Start() {
@@ -189,30 +177,24 @@ SLboolean AudioRecorder::Stop() {
 }
 
 AudioRecorder::~AudioRecorder() {
-    /*myfile = std::ofstream(path, std::ios::binary | std::ios::out);
-    myfile.write((char *) dataBuf->buf_, dataBuf->size_);
-    myfile.close();*/
-    /*char path[] = "/data/data/ir.mahdiparastesh.mergen/files/test.txt";
-    remove(path);
-    std::ofstream text;
-    text.open(path);
-    text << "freeQueue_ size: " + std::to_string(freeQueue_->size()) + "\n";
-    text << "recQueue_ size: " + std::to_string(recQueue_->size()) + "\n";
-    text << "devShadowQueue_ size: " + std::to_string(devShadowQueue_->size()) + "\n";
-    text << "audioBufCount: " + std::to_string(audioBufCount) + "\n";
-    text.close();*/
-
     // destroy audio recorder object, and invalidate all associated interfaces
     if (recObjectItf_ != nullptr)
         (*recObjectItf_)->Destroy(recObjectItf_);
 
+    // Consume all non-completed audio buffers
+    sample_buf *buf = nullptr;
     if (devShadowQueue_) {
-        sample_buf *buf = nullptr;
         while (devShadowQueue_->front(&buf)) {
+            buf->size_ = 0;
             devShadowQueue_->pop();
-            freeQueue_->push(buf);
+            if (buf != &silentBuf_) freeQueue_->push(buf);
         }
         delete (devShadowQueue_);
+        while (recQueue_->front(&buf)) {
+            buf->size_ = 0;
+            recQueue_->pop();
+            freeQueue_->push(buf);
+        }
     }
 }
 
