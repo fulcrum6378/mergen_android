@@ -137,7 +137,7 @@ void NDKCamera::EnumerateCamera() {
         int32_t count = 0;
         const uint32_t *tags = nullptr;
         ACameraMetadata_getAllTags(metadataObj, &count, &tags);
-        for (int tagIdx = 0; tagIdx < count; ++tagIdx) {
+        for (int tagIdx = 0; tagIdx < count; ++tagIdx)
             if (ACAMERA_LENS_FACING == tags[tagIdx]) {
                 ACameraMetadata_const_entry lensInfo = {0};
                 CALL_METADATA(getConstEntry(metadataObj, tags[tagIdx], &lensInfo))
@@ -150,7 +150,6 @@ void NDKCamera::EnumerateCamera() {
                     activeCameraId_ = cam.id_;
                 break;
             }
-        }
         ACameraMetadata_free(metadataObj);
     }
 
@@ -194,15 +193,8 @@ void NDKCamera::EnumerateCamera() {
 // Toggle preview start/stop
 void NDKCamera::StartPreview(bool start) {
     if (start) CALL_SESSION(setRepeatingRequest(
-            captureSession_, nullptr, 1,
+            captureSession_, GetCaptureCallback(), 1,
             &requests_[PREVIEW_REQUEST_IDX].request_, nullptr))
     else if (captureSessionState_ == CaptureSessionState::ACTIVE)
         ACameraCaptureSession_stopRepeating(captureSession_);
-
-    /*if (!start)*/ return;
-    ANativeWindow_Buffer buf;
-    ANativeWindow_lock(requests_[PREVIEW_REQUEST_IDX].outputNativeWindow_,
-                       &buf, nullptr);
-    LOGE("%s", ("WINDOW_BITS: " + std::to_string(sizeof(buf.bits))).c_str());
-    // sizeof(buf.bits) => 8
 }

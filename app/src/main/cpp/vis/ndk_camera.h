@@ -56,6 +56,8 @@ private:
 
     ACameraCaptureSession_stateCallbacks *GetSessionListener();
 
+    ACameraCaptureSession_captureCallbacks *GetCaptureCallback();
+
 public:
     NDKCamera();
 
@@ -79,7 +81,7 @@ public:
     void StartPreview(bool start);
 };
 
-/** Helper classes to hold enumerated camera */
+// Helper classes to hold enumerated camera
 class CameraId {
 public:
     ACameraDevice *device_;

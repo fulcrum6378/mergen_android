@@ -83,3 +83,49 @@ void NDKCamera::OnSessionState(ACameraCaptureSession *ses, CaptureSessionState s
     ASSERT(state < CaptureSessionState::MAX_STATE, "Wrong state %d", state)
     captureSessionState_ = state;
 }
+
+void SessionCaptureCallback_OnCompleted(
+        void *context, ACameraCaptureSession *session, ACaptureRequest *request,
+        const ACameraMetadata *result) {
+    //LOGE("%s", ("SessionCaptureCallback_OnCompleted: " + std::to_string(786/*sequenceId*/)).c_str());
+    // FIXME WE FOUND THE CALLBACK FOR EACH FRAME BUT WE CANNOT RETRIEVE THE CAPTURED IMAGE!!!
+}
+
+/*void SessionCaptureCallback_OnFailed(
+        void *context, ACameraCaptureSession *session, ACaptureRequest *request,
+        ACameraCaptureFailure *failure) {
+    std::thread captureFailedThread(
+            &NDKCamera::OnCaptureFailed, static_cast<NDKCamera *>(context), session, request,
+            failure);
+    captureFailedThread.detach();
+}*/
+
+void SessionCaptureCallback_OnSequenceAborted(
+        void *context, ACameraCaptureSession *session, int sequenceId) {
+    /*std::thread sequenceThread(
+            &NDKCamera::OnCaptureSequenceEnd, static_cast<NDKCamera *>(context), session,
+            sequenceId, static_cast<int64_t>(-1));
+    sequenceThread.detach();*/
+}
+
+void SessionCaptureCallback_OnSequenceEnd(
+        void *context, ACameraCaptureSession *session, int sequenceId, int64_t frameNumber) {
+    /*std::thread sequenceThread(
+            &NDKCamera::OnCaptureSequenceEnd, static_cast<NDKCamera *>(context), session,
+            sequenceId, frameNumber);
+    sequenceThread.detach();*/
+}
+
+ACameraCaptureSession_captureCallbacks *NDKCamera::GetCaptureCallback() {
+    static ACameraCaptureSession_captureCallbacks captureListener{
+            .context = this,
+            .onCaptureStarted = nullptr,
+            .onCaptureProgressed = nullptr,
+            .onCaptureCompleted = SessionCaptureCallback_OnCompleted,
+            .onCaptureFailed = nullptr/*SessionCaptureCallback_OnFailed*/,
+            .onCaptureSequenceCompleted = SessionCaptureCallback_OnSequenceEnd,
+            .onCaptureSequenceAborted = SessionCaptureCallback_OnSequenceAborted,
+            .onCaptureBufferLost = nullptr,
+    };
+    return &captureListener;
+}
