@@ -80,7 +80,6 @@ void NDKCamera::OnSessionState(ACameraCaptureSession *ses, CaptureSessionState s
         LOGW("CaptureSession is %s", (ses ? "NOT our session" : "NULL"));
         return;
     }
-
     ASSERT(state < CaptureSessionState::MAX_STATE, "Wrong state %d", state)
     captureSessionState_ = state;
 }

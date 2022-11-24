@@ -155,4 +155,10 @@ Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
     else onPreviewSurfaceDestroyed(env, ndkCameraObj, surface);
 }
 
-// The idea of defining a JNI interface header sucks!
+/* TODO:
+  * Problems:
+  * AudioRecorder::Start() crashes on a second record
+  *
+  * Notes:
+  * The idea of defining a JNI interface header sucks!
+  */

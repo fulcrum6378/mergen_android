@@ -19,7 +19,6 @@ enum class CaptureSessionState : int32_t {
 struct ImageFormat {
     int32_t width;
     int32_t height;
-
     // int32_t format;  // The format is fixed to YUV_420 format
 };
 

@@ -67,14 +67,11 @@ void NDKCamera::CreateSession(ANativeWindow *previewWindow,
                                   outputContainer_, GetSessionListener(),
                                   &captureSession_))
 
-    if (jpgWindow) {
+    if (jpgWindow) // jpgWindow is always null
         ACaptureRequest_setEntry_i32(requests_[JPG_CAPTURE_REQUEST_IDX].request_,
                                      ACAMERA_JPEG_ORIENTATION, 1, &imageRotation);
-    }
 
-    if (!manualPreview) {
-        return;
-    }
+    if (!manualPreview) return; // manualPreview is always false
     /*
      * Only preview request is in manual mode, JPG is always in Auto mode
      * JPG capture mode could also be switch into manual mode and control
@@ -92,9 +89,8 @@ void NDKCamera::CreateSession(ANativeWindow *previewWindow) {
 
 NDKCamera::~NDKCamera() {
     // stop session if it is on:
-    if (captureSessionState_ == CaptureSessionState::ACTIVE) {
+    if (captureSessionState_ == CaptureSessionState::ACTIVE)
         ACameraCaptureSession_stopRepeating(captureSession_);
-    }
     ACameraCaptureSession_close(captureSession_);
 
     for (auto &req: requests_) {
@@ -112,15 +108,11 @@ NDKCamera::~NDKCamera() {
     requests_.resize(0);
     ACaptureSessionOutputContainer_free(outputContainer_);
 
-    for (auto &cam: cameras_) {
+    for (auto &cam: cameras_)
         if (cam.second.device_) CALL_DEV(close(cam.second.device_))
-    }
     cameras_.clear();
     if (cameraMgr_) {
         CALL_MGR(unregisterAvailabilityCallback(cameraMgr_, GetManagerListener()))
-        /* FIXME on destroy after exiting app
-          * ACameraManager_unregisterAvailabilityCallback: invalid argument! callback 0x79c6175df0, onCameraAvailable 0x0, onCameraUnavailable 0x0
-          * A  NativeObject should not be null Pointer*/
         ACameraManager_delete(cameraMgr_);
         cameraMgr_ = nullptr;
     }
@@ -147,18 +139,15 @@ void NDKCamera::EnumerateCamera() {
         ACameraMetadata_getAllTags(metadataObj, &count, &tags);
         for (int tagIdx = 0; tagIdx < count; ++tagIdx) {
             if (ACAMERA_LENS_FACING == tags[tagIdx]) {
-                ACameraMetadata_const_entry lensInfo = {
-                        0,
-                };
+                ACameraMetadata_const_entry lensInfo = {0};
                 CALL_METADATA(getConstEntry(metadataObj, tags[tagIdx], &lensInfo))
                 CameraId cam(id);
                 cam.facing_ = static_cast<acamera_metadata_enum_android_lens_facing_t>(
                         lensInfo.data.u8[0]);
                 cam.device_ = nullptr;
                 cameras_[cam.id_] = cam;
-                if (cam.facing_ == ACAMERA_LENS_FACING_BACK) {
+                if (cam.facing_ == ACAMERA_LENS_FACING_BACK)
                     activeCameraId_ = cam.id_;
-                }
                 break;
             }
         }
@@ -202,11 +191,18 @@ void NDKCamera::EnumerateCamera() {
     return true;
 }*/
 
-/** Toggle preview start/stop */
+// Toggle preview start/stop
 void NDKCamera::StartPreview(bool start) {
     if (start) CALL_SESSION(setRepeatingRequest(
             captureSession_, nullptr, 1,
             &requests_[PREVIEW_REQUEST_IDX].request_, nullptr))
     else if (captureSessionState_ == CaptureSessionState::ACTIVE)
         ACameraCaptureSession_stopRepeating(captureSession_);
+
+    /*if (!start)*/ return;
+    ANativeWindow_Buffer buf;
+    ANativeWindow_lock(requests_[PREVIEW_REQUEST_IDX].outputNativeWindow_,
+                       &buf, nullptr);
+    LOGE("%s", ("WINDOW_BITS: " + std::to_string(sizeof(buf.bits))).c_str());
+    // sizeof(buf.bits) => 8
 }
