@@ -11,16 +11,17 @@ add_library(main SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/aud/audio_common.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/aud/audio_recorder.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/vis/camera_engine.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/vis/image_reader.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/vis/listeners.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/vis/ndk_camera.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/vis/recorder.cpp)
 #add_library(vis SHARED) # resulted in an error!
 
 target_link_libraries(main
-
         android
         camera2ndk
-        OpenSLES
         dl
         log
-        m)
+        m
+        mediandk
+        OpenSLES)

@@ -9,7 +9,7 @@
 
 class CameraEngine {
 public:
-    explicit CameraEngine(JNIEnv *env);
+    explicit CameraEngine(JNIEnv *env, jint w, jint h);
 
     ~CameraEngine();
 

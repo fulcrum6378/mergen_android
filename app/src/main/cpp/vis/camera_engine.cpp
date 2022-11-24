@@ -4,13 +4,14 @@
 #include "camera_engine.h"
 #include "../otr/debug.h"
 
-CameraEngine::CameraEngine(JNIEnv *env)
+CameraEngine::CameraEngine(JNIEnv *env, jint w, jint h)
         : env_(env),
           surface_(nullptr),
           camera_(nullptr) {
     memset(&compatibleCameraRes_, 0, sizeof(compatibleCameraRes_));
     camera_ = new NDKCamera();
     ASSERT(camera_, "Failed to Create CameraObject")
+    camera_->MatchCaptureSizeRequest(w, h, &compatibleCameraRes_);
 }
 
 CameraEngine::~CameraEngine() {

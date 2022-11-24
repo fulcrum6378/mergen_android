@@ -20,7 +20,7 @@ class AudioRecorder {
     AudioQueue *devShadowQueue_;  // owner
     uint32_t audioBufCount{};
 
-    sample_buf silentBuf_;
+    sample_buf silentBuf_{};
 
 public:
     explicit AudioRecorder(SampleFormat *, SLEngineItf engineEngine);

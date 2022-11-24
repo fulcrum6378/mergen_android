@@ -53,6 +53,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         }
     }
 
+    @SuppressWarnings("UnnecessaryLocalVariable")
     private void permitted() {
         int dim = Math.min(dm.widthPixels, dm.heightPixels),
                 w = dim, h = dim;
@@ -62,7 +63,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         preview.setLayoutParams(previewLP);
 
         AudioManager audioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        ndkCamera = prepare(
+        ndkCamera = prepare(w, h,
                 Integer.parseInt(audioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)),
                 Integer.parseInt(audioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER)));
 
@@ -149,7 +150,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     }
 
 
-    private native long prepare(int sampleRate, int framesPerBuf);
+    private native long prepare(int width, int height, int sampleRate, int framesPerBuf);
 
     private native byte start();
 

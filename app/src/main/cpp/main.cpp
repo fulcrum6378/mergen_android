@@ -25,8 +25,8 @@ struct EchoAudioEngine {
 static EchoAudioEngine engine;
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_ir_mahdiparastesh_mergen_Main_prepare(JNIEnv *env, jobject, jint sampleRate,
-                                           jint framesPerBuf) {
+Java_ir_mahdiparastesh_mergen_Main_prepare(
+        JNIEnv *env, jobject, jint w, jint h, jint sampleRate, jint framesPerBuf) {
     //createAudioRecorder();
     SLresult result;
     memset(&engine, 0, sizeof(engine));
@@ -76,7 +76,7 @@ Java_ir_mahdiparastesh_mergen_Main_prepare(JNIEnv *env, jobject, jint sampleRate
     if (!engine.recorder_) return JNI_FALSE;
     engine.recorder_->SetBufQueues(engine.freeBufQueue_, engine.recBufQueue_);
 
-    return createCamera(env);
+    return createCamera(env, w, h);
 }
 
 extern "C" JNIEXPORT jbyte JNICALL

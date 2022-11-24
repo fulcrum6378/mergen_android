@@ -17,8 +17,8 @@ static CameraEngine *cameraEngine = nullptr;
  * portrait mode.
  * @return application object instance ( not used in this sample )
  */
-static jlong createCamera(JNIEnv *env) {
-    cameraEngine = new CameraEngine(env);
+static jlong createCamera(JNIEnv *env, jint w, jint h) {
+    cameraEngine = new CameraEngine(env, w, h);
     return reinterpret_cast<jlong>(cameraEngine);
 }
 

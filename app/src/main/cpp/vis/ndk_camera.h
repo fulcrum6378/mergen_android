@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "image_reader.h"
+
 enum class CaptureSessionState : int32_t {
     READY = 0,  // session is ready
     ACTIVE,     // session is busy
@@ -16,15 +18,9 @@ enum class CaptureSessionState : int32_t {
     MAX_STATE
 };
 
-struct ImageFormat {
-    int32_t width;
-    int32_t height;
-    // int32_t format;  // The format is fixed to YUV_420 format
-};
-
 enum PREVIEW_INDICES {
     PREVIEW_REQUEST_IDX = 0,
-    JPG_CAPTURE_REQUEST_IDX,
+    //JPG_CAPTURE_REQUEST_IDX,
     CAPTURE_REQUEST_COUNT,
 };
 
@@ -34,6 +30,7 @@ struct CaptureRequestInfo {
     ACameraOutputTarget *target_;
     ACaptureRequest *request_;
     ACameraDevice_request_template template_;
+    ImageReader *reader_;
 };
 
 class CameraId;
@@ -64,6 +61,8 @@ public:
     ~NDKCamera();
 
     void EnumerateCamera(void);
+
+    bool MatchCaptureSizeRequest(int32_t requestWidth, int32_t requestHeight, ImageFormat *view);
 
     void CreateSession(ANativeWindow *previewWindow, ANativeWindow *jpgWindow,
                        bool manaulPreview, int32_t imageRotation);

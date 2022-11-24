@@ -42,7 +42,8 @@ void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq) {
         if (!recQueue_->front(&buf)) return;
 
         devShadowQueue_->push(buf);
-        (*bq)->Enqueue(bq, buf->buf_, buf->size_);
+        //(*bq)->Enqueue(bq, buf->buf_, buf->size_);
+        // Caused  W  Leaving BufferQueue::Enqueue (SL_RESULT_PARAMETER_INVALID)
         recQueue_->pop();
         return;
     }
