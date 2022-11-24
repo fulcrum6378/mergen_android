@@ -18,21 +18,6 @@ enum class CaptureSessionState : int32_t {
     MAX_STATE
 };
 
-enum PREVIEW_INDICES {
-    PREVIEW_REQUEST_IDX = 0,
-    //JPG_CAPTURE_REQUEST_IDX,
-    CAPTURE_REQUEST_COUNT,
-};
-
-struct CaptureRequestInfo {
-    ANativeWindow *outputNativeWindow_;
-    ACaptureSessionOutput *sessionOutput_;
-    ACameraOutputTarget *target_;
-    ACaptureRequest *request_;
-    ACameraDevice_request_template template_;
-    ImageReader *reader_;
-};
-
 class CameraId;
 
 class NDKCamera {
@@ -41,7 +26,11 @@ private:
     std::map<std::string, CameraId> cameras_;
     std::string activeCameraId_;
 
-    std::vector<CaptureRequestInfo> requests_;
+    ANativeWindow *outputNativeWindow_{};
+    ACaptureSessionOutput *sessionOutput_{};
+    ACameraOutputTarget *target_{};
+    ACaptureRequest *request_{};
+    ImageReader *reader_{};
 
     ACaptureSessionOutputContainer *outputContainer_;
     ACameraCaptureSession *captureSession_{};
@@ -64,10 +53,7 @@ public:
 
     bool MatchCaptureSizeRequest(int32_t requestWidth, int32_t requestHeight, ImageFormat *view);
 
-    void CreateSession(ANativeWindow *previewWindow, ANativeWindow *jpgWindow,
-                       bool manaulPreview, int32_t imageRotation);
-
-    void CreateSession(ANativeWindow *previewWindow);
+    void CreateSession(ANativeWindow *previewWindow, int32_t imageRotation);
 
     //bool GetSensorOrientation(int32_t *facing, int32_t *angle);
 
