@@ -96,9 +96,7 @@ ANativeWindow *ImageReader::GetNativeWindow() {
 AImage *ImageReader::GetNextImage() {
     AImage *image;
     media_status_t status = AImageReader_acquireNextImage(reader_, &image);
-    if (status != AMEDIA_OK) {
-        return nullptr;
-    }
+    if (status != AMEDIA_OK) return nullptr;
     return image;
 }
 
@@ -110,9 +108,7 @@ AImage *ImageReader::GetNextImage() {
 AImage *ImageReader::GetLatestImage() {
     AImage *image;
     media_status_t status = AImageReader_acquireLatestImage(reader_, &image);
-    if (status != AMEDIA_OK) {
-        return nullptr;
-    }
+    if (status != AMEDIA_OK) return nullptr;
     return image;
 }
 
@@ -404,9 +400,9 @@ void ImageReader::WriteFile(AImage *image) {
     AImage_getPlaneData(image, 0, &data, &len);
 
     DIR *dir = opendir(kDirName);
-    if (dir) {
+    if (dir)
         closedir(dir);
-    } else {
+    else {
         std::string cmd = "mkdir -p ";
         cmd += kDirName;
         system(cmd.c_str());
@@ -416,7 +412,7 @@ void ImageReader::WriteFile(AImage *image) {
             0, 0
     };
     clock_gettime(CLOCK_REALTIME, &ts);
-    struct tm localTime;
+    struct tm localTime{};
     localtime_r(&ts.tv_sec, &localTime);
 
     std::string fileName = kDirName;
@@ -431,12 +427,9 @@ void ImageReader::WriteFile(AImage *image) {
         fwrite(data, 1, len, file);
         fclose(file);
 
-        if (callback_) {
-            callback_(callbackCtx_, fileName.c_str());
-        }
+        if (callback_) callback_(callbackCtx_, fileName.c_str());
     } else {
-        if (file)
-            fclose(file);
+        if (file) fclose(file);
     }
     AImage_delete(image);
 }

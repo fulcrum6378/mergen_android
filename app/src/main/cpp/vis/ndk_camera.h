@@ -26,11 +26,9 @@ private:
     std::map<std::string, CameraId> cameras_;
     std::string activeCameraId_;
 
-    ANativeWindow *outputNativeWindow_{};
     ACaptureSessionOutput *sessionOutput_{};
     ACameraOutputTarget *target_{};
     ACaptureRequest *request_{};
-    ImageReader *reader_{};
 
     ACaptureSessionOutputContainer *outputContainer_;
     ACameraCaptureSession *captureSession_{};
@@ -48,6 +46,9 @@ public:
     NDKCamera();
 
     ~NDKCamera();
+
+    ImageReader *reader_{};
+    ANativeWindow *window{};
 
     void EnumerateCamera(void);
 
