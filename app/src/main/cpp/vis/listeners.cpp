@@ -84,76 +84,52 @@ void NDKCamera::OnSessionState(ACameraCaptureSession *ses, CaptureSessionState s
     captureSessionState_ = state;
 }
 
-void SessionCaptureCallback_OnStarted(
+
+/*void SessionCaptureCallback_OnStarted(
         void *context, ACameraCaptureSession *session,
         const ACaptureRequest *request, int64_t timestamp) {
-}
+}*/
 
 void SessionCaptureCallback_OnCompleted(
         void *context, ACameraCaptureSession *session, ACaptureRequest *request,
         const ACameraMetadata *result) {
     auto *ndkCamera = static_cast<NDKCamera *>(context);
-    /*ANativeWindow *window = static_cast<NDKCamera *>(context)->window;
-    ANativeWindow_Buffer outBuffer;
-    ARect inOutDirtyBounds;
-    //ANativeWindow_unlockAndPost(window);
-    // [SurfaceTexture-0-2290-0](id:8f200000000,api:4,p:4292,c:2290) connect: already connected (cur=4 req=2)
-    ANativeWindow_lock(window,&outBuffer, &inOutDirtyBounds);*/
-    // FIXME WE FOUND THE CALLBACK FOR EACH FRAME BUT WE CANNOT RETRIEVE THE CAPTURED IMAGE!!!
-    //   ImageReader still needs AImage *image
-    //   ANativeWindow_Buffer is junk; AImage is what we want!
-    //   Or perhaps we need both but the data is in AImage.
-    AImage *fuck = ndkCamera->reader_->GetNextImage();
+    AImage *fuck = ndkCamera->reader->GetNextImage();
     int32_t w, h;
     AImage_getWidth(fuck, &w);
     AImage_getHeight(fuck, &h);
     LOGW("%s", ("SessionCaptureCallback_OnCompleted: " + std::to_string(w) +
                 " x " + std::to_string(h)).c_str());
-    /*SessionCaptureCallback_OnCompleted: 720 x 720
-14:40:14.414  W  SessionCaptureCallback_OnCompleted: 720 x 720
-14:40:14.474  W  SessionCaptureCallback_OnCompleted: 720 x 720
-14:40:14.536  W  Unable to acquire a lockedBuffer, very likely client tries to lock more than maxImages buffers
-14:40:14.536  W  SessionCaptureCallback_OnCompleted: 720 x 720
-14:40:14.597  W  Unable to acquire a lockedBuffer, very likely client tries to lock more than maxImages buffers
-14:40:14.597  E  AImage_getWidth: bad argument. image 0x0 width 0x7306a798f4*/
-    ndkCamera->reader_->DeleteImage(fuck);
-    // TODO WE DID IT... THO WE LOST PREVIEW SCREEN :(
-}
-
-/*void SessionCaptureCallback_OnFailed(
-        void *context, ACameraCaptureSession *session, ACaptureRequest *request,
-        ACameraCaptureFailure *failure) {
-    std::thread captureFailedThread(
-            &NDKCamera::OnCaptureFailed, static_cast<NDKCamera *>(context), session, request,
-            failure);
-    captureFailedThread.detach();
-}*/
-
-void SessionCaptureCallback_OnSequenceAborted(
-        void *context, ACameraCaptureSession *session, int sequenceId) {
-    /*std::thread sequenceThread(
-            &NDKCamera::OnCaptureSequenceEnd, static_cast<NDKCamera *>(context), session,
-            sequenceId, static_cast<int64_t>(-1));
-    sequenceThread.detach();*/
-}
-
-void SessionCaptureCallback_OnSequenceEnd(
-        void *context, ACameraCaptureSession *session, int sequenceId, int64_t frameNumber) {
-    /*std::thread sequenceThread(
+    std::thread writeFileHandler(&ImageReader::WriteFile, ndkCamera->reader, fuck);
+    writeFileHandler.detach();//ndkCamera->reader->DeleteImage(fuck);
+/*std::thread sequenceThread(
             &NDKCamera::OnCaptureSequenceEnd, static_cast<NDKCamera *>(context), session,
             sequenceId, frameNumber);
     sequenceThread.detach();*/
 }
 
+/*void SessionCaptureCallback_OnFailed(
+        void *context, ACameraCaptureSession *session, ACaptureRequest *request,
+        ACameraCaptureFailure *failure) {
+}*/
+
+/*void SessionCaptureCallback_OnSequenceAborted(
+        void *context, ACameraCaptureSession *session, int sequenceId) {
+}*/
+
+/*void SessionCaptureCallback_OnSequenceEnd(
+        void *context, ACameraCaptureSession *session, int sequenceId, int64_t frameNumber) {
+}*/
+
 ACameraCaptureSession_captureCallbacks *NDKCamera::GetCaptureCallback() {
     static ACameraCaptureSession_captureCallbacks captureListener{
             .context = this,
-            .onCaptureStarted = SessionCaptureCallback_OnStarted,
+            .onCaptureStarted = nullptr/*SessionCaptureCallback_OnStarted*/,
             .onCaptureProgressed = nullptr,
             .onCaptureCompleted = SessionCaptureCallback_OnCompleted,
             .onCaptureFailed = nullptr/*SessionCaptureCallback_OnFailed*/,
-            .onCaptureSequenceCompleted = SessionCaptureCallback_OnSequenceEnd,
-            .onCaptureSequenceAborted = SessionCaptureCallback_OnSequenceAborted,
+            .onCaptureSequenceCompleted = nullptr/*SessionCaptureCallback_OnSequenceEnd*/,
+            .onCaptureSequenceAborted = nullptr/*SessionCaptureCallback_OnSequenceAborted*/,
             .onCaptureBufferLost = nullptr,
     };
     return &captureListener;

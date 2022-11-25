@@ -69,6 +69,8 @@ public:
      */
     void RegisterCallback(void *ctx, std::function<void(void *ctx, const char *fileName)>);
 
+    void WriteFile(AImage *image);
+
 private:
     int32_t presentRotation_;
     AImageReader *reader_;
@@ -83,8 +85,6 @@ private:
     void PresentImage180(ANativeWindow_Buffer *buf, AImage *image);
 
     void PresentImage270(ANativeWindow_Buffer *buf, AImage *image);
-
-    void WriteFile(AImage *image);
 };
 
 #endif  // VIS_IMAGE_READER_H

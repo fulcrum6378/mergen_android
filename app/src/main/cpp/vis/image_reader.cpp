@@ -14,7 +14,7 @@
  * File names are incrementally appended an index number as
  *     capture0.jpg, capture1.jpg, capture2.jpg
  */
-static const char *kDirName = "/sdcard/DCIM/Camera/";
+static const char *kDirName = "/data/data/ir.mahdiparastesh.mergen/files/";
 static const char *kFileName = "capture";
 
 /**
@@ -393,8 +393,8 @@ void ImageReader::WriteFile(AImage *image) {
 
     int planeCount;
     media_status_t status = AImage_getNumberOfPlanes(image, &planeCount);
-    ASSERT(status == AMEDIA_OK && planeCount == 1,
-           "Error: getNumberOfPlanes() planeCount = %d", planeCount);
+    /*FIXME ASSERT(status == AMEDIA_OK && planeCount == 1,
+           "Error: getNumberOfPlanes() planeCount = %d", planeCount);*/
     uint8_t *data = nullptr;
     int len = 0;
     AImage_getPlaneData(image, 0, &data, &len);
@@ -408,9 +408,7 @@ void ImageReader::WriteFile(AImage *image) {
         system(cmd.c_str());
     }
 
-    struct timespec ts{
-            0, 0
-    };
+    struct timespec ts{0, 0};
     clock_gettime(CLOCK_REALTIME, &ts);
     struct tm localTime{};
     localtime_r(&ts.tv_sec, &localTime);
@@ -421,7 +419,8 @@ void ImageReader::WriteFile(AImage *image) {
                 std::to_string(localTime.tm_mday) + dash +
                 std::to_string(localTime.tm_hour) +
                 std::to_string(localTime.tm_min) +
-                std::to_string(localTime.tm_sec) + ".jpg";
+                std::to_string(localTime.tm_sec) + ".yuv"; // jpg
+    // FIXME THIS PATTERN OF FILENAME MADE THEM BE RE-WRITTEN!
     FILE *file = fopen(fileName.c_str(), "wb");
     if (file && data && len) {
         fwrite(data, 1, len, file);

@@ -26,6 +26,7 @@ private:
     std::map<std::string, CameraId> cameras_;
     std::string activeCameraId_;
 
+    ANativeWindow *window_{};
     ACaptureSessionOutput *sessionOutput_{};
     ACameraOutputTarget *target_{};
     ACaptureRequest *request_{};
@@ -47,9 +48,6 @@ public:
 
     ~NDKCamera();
 
-    ImageReader *reader_{};
-    ANativeWindow *window{};
-
     void EnumerateCamera(void);
 
     bool MatchCaptureSizeRequest(int32_t requestWidth, int32_t requestHeight, ImageFormat *view);
@@ -65,6 +63,8 @@ public:
     void OnSessionState(ACameraCaptureSession *ses, CaptureSessionState state);
 
     void StartPreview(bool start);
+
+    ImageReader *reader{};
 };
 
 // Helper classes to hold enumerated camera

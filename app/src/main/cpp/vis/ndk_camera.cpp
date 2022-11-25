@@ -14,11 +14,11 @@ NDKCamera::NDKCamera()
         : cameraMgr_(nullptr),
         // cameraFacing_(ACAMERA_LENS_FACING_BACK),
         // cameraOrientation_(0),
-          window(nullptr),
+          window_(nullptr),
           sessionOutput_(nullptr),
           target_(nullptr),
           request_(nullptr),
-          reader_(nullptr),
+          reader(nullptr),
           outputContainer_(nullptr),
           captureSessionState_(CaptureSessionState::MAX_STATE) {
     cameras_.clear();
@@ -162,8 +162,8 @@ void NDKCamera::CreateSession(ANativeWindow *previewWindow, int32_t /*imageRotat
                             ANativeWindow_getHeight(previewWindow), &view);
     ASSERT(view.width && view.height, "Could not find supportable resolution")
 
-    reader_ = new ImageReader(&view); // reader_->SetPresentRotation(0);
-    reader_->RegisterCallback(
+    reader = new ImageReader(&view); // reader_->SetPresentRotation(0);
+    reader->RegisterCallback(
             this, [/*this*/](void *ctx, const char *str) -> void {
                 //reinterpret_cast<CameraEngine* >(ctx)->OnPhotoTaken(str);
                 /*JNIEnv *jni;
@@ -177,14 +177,14 @@ void NDKCamera::CreateSession(ANativeWindow *previewWindow, int32_t /*imageRotat
   jni->CallVoidMethod(app_->activity->clazz, methodID, javaName);
   app_->activity->vm->DetachCurrentThread();*/
             });
-    window = reader_->GetNativeWindow();
+    window_ = reader->GetNativeWindow();
 
     CALL_CONTAINER(create(&outputContainer_))
-    if (window) {
-        ANativeWindow_acquire(window);
-        CALL_OUTPUT(create(window, &sessionOutput_))
+    if (window_) {
+        ANativeWindow_acquire(window_);
+        CALL_OUTPUT(create(window_, &sessionOutput_))
         CALL_CONTAINER(add(outputContainer_, sessionOutput_))
-        CALL_TARGET(create(window, &target_))
+        CALL_TARGET(create(window_, &target_))
         CALL_DEV(createCaptureRequest(cameras_[activeCameraId_].device_,
                                       TEMPLATE_PREVIEW, &request_))
         CALL_REQUEST(addTarget(request_, target_))
@@ -203,7 +203,7 @@ NDKCamera::~NDKCamera() {
         ACameraCaptureSession_stopRepeating(captureSession_);
     ACameraCaptureSession_close(captureSession_);
 
-    if (window) {
+    if (window_) {
         CALL_REQUEST(removeTarget(request_, target_))
         ACaptureRequest_free(request_);
         ACameraOutputTarget_free(target_);
@@ -211,7 +211,7 @@ NDKCamera::~NDKCamera() {
         CALL_CONTAINER(remove(outputContainer_, sessionOutput_))
         ACaptureSessionOutput_free(sessionOutput_);
 
-        ANativeWindow_release(window);
+        ANativeWindow_release(window_);
     }
     ACaptureSessionOutputContainer_free(outputContainer_);
 
