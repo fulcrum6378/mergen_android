@@ -11,6 +11,8 @@
 
 #include "image_reader.h"
 
+#define VIS_IMAGE_FORMAT AIMAGE_FORMAT_JPEG // AIMAGE_FORMAT_YUV_420_888
+
 enum class CaptureSessionState : int32_t {
     READY = 0,  // session is ready
     ACTIVE,     // session is busy
@@ -52,7 +54,7 @@ public:
 
     bool MatchCaptureSizeRequest(int32_t requestWidth, int32_t requestHeight, ImageFormat *view);
 
-    void CreateSession(ANativeWindow *previewWindow, int32_t imageRotation);
+    void CreateSession(jobject surface);
 
     //bool GetSensorOrientation(int32_t *facing, int32_t *angle);
 
@@ -74,8 +76,7 @@ public:
     std::string id_;
     acamera_metadata_enum_android_lens_facing_t facing_;
 
-    explicit CameraId(const char *id) :
-            device_(nullptr), facing_(ACAMERA_LENS_FACING_FRONT) {
+    explicit CameraId(const char *id) : device_(nullptr), facing_(ACAMERA_LENS_FACING_FRONT) {
         id_ = id;
     }
 

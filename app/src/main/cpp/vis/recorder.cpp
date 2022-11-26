@@ -111,3 +111,14 @@ static int8_t stopStreaming() {
     // TODO
     return 0;
 }
+
+/*JNIEnv *jni;
+  app_->activity->vm->AttachCurrentThread(&jni, NULL);
+
+  // Default class retrieval
+  jclass clazz = jni->GetObjectClass(app_->activity->clazz);
+  jmethodID methodID = jni->GetMethodID(clazz, "OnPhotoTaken", "(Ljava/lang/String;)V");
+  jstring javaName = jni->NewStringUTF(fileName);
+
+  jni->CallVoidMethod(app_->activity->clazz, methodID, javaName);
+  app_->activity->vm->DetachCurrentThread();*/

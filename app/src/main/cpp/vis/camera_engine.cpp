@@ -28,7 +28,7 @@ CameraEngine::~CameraEngine() {
 
 void CameraEngine::CreateCameraSession(jobject surface) {
     surface_ = env_->NewGlobalRef(surface);
-    camera_->CreateSession(ANativeWindow_fromSurface(env_, surface), 0);
+    camera_->CreateSession(surface);
 }
 
 jobject CameraEngine::GetSurfaceObject() { return surface_; }

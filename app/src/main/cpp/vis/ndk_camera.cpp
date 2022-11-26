@@ -5,6 +5,7 @@
 #include <queue>
 #include <unistd.h>
 #include <utility>
+#include <android/native_window_jni.h>
 
 #include "ndk_camera.h"
 #include "utils.h"
@@ -124,7 +125,7 @@ bool NDKCamera::MatchCaptureSizeRequest(
         int32_t format = entry.data.i32[i + 0];
         if (input) continue;
 
-        if (format == AIMAGE_FORMAT_YUV_420_888) {
+        if (format == VIS_IMAGE_FORMAT) {
             DisplayDimension res(entry.data.i32[i + 1], entry.data.i32[i + 2]);
             if (!disp.IsSameRatio(res)) continue;
             if (foundRes > res) {
@@ -147,37 +148,24 @@ bool NDKCamera::MatchCaptureSizeRequest(
             resView->height = 480;
         }
     }
-    resView->format = AIMAGE_FORMAT_YUV_420_888;
+    //resView->format = AIMAGE_FORMAT_YUV_420_888;
     return foundIt;
 }
 
-void NDKCamera::CreateSession(ANativeWindow *previewWindow, int32_t /*imageRotation*/) {
-    // Create output from this app's ANativeWindow, and add into output container
-    //window = previewWindow;
-    // FIXME needs Android 30 ANativeWindow_setFrameRate(outputNativeWindow_,
-    //    10, ANATIVEWINDOW_FRAME_RATE_COMPATIBILITY_FIXED_SOURCE);
+void NDKCamera::CreateSession(jobject surface) {
+    window_ = reader->GetNativeWindow();
+    ANativeWindow_toSurface(env, window_);
 
-    ImageFormat view{0, 0, AIMAGE_FORMAT_YUV_420_888};
-    MatchCaptureSizeRequest(ANativeWindow_getWidth(previewWindow),
-                            ANativeWindow_getHeight(previewWindow), &view);
+    ImageFormat view{0, 0, VIS_IMAGE_FORMAT};
+    MatchCaptureSizeRequest(ANativeWindow_getWidth(window_),
+                            ANativeWindow_getHeight(window_), &view);
     ASSERT(view.width && view.height, "Could not find supportable resolution")
 
     reader = new ImageReader(&view); // reader_->SetPresentRotation(0);
     reader->RegisterCallback(
             this, [/*this*/](void *ctx, const char *str) -> void {
                 //reinterpret_cast<CameraEngine* >(ctx)->OnPhotoTaken(str);
-                /*JNIEnv *jni;
-  app_->activity->vm->AttachCurrentThread(&jni, NULL);
-
-  // Default class retrieval
-  jclass clazz = jni->GetObjectClass(app_->activity->clazz);
-  jmethodID methodID = jni->GetMethodID(clazz, "OnPhotoTaken", "(Ljava/lang/String;)V");
-  jstring javaName = jni->NewStringUTF(fileName);
-
-  jni->CallVoidMethod(app_->activity->clazz, methodID, javaName);
-  app_->activity->vm->DetachCurrentThread();*/
             });
-    window_ = reader->GetNativeWindow();
 
     CALL_CONTAINER(create(&outputContainer_))
     if (window_) {

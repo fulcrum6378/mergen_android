@@ -419,7 +419,7 @@ void ImageReader::WriteFile(AImage *image) {
                 std::to_string(localTime.tm_mday) + dash +
                 std::to_string(localTime.tm_hour) +
                 std::to_string(localTime.tm_min) +
-                std::to_string(localTime.tm_sec) + ".yuv"; // jpg
+                std::to_string(localTime.tm_sec) + ".jpg"; // yuv
     // FIXME THIS PATTERN OF FILENAME MADE THEM BE RE-WRITTEN!
     FILE *file = fopen(fileName.c_str(), "wb");
     if (file && data && len) {

@@ -93,6 +93,7 @@ void NDKCamera::OnSessionState(ACameraCaptureSession *ses, CaptureSessionState s
 void SessionCaptureCallback_OnCompleted(
         void *context, ACameraCaptureSession *session, ACaptureRequest *request,
         const ACameraMetadata *result) {
+    return;
     auto *ndkCamera = static_cast<NDKCamera *>(context);
     AImage *fuck = ndkCamera->reader->GetNextImage();
     int32_t w, h;
@@ -101,11 +102,7 @@ void SessionCaptureCallback_OnCompleted(
     LOGW("%s", ("SessionCaptureCallback_OnCompleted: " + std::to_string(w) +
                 " x " + std::to_string(h)).c_str());
     std::thread writeFileHandler(&ImageReader::WriteFile, ndkCamera->reader, fuck);
-    writeFileHandler.detach();//ndkCamera->reader->DeleteImage(fuck);
-/*std::thread sequenceThread(
-            &NDKCamera::OnCaptureSequenceEnd, static_cast<NDKCamera *>(context), session,
-            sequenceId, frameNumber);
-    sequenceThread.detach();*/
+    writeFileHandler.detach(); //ndkCamera->reader->DeleteImage(fuck);
 }
 
 /*void SessionCaptureCallback_OnFailed(
