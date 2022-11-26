@@ -1,10 +1,6 @@
 #ifndef VIS_CAMERA_ENGINE_H
 #define VIS_CAMERA_ENGINE_H
 
-#include <android/native_activity.h>
-#include <android/native_window_jni.h>
-#include <android/native_window.h>
-
 #include "ndk_camera.h"
 
 class CameraEngine {
@@ -13,8 +9,7 @@ public:
 
     ~CameraEngine();
 
-    // Manage NDKCamera Object
-    void CreateCameraSession(jobject surface);
+    void CreateCameraSession(JNIEnv *env, jobject surface);
 
     void StartPreview(bool start);
 
@@ -28,7 +23,8 @@ private:
     JNIEnv *env_;
     jobject surface_;
     NDKCamera *camera_;
-    ImageFormat compatibleCameraRes_{};
+    ImageReader *reader_{};
+    ImageFormat imageFormat{};
 };
 
 #endif //VIS_CAMERA_ENGINE_H

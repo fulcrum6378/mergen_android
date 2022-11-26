@@ -1,6 +1,6 @@
 #include <cassert>
 #include <cstring>
-#include "audio_common.h"
+#include "common.h"
 
 void ConvertToSLSampleFormat(SLAndroidDataFormat_PCM_EX *pFormat, SampleFormat *pSampleInfo_) {
     assert(pFormat);

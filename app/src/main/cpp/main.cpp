@@ -1,9 +1,9 @@
 #include <cstring>
 #include <jni.h>
 
-#include "aud/audio_common.h"
-#include "aud/audio_recorder.h"
-#include "vis/recorder.cpp" // don't put these in namespace brackets.
+#include "aud/common.h"
+#include "aud/recorder.h"
+#include "vis/streamer.cpp" // don't put these in namespace brackets.
 
 struct EchoAudioEngine {
     SLmilliHertz fastPathSampleRate_;
@@ -25,7 +25,7 @@ struct EchoAudioEngine {
 static EchoAudioEngine engine;
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_ir_mahdiparastesh_mergen_Main_prepare(
+Java_ir_mahdiparastesh_mergen_Main_create(
         JNIEnv *env, jobject, jint w, jint h, jint sampleRate, jint framesPerBuf) {
     //createAudioRecorder();
     SLresult result;
@@ -151,7 +151,7 @@ Java_ir_mahdiparastesh_mergen_Main_getMinimumCompatiblePreviewSize(
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
         JNIEnv *env, jobject, jboolean available, jlong ndkCameraObj, jobject surface) {
-    if (available) onPreviewSurfaceCreated(ndkCameraObj, surface);
+    if (available) onPreviewSurfaceCreated(env, ndkCameraObj, surface);
     else onPreviewSurfaceDestroyed(env, ndkCameraObj, surface);
 }
 

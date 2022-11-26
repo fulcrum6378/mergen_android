@@ -6,7 +6,7 @@
 #include <SLES/OpenSLES_Android.h>
 #include <sys/types.h>
 
-#include "audio_common.h"
+#include "common.h"
 #include "buf_manager.h"
 
 class AudioRecorder {

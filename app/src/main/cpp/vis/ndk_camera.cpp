@@ -19,7 +19,6 @@ NDKCamera::NDKCamera()
           sessionOutput_(nullptr),
           target_(nullptr),
           request_(nullptr),
-          reader(nullptr),
           outputContainer_(nullptr),
           captureSessionState_(CaptureSessionState::MAX_STATE) {
     cameras_.clear();
@@ -148,24 +147,11 @@ bool NDKCamera::MatchCaptureSizeRequest(
             resView->height = 480;
         }
     }
-    //resView->format = AIMAGE_FORMAT_YUV_420_888;
     return foundIt;
 }
 
-void NDKCamera::CreateSession(jobject surface) {
-    window_ = reader->GetNativeWindow();
-    ANativeWindow_toSurface(env, window_);
-
-    ImageFormat view{0, 0, VIS_IMAGE_FORMAT};
-    MatchCaptureSizeRequest(ANativeWindow_getWidth(window_),
-                            ANativeWindow_getHeight(window_), &view);
-    ASSERT(view.width && view.height, "Could not find supportable resolution")
-
-    reader = new ImageReader(&view); // reader_->SetPresentRotation(0);
-    reader->RegisterCallback(
-            this, [/*this*/](void *ctx, const char *str) -> void {
-                //reinterpret_cast<CameraEngine* >(ctx)->OnPhotoTaken(str);
-            });
+void NDKCamera::CreateSession(ANativeWindow *window) {
+    window_ = window;
 
     CALL_CONTAINER(create(&outputContainer_))
     if (window_) {
@@ -288,7 +274,7 @@ void NDKCamera::EnumerateCamera() {
 // Toggle preview start/stop
 void NDKCamera::StartPreview(bool start) {
     if (start) CALL_SESSION(setRepeatingRequest(
-            captureSession_, GetCaptureCallback(), 1,
+            captureSession_, nullptr, 1,
             &request_, nullptr))
     else if (captureSessionState_ == CaptureSessionState::ACTIVE)
         ACameraCaptureSession_stopRepeating(captureSession_);

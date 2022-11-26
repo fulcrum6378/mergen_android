@@ -1,3 +1,4 @@
+#include <android/native_window_jni.h>
 #include <cstdio>
 #include <cstring>
 
@@ -8,10 +9,19 @@ CameraEngine::CameraEngine(JNIEnv *env, jint w, jint h)
         : env_(env),
           surface_(nullptr),
           camera_(nullptr) {
-    memset(&compatibleCameraRes_, 0, sizeof(compatibleCameraRes_));
     camera_ = new NDKCamera();
     ASSERT(camera_, "Failed to Create CameraObject")
-    camera_->MatchCaptureSizeRequest(w, h, &compatibleCameraRes_);
+
+    imageFormat = ImageFormat{0, 0, VIS_IMAGE_FORMAT};
+    camera_->MatchCaptureSizeRequest(w, h, &imageFormat);
+    ASSERT(imageFormat.width && imageFormat.height, "Could not find supportable resolution")
+
+    reader_ = new ImageReader(&imageFormat); // reader_->SetPresentRotation(0);
+    reader_->RegisterCallback(
+            this, [/*this*/](void *ctx, const char *str) -> void {
+                //reinterpret_cast<CameraEngine* >(ctx)->OnPhotoTaken(str);
+            });
+    camera_->MatchCaptureSizeRequest(w, h, &imageFormat);
 }
 
 CameraEngine::~CameraEngine() {
@@ -20,21 +30,28 @@ CameraEngine::~CameraEngine() {
         camera_ = nullptr;
     }
 
+    if (reader_) {
+        delete reader_;
+        reader_ = nullptr;
+    }
+
     if (surface_) {
         env_->DeleteGlobalRef(surface_);
         surface_ = nullptr;
     }
 }
 
-void CameraEngine::CreateCameraSession(jobject surface) {
+void CameraEngine::CreateCameraSession(JNIEnv *env, jobject surface) {
     surface_ = env_->NewGlobalRef(surface);
-    camera_->CreateSession(surface);
+    ASSERT(reader_, "reader_ is NULL!")
+    reader_->SetMirrorWindow(ANativeWindow_fromSurface(env, surface));
+    camera_->CreateSession(reader_->GetNativeWindow());
 }
 
 jobject CameraEngine::GetSurfaceObject() { return surface_; }
 
 const ImageFormat &CameraEngine::GetCompatibleCameraRes() const {
-    return compatibleCameraRes_;
+    return imageFormat;
 }
 
 /*int CameraEngine::GetCameraSensorOrientation(int32_t requestFacing) {

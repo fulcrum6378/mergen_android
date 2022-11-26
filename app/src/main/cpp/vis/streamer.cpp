@@ -4,29 +4,11 @@
 
 static CameraEngine *cameraEngine = nullptr;
 
-/**
- * createCamera() Create application instance and NDK camera object
- * @param  width is the texture view window width
- * @param  height is the texture view window height
- * In this sample, it takes the simplest approach in that:
- * the android system display size is used to view full screen
- * preview camera images. Onboard Camera most likely to
- * support the onboard panel size on that device. Camera is most likely
- * to be oriented as landscape mode, the input width/height is in
- * landscape mode. TextureView on Java side handles rotation for
- * portrait mode.
- * @return application object instance ( not used in this sample )
- */
 static jlong createCamera(JNIEnv *env, jint w, jint h) {
     cameraEngine = new CameraEngine(env, w, h);
     return reinterpret_cast<jlong>(cameraEngine);
 }
 
-/**
- * deleteCamera():
- *   releases native application object, which
- *   triggers native camera object be released
- */
 static void deleteCamera(jlong ndkCameraObj) {
     if (!cameraEngine || !ndkCameraObj) return;
     auto *pApp = reinterpret_cast<CameraEngine *>(ndkCameraObj);
@@ -38,11 +20,6 @@ static void deleteCamera(jlong ndkCameraObj) {
     cameraEngine = nullptr;
 }
 
-/**
- * getCameraSensorOrientation()
- * @ return camera sensor orientation angle relative to Android device's
- * display orientation. This sample only deal to back facing camera.
- */
 /*extern "C" JNIEXPORT jint JNICALL
 Java_ir_mahdiparastesh_mergen_Main_getCameraSensorOrientation(
         JNIEnv *, jobject, jlong ndkCameraObj) {
@@ -51,26 +28,14 @@ Java_ir_mahdiparastesh_mergen_Main_getCameraSensorOrientation(
     return pApp->GetCameraSensorOrientation(ACAMERA_LENS_FACING_BACK);
 }*/
 
-/**
- * OnPreviewSurfaceCreated()
- *   Notification to native camera that java TextureView is ready
- *   to preview video. Simply create cameraSession and
- *   start camera preview
- */
-static void onPreviewSurfaceCreated(jlong ndkCameraObj, jobject surface) {
+static void onPreviewSurfaceCreated(JNIEnv *env, jlong ndkCameraObj, jobject surface) {
     ASSERT(ndkCameraObj && (jlong) cameraEngine == ndkCameraObj,
            "NativeObject should not be null Pointer")
     auto *pApp = reinterpret_cast<CameraEngine *>(ndkCameraObj);
-    pApp->CreateCameraSession(surface);
+    pApp->CreateCameraSession(env, surface);
     pApp->StartPreview(true);
 }
 
-/**
- * OnPreviewSurfaceDestroyed()
- *   Notification to native camera that java TextureView is destroyed
- *   Native camera would:
- *      * stop preview
- */
 static void onPreviewSurfaceDestroyed(JNIEnv *env, jlong ndkCameraObj, jobject surface) {
     auto *pApp = reinterpret_cast<CameraEngine *>(ndkCameraObj);
     ASSERT(ndkCameraObj && cameraEngine == pApp,
@@ -96,13 +61,12 @@ static void onPreviewSurfaceDestroyed(JNIEnv *env, jlong ndkCameraObj, jobject s
 
     pApp->StartPreview(false);
 
-    // Don't put this in Main.destroy()
-    deleteCamera(ndkCameraObj);
+    deleteCamera(ndkCameraObj); // Don't put this in Main.destroy()
 }
 
 static int8_t startStreaming() {
     if (cameraEngine == nullptr) return 1;
-    // TODO start gathering photos through CameraEngine, through NDKCamera
+    // TODO
     return 0;
 }
 

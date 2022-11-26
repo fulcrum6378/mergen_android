@@ -54,7 +54,7 @@ public:
 
     bool MatchCaptureSizeRequest(int32_t requestWidth, int32_t requestHeight, ImageFormat *view);
 
-    void CreateSession(jobject surface);
+    void CreateSession(ANativeWindow *window);
 
     //bool GetSensorOrientation(int32_t *facing, int32_t *angle);
 
@@ -65,8 +65,6 @@ public:
     void OnSessionState(ACameraCaptureSession *ses, CaptureSessionState state);
 
     void StartPreview(bool start);
-
-    ImageReader *reader{};
 };
 
 // Helper classes to hold enumerated camera

@@ -63,7 +63,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         preview.setLayoutParams(previewLP);
 
         AudioManager audioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        ndkCamera = prepare(w, h,
+        ndkCamera = create(w, h,
                 Integer.parseInt(audioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)),
                 Integer.parseInt(audioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER)));
 
@@ -150,7 +150,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     }
 
 
-    private native long prepare(int width, int height, int sampleRate, int framesPerBuf);
+    private native long create(int width, int height, int sampleRate, int framesPerBuf);
 
     private native byte start();
 

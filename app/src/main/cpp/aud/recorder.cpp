@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "audio_recorder.h"
+#include "recorder.h"
 
 // Called for every buffer is full; pass directly to handler.
 void bqRecorderCallback(SLAndroidSimpleBufferQueueItf bq, void *recorder) {
