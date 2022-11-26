@@ -10,7 +10,7 @@ CameraEngine::CameraEngine(JNIEnv *env, jint w, jint h)
           surface_(nullptr),
           camera_(nullptr) {
     camera_ = new NDKCamera();
-    ASSERT(camera_, "Failed to Create CameraObject")
+    ASSERT(camera_, "Failed to create CameraObject")
 
     imageFormat = ImageFormat{0, 0, VIS_IMAGE_FORMAT};
     camera_->MatchCaptureSizeRequest(w, h, &imageFormat);

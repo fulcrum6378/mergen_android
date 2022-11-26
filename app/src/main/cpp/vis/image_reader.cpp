@@ -58,6 +58,16 @@ void ImageReader::ImageCallback(AImageReader *reader) {
     media_status_t status = AImageReader_acquireNextImage(reader, &image);
     ASSERT(status == AMEDIA_OK && image, "Image is not available")
 
+    ANativeWindow_acquire(mirror_);
+    ANativeWindow_Buffer buf;
+    if (ANativeWindow_lock(mirror_, &buf, nullptr) < 0) {
+        //DeleteImage(image);
+        //return;
+    }
+    Mirror(&buf, image);
+    ANativeWindow_unlockAndPost(mirror_);
+    ANativeWindow_release(mirror_);
+
     std::thread writeFileHandler(&ImageReader::WriteFile, this, image);
     writeFileHandler.detach();
 }
@@ -88,9 +98,9 @@ AImage *ImageReader::GetLatestImage() {
     return image;
 }
 
-void ImageReader::DeleteImage(AImage *image) {
+/*void ImageReader::DeleteImage(AImage *image) {
     if (image) AImage_delete(image);
-}
+}*/
 
 static const int kMaxChannelValue = 262143;
 
@@ -130,11 +140,9 @@ static inline uint32_t YUV2RGB(int nY, int nU, int nV) {
     return 0xff000000 | (nR << 16) | (nG << 8) | nB;
 }
 
-bool ImageReader::DisplayImage(ANativeWindow_Buffer *buf, AImage *image) {
+bool ImageReader::Mirror(ANativeWindow_Buffer *buf, AImage *image) {
     ASSERT(buf->format == WINDOW_FORMAT_RGBX_8888 ||
-           buf->format == WINDOW_FORMAT_RGBA_8888,
-           "Not supported buffer format")
-
+           buf->format == WINDOW_FORMAT_RGBA_8888, "Not supported buffer format")
     int32_t srcFormat = -1;
     AImage_getFormat(image, &srcFormat);
     ASSERT(AIMAGE_FORMAT_YUV_420_888 == srcFormat, "Failed to get format")
@@ -142,6 +150,7 @@ bool ImageReader::DisplayImage(ANativeWindow_Buffer *buf, AImage *image) {
     AImage_getNumberOfPlanes(image, &srcPlanes);
     ASSERT(srcPlanes == 3, "Is not 3 planes")
 
+    // Show the image with 90 degrees rotation.
     AImageCropRect srcRect;
     AImage_getCropRect(image, &srcRect);
 
@@ -156,10 +165,11 @@ bool ImageReader::DisplayImage(ANativeWindow_Buffer *buf, AImage *image) {
     int32_t uvPixelStride;
     AImage_getPlanePixelStride(image, 1, &uvPixelStride);
 
-    int32_t height = MIN(buf->height, (srcRect.bottom - srcRect.top));
-    int32_t width = MIN(buf->width, (srcRect.right - srcRect.left));
+    int32_t height = MIN(buf->width, (srcRect.bottom - srcRect.top));
+    int32_t width = MIN(buf->height, (srcRect.right - srcRect.left));
 
     auto *out = static_cast<uint32_t *>(buf->bits);
+    out += height - 1;
     for (int32_t y = 0; y < height; y++) {
         const uint8_t *pY = yPixel + yStride * (y + srcRect.top) + srcRect.left;
 
@@ -169,13 +179,13 @@ bool ImageReader::DisplayImage(ANativeWindow_Buffer *buf, AImage *image) {
 
         for (int32_t x = 0; x < width; x++) {
             const int32_t uv_offset = (x >> 1) * uvPixelStride;
-            out[x] = YUV2RGB(pY[x], pU[uv_offset], pV[uv_offset]);
+            // [x, y]--> [-y, x]
+            out[x * buf->stride] = YUV2RGB(pY[x], pU[uv_offset], pV[uv_offset]);
         }
-        out += buf->stride;
+        out -= 1;  // move to the next column
     }
 
-    AImage_delete(image);
-
+    // FIXME AImage_delete(image);
     return true;
 }
 
@@ -208,7 +218,7 @@ void ImageReader::WriteFile(AImage *image) {
                 std::to_string(localTime.tm_mday) + dash +
                 std::to_string(localTime.tm_hour) +
                 std::to_string(localTime.tm_min) +
-                std::to_string(localTime.tm_sec) + ".jpg"; // yuv
+                std::to_string(localTime.tm_sec) + ".yuv";
     // FIXME THIS PATTERN OF FILENAME MADE THEM BE RE-WRITTEN!
     FILE *file = fopen(fileName.c_str(), "wb");
     if (file && data && len) {
@@ -219,5 +229,5 @@ void ImageReader::WriteFile(AImage *image) {
     } else {
         if (file) fclose(file);
     }
-    DeleteImage(image);
+    AImage_delete(image);
 }

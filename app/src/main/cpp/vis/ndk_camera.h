@@ -11,7 +11,7 @@
 
 #include "image_reader.h"
 
-#define VIS_IMAGE_FORMAT AIMAGE_FORMAT_JPEG // AIMAGE_FORMAT_YUV_420_888
+#define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888 // AIMAGE_FORMAT_JPEG
 
 enum class CaptureSessionState : int32_t {
     READY = 0,  // session is ready

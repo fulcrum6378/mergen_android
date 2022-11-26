@@ -47,7 +47,7 @@ public:
      */
     AImage *GetLatestImage(void);
 
-    static void DeleteImage(AImage *image);
+    // static void DeleteImage(AImage *image);
 
     // called by AImageReader when a frame is captured
     void ImageCallback(AImageReader *reader);
@@ -63,7 +63,7 @@ public:
      *   @return true on success, false on failure
      *   https://mathbits.com/MathBits/TISection/Geometry/Transformations2.htm
      */
-    static bool DisplayImage(ANativeWindow_Buffer *buf, AImage *image);
+    static bool Mirror(ANativeWindow_Buffer *buf, AImage *image);
 
     /**
      * regsiter a callback function for client to be notified that jpeg already written out.

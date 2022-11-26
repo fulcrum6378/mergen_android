@@ -200,10 +200,9 @@ NDKCamera::~NDKCamera() {
 }
 
 /**
- * EnumerateCamera()
- *     Loop through cameras on the system, pick up
- *     1) back facing one if available
- *     2) otherwise pick the first one reported to us
+ * Loop through cameras on the system, pick up
+ * 1) back facing one if available
+ * 2) otherwise pick the first one reported to us
  */
 void NDKCamera::EnumerateCamera() {
     ACameraIdList *cameraIds = nullptr;
