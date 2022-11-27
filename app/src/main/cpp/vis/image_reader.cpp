@@ -43,6 +43,10 @@ ImageReader::~ImageReader() {
     AImageReader_delete(reader_);
 }
 
+/**
+ * AImageReader_acquireNextImage is recommended for batch/background processing.
+ * AImageReader_acquireLatestImage is recommended for real-time processing.
+ */
 void ImageReader::ImageCallback(AImageReader *reader) {
     AImage *image = nullptr;
     /*media_status_t status = */AImageReader_acquireNextImage(reader, &image);
@@ -63,7 +67,7 @@ void ImageReader::ImageCallback(AImageReader *reader) {
         AImage_delete(image);
         return;
     }
-    std::thread writeFileHandler(&ImageReader::WriteFile, this, image);
+    std::thread writeFileHandler(&ImageReader::WriteFile,/* this,*/ image, count_);
     writeFileHandler.detach();
 }
 
@@ -77,20 +81,6 @@ ANativeWindow *ImageReader::GetNativeWindow() {
     media_status_t status = AImageReader_getWindow(reader_, &nativeWindow);
     ASSERT(status == AMEDIA_OK, "Could not get ANativeWindow")
     return nativeWindow;
-}
-
-AImage *ImageReader::GetNextImage() {
-    AImage *image;
-    media_status_t status = AImageReader_acquireNextImage(reader_, &image);
-    if (status != AMEDIA_OK) return nullptr;
-    return image;
-}
-
-AImage *ImageReader::GetLatestImage() {
-    AImage *image;
-    media_status_t status = AImageReader_acquireLatestImage(reader_, &image);
-    if (status != AMEDIA_OK) return nullptr;
-    return image;
 }
 
 static const int kMaxChannelValue = 262143;
@@ -120,9 +110,11 @@ static inline uint32_t YUV2RGB(int nY, int nU, int nV) {
     int nG = (int) (1192 * nY - 833 * nV - 400 * nU);
     int nB = (int) (1192 * nY + 2066 * nU);
 
-    nR = MIN(kMaxChannelValue, MAX(0, nR));
-    nG = MIN(kMaxChannelValue, MAX(0, nG));
-    nB = MIN(kMaxChannelValue, MAX(0, nB));
+    int maxR = MAX(0, nR), maxG = MAX(0, nG), maxB = MAX(0, nB);
+    // inlining these will cause mere-IDE error
+    nR = MIN(kMaxChannelValue, maxR);
+    nG = MIN(kMaxChannelValue, maxG);
+    nB = MIN(kMaxChannelValue, maxB);
 
     nR = (nR >> 10) & 0xff;
     nG = (nG >> 10) & 0xff;
@@ -170,7 +162,7 @@ bool ImageReader::Mirror(ANativeWindow_Buffer *buf, AImage *image) {
             // [x, y]--> [-y, x]
             out[x * buf->stride] = YUV2RGB(pY[x], pU[uv_offset], pV[uv_offset]);
         }
-        out -= 1;  // move to the next column
+        out -= 1; // move to the next column
     }
     return true;
 }
@@ -182,12 +174,12 @@ bool ImageReader::SetRecording(bool b) {
     return true;
 }
 
-void ImageReader::WriteFile(AImage *image) const {
+void ImageReader::WriteFile(AImage *image, int64_t i) {
     uint8_t *data = nullptr;
     int len = 0;
     AImage_getPlaneData(image, 0, &data, &len);
 
-    std::string fileName = path + std::to_string(count_) + ".yuv";
+    std::string fileName = path + std::to_string(i) + ".yuv";
     FILE *file = fopen(fileName.c_str(), "wb");
     if (file && data && len) {
         fwrite(data, 1, len, file);

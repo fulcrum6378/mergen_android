@@ -34,19 +34,7 @@ public:
 
     ANativeWindow *GetNativeWindow(void);
 
-    /**
-     * Retrieve the next image in ImageReader's bufferQueue, NOT the last image so
-     * no image is skipped. Recommended for batch/background processing.
-     */
-    AImage *GetNextImage(void);
-
-    /**
-     * Retrieve the last image in ImageReader's bufferQueue, deleting images in
-     * in front of it on the queue. Recommended for real-time processing.
-     */
-    AImage *GetLatestImage(void);
-
-    // called by AImageReader when a frame is captured
+    // called when a frame is captured
     void ImageCallback(AImageReader *reader);
 
     /**
@@ -64,7 +52,7 @@ public:
 
     bool SetRecording(bool b);
 
-    void WriteFile(AImage *image) const;
+    static void WriteFile(AImage *image, int64_t i);
 
 private:
     AImageReader *reader_;
