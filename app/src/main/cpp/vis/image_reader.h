@@ -10,6 +10,7 @@ struct ImageFormat {
     int32_t format;
 };
 
+#define MAX_BUF_COUNT 4 // max image buffers
 #define MIN(a, b)           \
   ({                        \
     __typeof__(a) _a = (a); \
@@ -25,14 +26,12 @@ struct ImageFormat {
 
 class ImageReader {
 public:
-    // Ctor and Dtor()
     explicit ImageReader(ImageFormat *format);
 
     ~ImageReader();
 
     void SetMirrorWindow(ANativeWindow *window);
 
-    // Report cached ANativeWindow, which was used to create camera's capture session output.
     ANativeWindow *GetNativeWindow(void);
 
     /**
@@ -46,8 +45,6 @@ public:
      * in front of it on the queue. Recommended for real-time processing.
      */
     AImage *GetLatestImage(void);
-
-    // static void DeleteImage(AImage *image);
 
     // called by AImageReader when a frame is captured
     void ImageCallback(AImageReader *reader);
@@ -65,21 +62,15 @@ public:
      */
     static bool Mirror(ANativeWindow_Buffer *buf, AImage *image);
 
-    /**
-     * regsiter a callback function for client to be notified that jpeg already written out.
-     * @param ctx is client context when callback is invoked
-     * @param callback is the actual callback function
-     */
-    void RegisterCallback(void *ctx, std::function<void(void *ctx, const char *fileName)>);
+    bool SetRecording(bool b);
 
-    void WriteFile(AImage *image);
+    void WriteFile(AImage *image) const;
 
 private:
     AImageReader *reader_;
     ANativeWindow *mirror_;
-
-    std::function<void(void *ctx, const char *fileName)> callback_;
-    void *callbackCtx_;
+    bool recording_{false};
+    int64_t count_{0};
 };
 
 #endif  // VIS_IMAGE_READER_H

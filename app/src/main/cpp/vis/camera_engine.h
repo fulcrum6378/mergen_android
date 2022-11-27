@@ -13,6 +13,8 @@ public:
 
     void StartPreview(bool start);
 
+    bool SetRecording(bool b);
+
     const ImageFormat &GetCompatibleCameraRes() const;
 
     //int32_t GetCameraSensorOrientation(int32_t facing);

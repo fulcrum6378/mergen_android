@@ -66,13 +66,13 @@ static void onPreviewSurfaceDestroyed(JNIEnv *env, jlong ndkCameraObj, jobject s
 
 static int8_t startStreaming() {
     if (cameraEngine == nullptr) return 1;
-    // TODO
+    cameraEngine->SetRecording(true);
     return 0;
 }
 
 static int8_t stopStreaming() {
     if (cameraEngine == nullptr) return 1;
-    // TODO
+    cameraEngine->SetRecording(false);
     return 0;
 }
 

@@ -16,11 +16,7 @@ CameraEngine::CameraEngine(JNIEnv *env, jint w, jint h)
     camera_->MatchCaptureSizeRequest(w, h, &imageFormat);
     ASSERT(imageFormat.width && imageFormat.height, "Could not find supportable resolution")
 
-    reader_ = new ImageReader(&imageFormat); // reader_->SetPresentRotation(0);
-    reader_->RegisterCallback(
-            this, [/*this*/](void *ctx, const char *str) -> void {
-                //reinterpret_cast<CameraEngine* >(ctx)->OnPhotoTaken(str);
-            });
+    reader_ = new ImageReader(&imageFormat);
     camera_->MatchCaptureSizeRequest(w, h, &imageFormat);
 }
 
@@ -48,6 +44,18 @@ void CameraEngine::CreateCameraSession(JNIEnv *env, jobject surface) {
     camera_->CreateSession(reader_->GetNativeWindow());
 }
 
+/**
+ * @param start is true to start preview, false to stop preview
+ * @return  true if preview started, false when error happened
+ */
+void CameraEngine::StartPreview(bool start) { camera_->StartPreview(start); }
+
+bool CameraEngine::SetRecording(bool b) {
+    if (reader_)
+        return reader_->SetRecording(b);
+    else return false;
+}
+
 jobject CameraEngine::GetSurfaceObject() { return surface_; }
 
 const ImageFormat &CameraEngine::GetCompatibleCameraRes() const {
@@ -64,9 +72,3 @@ const ImageFormat &CameraEngine::GetCompatibleCameraRes() const {
     }
     ASSERT(false, "Failed for GetSensorOrientation()")
 }*/
-
-/**
- * @param start is true to start preview, false to stop preview
- * @return  true if preview started, false when error happened
- */
-void CameraEngine::StartPreview(bool start) { camera_->StartPreview(start); }

@@ -10,30 +10,26 @@
 #include "image_reader.h"
 #include "../otr/debug.h"
 
-static const char *path = "/data/data/ir.mahdiparastesh.mergen/files/";
+static const char *path = "/data/data/ir.mahdiparastesh.mergen/files/vis/";
 
-#define MAX_BUF_COUNT 4 // max buffers in this ImageReader
-
-/**
- * ImageReader listener: called by AImageReader for every frame captured
- * We pass the event to ImageReader class, so it could do some housekeeping
- * about the loaded queue. For example, we could keep a counter to track how
- * many buffers are full and idle in the queue. If camera almost has no buffer
- * to capture we could release ( skip ) some frames by AImageReader_getNextImage()
- * and AImageReader_delete().
- */
 void OnImageCallback(void *ctx, AImageReader *reader) {
     reinterpret_cast<ImageReader *>(ctx)->ImageCallback(reader);
 }
 
 ImageReader::ImageReader(ImageFormat *format) : reader_(nullptr), mirror_(nullptr) {
-    callback_ = nullptr;
-    callbackCtx_ = nullptr;
-
     media_status_t status = AImageReader_new(
             format->width, format->height, format->format,
             MAX_BUF_COUNT, &reader_);
     ASSERT(reader_ && status == AMEDIA_OK, "Failed to create AImageReader")
+
+    // Create the destination directory
+    DIR *dir = opendir(path);
+    if (dir) closedir(dir);
+    else {
+        std::string cmd = "mkdir -p ";
+        cmd += path;
+        system(cmd.c_str());
+    }
 
     AImageReader_ImageListener listener{
             .context = this,
@@ -47,16 +43,11 @@ ImageReader::~ImageReader() {
     AImageReader_delete(reader_);
 }
 
-void ImageReader::RegisterCallback(
-        void *ctx, std::function<void(void *ctx, const char *fileName)> func) {
-    callbackCtx_ = ctx;
-    callback_ = std::move(func);
-}
-
 void ImageReader::ImageCallback(AImageReader *reader) {
     AImage *image = nullptr;
-    media_status_t status = AImageReader_acquireNextImage(reader, &image);
-    ASSERT(status == AMEDIA_OK && image, "Image is not available")
+    /*media_status_t status = */AImageReader_acquireNextImage(reader, &image);
+    //ASSERT(status == AMEDIA_OK && image, "Image is not available")
+    count_++;
 
     ANativeWindow_acquire(mirror_);
     ANativeWindow_Buffer buf;
@@ -68,6 +59,10 @@ void ImageReader::ImageCallback(AImageReader *reader) {
     ANativeWindow_unlockAndPost(mirror_);
     ANativeWindow_release(mirror_);
 
+    if (!recording_) {
+        AImage_delete(image);
+        return;
+    }
     std::thread writeFileHandler(&ImageReader::WriteFile, this, image);
     writeFileHandler.detach();
 }
@@ -97,10 +92,6 @@ AImage *ImageReader::GetLatestImage() {
     if (status != AMEDIA_OK) return nullptr;
     return image;
 }
-
-/*void ImageReader::DeleteImage(AImage *image) {
-    if (image) AImage_delete(image);
-}*/
 
 static const int kMaxChannelValue = 262143;
 
@@ -140,17 +131,14 @@ static inline uint32_t YUV2RGB(int nY, int nU, int nV) {
     return 0xff000000 | (nR << 16) | (nG << 8) | nB;
 }
 
+/**
+ * Show the image with 90 degrees rotation.
+ * MUST BE:
+ * buf->format == WINDOW_FORMAT_RGBX_8888 || buf->format == WINDOW_FORMAT_RGBA_8888
+ * int32_t srcFormat = -1; AImage_getFormat(image, &srcFormat); AIMAGE_FORMAT_YUV_420_888 == srcFormat
+ * int32_t srcPlanes = 0; AImage_getNumberOfPlanes(image, &srcPlanes); srcPlanes == 3
+ */
 bool ImageReader::Mirror(ANativeWindow_Buffer *buf, AImage *image) {
-    ASSERT(buf->format == WINDOW_FORMAT_RGBX_8888 ||
-           buf->format == WINDOW_FORMAT_RGBA_8888, "Not supported buffer format")
-    int32_t srcFormat = -1;
-    AImage_getFormat(image, &srcFormat);
-    ASSERT(AIMAGE_FORMAT_YUV_420_888 == srcFormat, "Failed to get format")
-    int32_t srcPlanes = 0;
-    AImage_getNumberOfPlanes(image, &srcPlanes);
-    ASSERT(srcPlanes == 3, "Is not 3 planes")
-
-    // Show the image with 90 degrees rotation.
     AImageCropRect srcRect;
     AImage_getCropRect(image, &srcRect);
 
@@ -184,48 +172,26 @@ bool ImageReader::Mirror(ANativeWindow_Buffer *buf, AImage *image) {
         }
         out -= 1;  // move to the next column
     }
-
-    // FIXME AImage_delete(image);
     return true;
 }
 
-void ImageReader::WriteFile(AImage *image) {
-    /*int planeCount;
-    media_status_t status = AImage_getNumberOfPlanes(image, &planeCount);
-    FIXME ASSERT(status == AMEDIA_OK && planeCount == 1,
-      "Error: getNumberOfPlanes() planeCount = %d", planeCount);*/
+bool ImageReader::SetRecording(bool b) {
+    if (b == recording_) return false;
+    recording_ = b;
+    if (recording_) count_ = 0;
+    return true;
+}
 
+void ImageReader::WriteFile(AImage *image) const {
     uint8_t *data = nullptr;
     int len = 0;
     AImage_getPlaneData(image, 0, &data, &len);
 
-    DIR *dir = opendir(path);
-    if (dir) closedir(dir);
-    else {
-        std::string cmd = "mkdir -p ";
-        cmd += path;
-        system(cmd.c_str());
-    }
-
-    struct timespec ts{0, 0};
-    clock_gettime(CLOCK_REALTIME, &ts);
-    struct tm localTime{};
-    localtime_r(&ts.tv_sec, &localTime);
-
-    std::string fileName = path;
-    std::string dash("-");
-    fileName += "capture" + std::to_string(localTime.tm_mon) +
-                std::to_string(localTime.tm_mday) + dash +
-                std::to_string(localTime.tm_hour) +
-                std::to_string(localTime.tm_min) +
-                std::to_string(localTime.tm_sec) + ".yuv";
-    // FIXME THIS PATTERN OF FILENAME MADE THEM BE RE-WRITTEN!
+    std::string fileName = path + std::to_string(count_) + ".yuv";
     FILE *file = fopen(fileName.c_str(), "wb");
     if (file && data && len) {
         fwrite(data, 1, len, file);
         fclose(file);
-
-        if (callback_) callback_(callbackCtx_, fileName.c_str());
     } else {
         if (file) fclose(file);
     }
