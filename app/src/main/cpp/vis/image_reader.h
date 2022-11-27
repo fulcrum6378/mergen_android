@@ -1,14 +1,9 @@
 #ifndef VIS_IMAGE_READER_H
 #define VIS_IMAGE_READER_H
 
-#include <functional>
 #include <media/NdkImageReader.h>
 
-struct ImageFormat {
-    int32_t width;
-    int32_t height;
-    int32_t format;
-};
+#include "utils.h"
 
 #define MAX_BUF_COUNT 4 // max image buffers
 #define MIN(a, b)           \

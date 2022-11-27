@@ -2,9 +2,6 @@
 #define AUD_RECORDER_H
 
 #include <fstream> // required for std::ofstream
-#include <SLES/OpenSLES.h>
-#include <SLES/OpenSLES_Android.h>
-#include <sys/types.h>
 
 #include "common.h"
 #include "buf_manager.h"
@@ -25,8 +22,6 @@ class AudioRecorder {
 public:
     explicit AudioRecorder(SampleFormat *, SLEngineItf engineEngine);
 
-    std::ofstream test;
-
     ~AudioRecorder();
 
     SLboolean Start(void);
@@ -36,6 +31,8 @@ public:
     void SetBufQueues(AudioQueue *freeQ, AudioQueue *recQ);
 
     void ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq);
+
+    std::ofstream test;
 };
 
 #endif //AUD_RECORDER_H

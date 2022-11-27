@@ -1,7 +1,6 @@
 #ifndef AUD_COMMON_H
 #define AUD_COMMON_H
 
-#include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 
 #include "../otr/debug.h" // do not include "recorder.h" here!

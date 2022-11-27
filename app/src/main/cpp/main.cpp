@@ -1,7 +1,5 @@
-#include <jni.h>
-
 #include "aud/engine.h"
-#include "vis/streamer.cpp" // don't put these in namespace brackets.
+#include "vis/streamer.cpp" // don't put these in namespace brackets like AUD or VIS
 
 static AudioEngine *aud = nullptr;
 

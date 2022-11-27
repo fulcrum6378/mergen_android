@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstring>
+
 #include "common.h"
 
 void ConvertToSLSampleFormat(SLAndroidDataFormat_PCM_EX *pFormat, SampleFormat *pSampleInfo_) {

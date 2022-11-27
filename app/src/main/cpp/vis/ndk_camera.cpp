@@ -1,14 +1,6 @@
-#include <camera/NdkCameraManager.h>
-#include <cinttypes>
-#include <cstring>
-#include <media/NdkImage.h>
-#include <queue>
-#include <unistd.h>
-#include <utility>
 #include <android/native_window_jni.h>
 
 #include "ndk_camera.h"
-#include "utils.h"
 #include "../otr/debug.h"
 
 NDKCamera::NDKCamera()

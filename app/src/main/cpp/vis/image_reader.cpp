@@ -1,11 +1,5 @@
-#include <cstdlib>
-#include <ctime>
 #include <dirent.h>
-#include <functional>
-#include <media/NdkImageReader.h>
-#include <string>
 #include <thread>
-#include <utility>
 
 #include "image_reader.h"
 #include "../otr/debug.h"

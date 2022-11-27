@@ -1,7 +1,6 @@
 #ifndef AUD_ENGINE_H
 #define AUD_ENGINE_H
 
-#include "buf_manager.h"
 #include "recorder.h"
 
 class AudioEngine {

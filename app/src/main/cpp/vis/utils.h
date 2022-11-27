@@ -1,8 +1,9 @@
 #ifndef VIS_UTILS_H
 #define VIS_UTILS_H
 
-#include <camera/NdkCameraError.h>
+#include <camera/NdkCameraDevice.h>
 #include <camera/NdkCameraManager.h>
+#include <camera/NdkCameraMetadataTags.h>
 
 /*
  * A set of macros to call into Camera APIs. The API is grouped with a few
@@ -17,5 +18,11 @@
 #define CALL_TARGET(func) CALL_CAMERA(ACameraOutputTarget_##func)
 #define CALL_REQUEST(func) CALL_CAMERA(ACaptureRequest_##func)
 #define CALL_SESSION(func) CALL_CAMERA(ACameraCaptureSession_##func)
+
+struct ImageFormat {
+    int32_t width;
+    int32_t height;
+    int32_t format;
+};
 
 #endif //VIS_UTILS_H

@@ -1,12 +1,8 @@
 #ifndef AUD_BUF_MANAGER_H
 #define AUD_BUF_MANAGER_H
 
-#include <atomic>
 #include <cassert>
-#include <limits>
 #include <memory>
-#include <sys/types.h>
-#include <SLES/OpenSLES.h>
 
 #include "../otr/debug.h"
 

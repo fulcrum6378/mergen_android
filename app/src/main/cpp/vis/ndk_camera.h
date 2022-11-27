@@ -1,15 +1,11 @@
 #ifndef VIS_NDK_CAMERA_H
 #define VIS_NDK_CAMERA_H
 
-#include <camera/NdkCameraDevice.h>
-#include <camera/NdkCameraError.h>
-#include <camera/NdkCameraManager.h>
-#include <camera/NdkCameraMetadataTags.h>
 #include <map>
+#include <media/NdkImage.h>
 #include <string>
-#include <vector>
 
-#include "image_reader.h"
+#include "utils.h"
 
 #define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888 // AIMAGE_FORMAT_JPEG
 
@@ -42,8 +38,6 @@ private:
     ACameraDevice_stateCallbacks *GetDeviceListener();
 
     ACameraCaptureSession_stateCallbacks *GetSessionListener();
-
-    ACameraCaptureSession_captureCallbacks *GetCaptureCallback();
 
 public:
     NDKCamera();

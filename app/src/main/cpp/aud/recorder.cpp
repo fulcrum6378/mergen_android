@@ -1,8 +1,3 @@
-#include <cstring>
-#include <cstdlib>
-#include <fstream>
-#include <iostream>
-
 #include "recorder.h"
 
 // Called for every buffer is full; pass directly to handler.
@@ -34,7 +29,7 @@ void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq) {
     devShadowQueue_->pop();
 
     if (buf != &silentBuf_) {
-        test.write((char *) buf->buf_, buf->size_); // TODO
+        test.write((char *) buf->buf_, buf->size_);
 
         buf->size_ = 0;
         freeQueue_->push(buf);

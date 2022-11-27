@@ -28,6 +28,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     private TextureView preview;
     private Surface surface = null;
     private boolean isRecording = false;
+    private Toast toast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,9 +107,11 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         byte res;
         if (!isRecording) res = start();
         else res = stop();
-        Toast.makeText(this,
+        if (toast != null) toast.cancel();
+        toast = Toast.makeText(this,
                 (!isRecording ? "STARTED" : "STOPPED") + ": " + (int) res,
-                Toast.LENGTH_SHORT).show();
+                Toast.LENGTH_SHORT);
+        toast.show();
         if (res != 0) return;
         isRecording = bb;
         if (isRecording) onRecordingStarted();
@@ -117,10 +120,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
 
     private void onRecordingStarted() {
         preview.setOnClickListener(null);
-        preview.setOnTouchListener((v, event) -> {
-            // TODO IMPLEMENT HPT {@link android.view.MotionEvent event}
-            return false;
-        });
+        // TODO OnTouchListener isn't the answer!
     }
 
     private void onRecordingStopped() {

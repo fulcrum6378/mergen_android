@@ -1,6 +1,7 @@
 #ifndef VIS_CAMERA_ENGINE_H
 #define VIS_CAMERA_ENGINE_H
 
+#include "image_reader.h"
 #include "ndk_camera.h"
 
 class CameraEngine {

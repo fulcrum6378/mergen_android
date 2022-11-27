@@ -1,11 +1,4 @@
-#include <camera/NdkCameraManager.h>
-#include <cinttypes>
-#include <queue>
-#include <thread>
-#include <utility>
-
 #include "ndk_camera.h"
-#include "utils.h"
 #include "../otr/debug.h"
 
 ACameraManager_AvailabilityCallbacks *NDKCamera::GetManagerListener() {

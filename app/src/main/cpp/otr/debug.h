@@ -10,4 +10,5 @@
   if (!(cond)) {                                              \
     __android_log_assert(#cond, LOG_TAG, fmt, ##__VA_ARGS__); \
   }
+
 #endif
