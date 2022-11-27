@@ -22,9 +22,7 @@ void ConvertToSLSampleFormat(SLAndroidDataFormat_PCM_EX *pFormat, SampleFormat *
     pFormat->bitsPerSample = pSampleInfo_->pcmFormat_;
     pFormat->containerSize = pSampleInfo_->pcmFormat_;
 
-    /*
-     * fixup for android extended representations...
-     */
+    // fixup for android extended representations...
     pFormat->representation = pSampleInfo_->representation_;
     switch (pFormat->representation) {
         case SL_ANDROID_PCM_REPRESENTATION_UNSIGNED_INT:

@@ -20,14 +20,6 @@ static void deleteCamera(jlong ndkCameraObj) {
     cameraEngine = nullptr;
 }
 
-/*extern "C" JNIEXPORT jint JNICALL
-Java_ir_mahdiparastesh_mergen_Main_getCameraSensorOrientation(
-        JNIEnv *, jobject, jlong ndkCameraObj) {
-    ASSERT(ndkCameraObj, "NativeObject should not be null Pointer")
-    auto *pApp = reinterpret_cast<CameraEngine *>(ndkCameraObj);
-    return pApp->GetCameraSensorOrientation(ACAMERA_LENS_FACING_BACK);
-}*/
-
 static void onPreviewSurfaceCreated(JNIEnv *env, jlong ndkCameraObj, jobject surface) {
     ASSERT(ndkCameraObj && (jlong) cameraEngine == ndkCameraObj,
            "NativeObject should not be null Pointer")
@@ -65,24 +57,13 @@ static void onPreviewSurfaceDestroyed(JNIEnv *env, jlong ndkCameraObj, jobject s
 }
 
 static int8_t startStreaming() {
-    if (cameraEngine == nullptr) return 1;
-    cameraEngine->SetRecording(true);
+    if (cameraEngine == nullptr) return 3;
+    if (!cameraEngine->SetRecording(true)) return 4;
     return 0;
 }
 
 static int8_t stopStreaming() {
-    if (cameraEngine == nullptr) return 1;
-    cameraEngine->SetRecording(false);
+    if (cameraEngine == nullptr) return 3;
+    if (!cameraEngine->SetRecording(false)) return 4;
     return 0;
 }
-
-/*JNIEnv *jni;
-  app_->activity->vm->AttachCurrentThread(&jni, NULL);
-
-  // Default class retrieval
-  jclass clazz = jni->GetObjectClass(app_->activity->clazz);
-  jmethodID methodID = jni->GetMethodID(clazz, "OnPhotoTaken", "(Ljava/lang/String;)V");
-  jstring javaName = jni->NewStringUTF(fileName);
-
-  jni->CallVoidMethod(app_->activity->clazz, methodID, javaName);
-  app_->activity->vm->DetachCurrentThread();*/

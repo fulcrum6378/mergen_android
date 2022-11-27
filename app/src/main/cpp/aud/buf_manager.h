@@ -1,22 +1,18 @@
 #ifndef AUD_BUF_MANAGER_H
 #define AUD_BUF_MANAGER_H
 
-#include <sys/types.h>
-#include <SLES/OpenSLES.h>
 #include <atomic>
 #include <cassert>
-#include <memory>
 #include <limits>
+#include <memory>
+#include <sys/types.h>
+#include <SLES/OpenSLES.h>
 
 #include "../otr/debug.h"
 
-#ifndef CACHE_ALIGN
 #define CACHE_ALIGN 64
-#endif
 
-/*
- * ProducerConsumerQueue, borrowed from Ian NiLewis
- */
+// ProducerConsumerQueue, borrowed from Ian NiLewis
 template<typename T>
 class ProducerConsumerQueue {
 public:

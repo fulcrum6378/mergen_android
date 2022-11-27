@@ -34,7 +34,7 @@ void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq) {
     devShadowQueue_->pop();
 
     if (buf != &silentBuf_) {
-        myfile.write((char *) buf->buf_, buf->size_); // TODO
+        test.write((char *) buf->buf_, buf->size_); // TODO
 
         buf->size_ = 0;
         freeQueue_->push(buf);
@@ -151,16 +151,15 @@ SLboolean AudioRecorder::Start() {
 
     result = (*recItf_)->SetRecordState(recItf_, SL_RECORDSTATE_RECORDING);
 
-    // TODO
-    char path[] = "/data/data/ir.mahdiparastesh.mergen/files/test.pcm";
+    char path[] = "/data/data/ir.mahdiparastesh.mergen/files/aud.pcm";
     remove(path);
-    myfile = std::ofstream(path, std::ios::binary | std::ios::out);
+    test = std::ofstream(path, std::ios::binary | std::ios::out);
 
     return (result == SL_RESULT_SUCCESS ? SL_BOOLEAN_TRUE : SL_BOOLEAN_FALSE);
 }
 
 SLboolean AudioRecorder::Stop() {
-    myfile.close(); // TODO
+    test.close();
 
     // In case already recording, stop recording and clear buffer queue.
     SLuint32 curState;

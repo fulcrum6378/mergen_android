@@ -25,7 +25,7 @@ class AudioRecorder {
 public:
     explicit AudioRecorder(SampleFormat *, SLEngineItf engineEngine);
 
-    std::ofstream myfile; // TODO
+    std::ofstream test;
 
     ~AudioRecorder();
 

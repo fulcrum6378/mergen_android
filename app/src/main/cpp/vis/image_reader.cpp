@@ -45,7 +45,7 @@ ImageReader::~ImageReader() {
 
 /**
  * AImageReader_acquireNextImage is recommended for batch/background processing.
- * AImageReader_acquireLatestImage is recommended for real-time processing.
+ * AImageReader_acquireLatestImage is recommended for real-time processing. (deletes all previous images)
  */
 void ImageReader::ImageCallback(AImageReader *reader) {
     AImage *image = nullptr;

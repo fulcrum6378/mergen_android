@@ -1,117 +1,42 @@
-#include <cstring>
 #include <jni.h>
 
-#include "aud/common.h"
-#include "aud/recorder.h"
+#include "aud/engine.h"
 #include "vis/streamer.cpp" // don't put these in namespace brackets.
 
-struct EchoAudioEngine {
-    SLmilliHertz fastPathSampleRate_;
-    uint32_t fastPathFramesPerBuf_;
-    uint16_t sampleChannels_;
-    uint16_t bitsPerSample_;
-
-    SLObjectItf slEngineObj_;
-    SLEngineItf slEngineItf_;
-
-    AudioRecorder *recorder_;
-    AudioQueue *freeBufQueue_;  // Owner of the queue
-    AudioQueue *recBufQueue_;   // Owner of the queue
-    // recBufQueue_ is recQueue_ for the recorder and playQueue_ for the player.
-
-    sample_buf *bufs_;
-    uint32_t bufCount_;
-};
-static EchoAudioEngine engine;
+static AudioEngine *aud = nullptr;
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(
         JNIEnv *env, jobject, jint w, jint h, jint sampleRate, jint framesPerBuf) {
-    //createAudioRecorder();
-    SLresult result;
-    memset(&engine, 0, sizeof(engine));
-
-    engine.fastPathSampleRate_ = static_cast<SLmilliHertz>(sampleRate) * 1000;
-    engine.fastPathFramesPerBuf_ = static_cast<uint32_t>(framesPerBuf);
-    engine.sampleChannels_ = AUDIO_SAMPLE_CHANNELS;
-    engine.bitsPerSample_ = SL_PCMSAMPLEFORMAT_FIXED_16;
-
-    result = slCreateEngine(
-            &engine.slEngineObj_, 0, nullptr, 0,
-            nullptr, nullptr);
-    SLASSERT(result);
-
-    result = (*engine.slEngineObj_)->Realize(engine.slEngineObj_, SL_BOOLEAN_FALSE);
-    SLASSERT(result);
-
-    result = (*engine.slEngineObj_)->GetInterface(engine.slEngineObj_, SL_IID_ENGINE,
-                                                  &engine.slEngineItf_);
-    SLASSERT(result);
-
-    // compute the RECOMMENDED fast audio buffer size:
-    //   the lower latency required
-    //     *) the smaller the buffer should be (adjust it here) AND
-    //     *) the less buffering should be before starting player AFTER
-    //        receiving the recorder buffer
-    //   Adjust the bufSize here to fit your bill [before it busts]
-    uint32_t bufSize = engine.fastPathFramesPerBuf_ * engine.sampleChannels_ *
-                       engine.bitsPerSample_;
-    bufSize = (bufSize + 7) >> 3;  // bits --> byte
-    engine.bufCount_ = BUF_COUNT;
-    engine.bufs_ = allocateSampleBufs(engine.bufCount_, bufSize);
-    assert(engine.bufs_);
-    engine.freeBufQueue_ = new AudioQueue(engine.bufCount_);
-    engine.recBufQueue_ = new AudioQueue(engine.bufCount_);
-    assert(engine.freeBufQueue_ && engine.recBufQueue_);
-    for (uint32_t i = 0; i < engine.bufCount_; i++)
-        engine.freeBufQueue_->push(&engine.bufs_[i]);
-
-    SampleFormat sampleFormat{};
-    memset(&sampleFormat, 0, sizeof(sampleFormat));
-    sampleFormat.pcmFormat_ = static_cast<uint16_t>(engine.bitsPerSample_);
-    sampleFormat.channels_ = engine.sampleChannels_;
-    sampleFormat.sampleRate_ = engine.fastPathSampleRate_;
-    sampleFormat.framesPerBuf_ = engine.fastPathFramesPerBuf_;
-    engine.recorder_ = new AudioRecorder(&sampleFormat, engine.slEngineItf_);
-    if (!engine.recorder_) return JNI_FALSE;
-    engine.recorder_->SetBufQueues(engine.freeBufQueue_, engine.recBufQueue_);
-
+    aud = new AudioEngine(sampleRate, framesPerBuf);
     return createCamera(env, w, h);
 }
 
 extern "C" JNIEXPORT jbyte JNICALL
 Java_ir_mahdiparastesh_mergen_Main_start(JNIEnv *, jobject) {
-    //startRecording();
-    engine.recorder_->Start();
-
-    startStreaming();
-    return 0;
+    int8_t ret = 0;
+    if (aud) {
+        if (!aud->StartRecording()) ret = 1;
+    } else ret = 2;
+    if (ret > 0) return ret;
+    ret = startStreaming();
+    return ret;
 }
 
 extern "C" JNIEXPORT jbyte JNICALL
 Java_ir_mahdiparastesh_mergen_Main_stop(JNIEnv *, jobject) {
-    //stopRecording();
-    engine.recorder_->Stop();
-    delete engine.recorder_;
-    engine.recorder_ = nullptr;
-
-    stopStreaming();
-    return 0;
+    int8_t ret = 0;
+    if (aud) {
+        if (!aud->StopRecording()) ret = 1;
+    } else ret = 2;
+    if (ret > 0) return ret;
+    ret = stopStreaming();
+    return ret;
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
-    //deleteAudioRecorder();
-    delete engine.recorder_;
-    engine.recorder_ = nullptr;
-    delete engine.recBufQueue_;
-    delete engine.freeBufQueue_;
-    releaseSampleBufs(engine.bufs_, engine.bufCount_);
-    if (engine.slEngineObj_ != nullptr) {
-        (*engine.slEngineObj_)->Destroy(engine.slEngineObj_);
-        engine.slEngineObj_ = nullptr;
-        engine.slEngineItf_ = nullptr;
-    }
+    aud = nullptr;
 }
 
 extern "C" JNIEXPORT jstring JNICALL
@@ -155,9 +80,8 @@ Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
     else onPreviewSurfaceDestroyed(env, ndkCameraObj, surface);
 }
 
-/* TODO:
+/* TO-DO:
   * Problems:
-  * AudioRecorder::Start() crashes on a second record
   *
   * Notes:
   * The idea of defining a JNI interface header sucks!
