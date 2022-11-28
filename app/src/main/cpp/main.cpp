@@ -4,9 +4,8 @@
 static AudioEngine *aud = nullptr;
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_ir_mahdiparastesh_mergen_Main_create(
-        JNIEnv *env, jobject, jint w, jint h, jint sampleRate, jint framesPerBuf) {
-    aud = new AudioEngine(sampleRate, framesPerBuf);
+Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject, jint w, jint h) {
+    aud = new AudioEngine();
     return createCamera(env, w, h);
 }
 

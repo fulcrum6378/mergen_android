@@ -1,11 +1,6 @@
 #include "engine.h"
 
-AudioEngine::AudioEngine(int32_t sampleRate, int32_t framesPerBuf) :
-        slEngineObj_(nullptr), slEngineItf_(nullptr), recorder_(nullptr) {
-    fastPathSampleRate_ = static_cast<SLmilliHertz>(sampleRate) * 1000;
-    fastPathFramesPerBuf_ = static_cast<uint32_t>(framesPerBuf);
-    sampleChannels_ = AUDIO_SAMPLE_CHANNELS;
-    bitsPerSample_ = SL_PCMSAMPLEFORMAT_FIXED_16;
+AudioEngine::AudioEngine() : slEngineObj_(nullptr), slEngineItf_(nullptr), recorder_(nullptr) {
 
     SLresult result;
     result = slCreateEngine(
@@ -25,7 +20,7 @@ AudioEngine::AudioEngine(int32_t sampleRate, int32_t framesPerBuf) :
     //     *) the less buffering should be before starting player AFTER
     //        receiving the recorder buffer
     //   Adjust the bufSize here to fit your bill [before it busts]
-    uint32_t bufSize = fastPathFramesPerBuf_ * sampleChannels_ * bitsPerSample_;
+    uint32_t bufSize = FRAMES_PER_BUF * AUDIO_SAMPLE_CHANNELS * BITS_PER_SAMPLE;
     bufSize = (bufSize + 7) >> 3;  // bits --> byte
     bufCount_ = BUF_COUNT;
     bufs_ = allocateSampleBufs(bufCount_, bufSize);
@@ -52,10 +47,10 @@ AudioEngine::~AudioEngine() {
 
 bool AudioEngine::StartRecording() {
     SampleFormat sampleFormat{
-            fastPathSampleRate_,
-            fastPathFramesPerBuf_,
-            sampleChannels_,
-            static_cast<uint16_t>(bitsPerSample_),
+            SAMPLE_RATE,
+            FRAMES_PER_BUF,
+            AUDIO_SAMPLE_CHANNELS,
+            static_cast<uint16_t>(BITS_PER_SAMPLE),
             0
     };
     recorder_ = new AudioRecorder(&sampleFormat, slEngineItf_);

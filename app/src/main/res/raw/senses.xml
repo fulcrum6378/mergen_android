@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Manifest>
+    <Sense
+        bufferSize="1"
+        type="REW" />
+    <Sense
+        bufferSize="1000"
+        height=""
+        type="AUD"
+        width=""
+        x=""
+        y=""
+        z="" />
+    <Sense
+        bufferSize="100"
+        height=""
+        type="HPT"
+        width=""
+        x=""
+        y=""
+        z="" />
+    <Sense
+        bufferSize="500000"
+        height=""
+        type="VIS"
+        width=""
+        x=""
+        y=""
+        z="" />
+</Manifest>

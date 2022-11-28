@@ -6,7 +6,10 @@
 #include "../otr/debug.h" // do not include "recorder.h" here!
 
 // Audio Sample Controls
+#define SAMPLE_RATE 48000000 // millihertz
+#define FRAMES_PER_BUF 192
 #define AUDIO_SAMPLE_CHANNELS 1
+#define BITS_PER_SAMPLE SL_PCMSAMPLEFORMAT_FIXED_16
 
 // Sample Buffer Controls
 #define RECORD_DEVICE_KICKSTART_BUF_COUNT 2

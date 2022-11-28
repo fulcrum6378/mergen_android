@@ -5,7 +5,7 @@
 
 class AudioEngine {
 public:
-    AudioEngine(int32_t sampleRate, int32_t framesPerBuf);
+    AudioEngine();
 
     ~AudioEngine();
 
@@ -14,11 +14,6 @@ public:
     bool StopRecording();
 
 private:
-    SLmilliHertz fastPathSampleRate_;
-    uint32_t fastPathFramesPerBuf_;
-    uint16_t sampleChannels_;
-    uint16_t bitsPerSample_;
-
     SLObjectItf slEngineObj_;
     SLEngineItf slEngineItf_;
 

@@ -3,9 +3,7 @@ package ir.mahdiparastesh.mergen;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.SurfaceTexture;
-import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Size;
@@ -14,6 +12,10 @@ import android.view.TextureView;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 
 import ir.mahdiparastesh.mergen.otr.DoubleClickListener;
@@ -63,15 +65,32 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         previewLP.height = h;
         preview.setLayoutParams(previewLP);
 
-        AudioManager audioMgr = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        ndkCamera = create(w, h,
-                Integer.parseInt(audioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)),
-                Integer.parseInt(audioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER)));
+        /*TODO README
+         * AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER
+         * Used as a key for {@link #getProperty} to request the native or optimal output buffer size
+         * for this device's low latency output stream, in decimal PCM frames.  Latency-sensitive apps
+         * should use this value as a minimum, and offer the user the option to override it.
+         * The low latency output stream is typically either the device's primary output stream,
+         * or another output stream with smaller buffers.
+         */
+        ndkCamera = create(w, h);
+        Toast.makeText(this, w + "x" + h, Toast.LENGTH_LONG).show();
 
         onRecordingStopped();
         preview.setSurfaceTextureListener(this); // don't make it in-line.
         if (preview.isAvailable()) onSurfaceTextureAvailable(
                 preview.getSurfaceTexture(), preview.getWidth(), preview.getHeight());
+
+        File senses = new File(getFilesDir(), "senses.xml");
+        if (!senses.exists()) try {
+            InputStream src = getResources().openRawResource(R.raw.senses);
+            FileOutputStream fos = new FileOutputStream(senses);
+            int byt;
+            while ((byt = src.read()) > -1) fos.write(byt);
+            src.close();
+            fos.close();
+        } catch (IOException ignored) {
+        }
     }
 
     @Override
@@ -150,7 +169,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     }
 
 
-    private native long create(int width, int height, int sampleRate, int framesPerBuf);
+    private native long create(int width, int height);
 
     private native byte start();
 
