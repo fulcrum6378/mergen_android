@@ -53,7 +53,7 @@ private:
     AImageReader *reader_;
     ANativeWindow *mirror_;
     bool recording_{false};
-    int64_t count_{0};
+    int64_t count_{1};
 };
 
 #endif  // VIS_IMAGE_READER_H

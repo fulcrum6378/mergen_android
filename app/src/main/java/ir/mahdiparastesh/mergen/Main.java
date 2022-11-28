@@ -82,7 +82,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
                 preview.getSurfaceTexture(), preview.getWidth(), preview.getHeight());
 
         File senses = new File(getFilesDir(), "senses.xml");
-        if (!senses.exists()) try {
+        /*if (!senses.exists())*/ try {
             InputStream src = getResources().openRawResource(R.raw.senses);
             FileOutputStream fos = new FileOutputStream(senses);
             int byt;

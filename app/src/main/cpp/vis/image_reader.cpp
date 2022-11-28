@@ -37,32 +37,23 @@ ImageReader::~ImageReader() {
     AImageReader_delete(reader_);
 }
 
-/**
- * AImageReader_acquireNextImage is recommended for batch/background processing.
- * AImageReader_acquireLatestImage is recommended for real-time processing. (deletes all previous images)
- */
 void ImageReader::ImageCallback(AImageReader *reader) {
     AImage *image = nullptr;
-    /*media_status_t status = */AImageReader_acquireNextImage(reader, &image);
-    //ASSERT(status == AMEDIA_OK && image, "Image is not available")
-    count_++;
+    if (AImageReader_acquireNextImage(reader, &image) != AMEDIA_OK || !image) return;
 
     ANativeWindow_acquire(mirror_);
     ANativeWindow_Buffer buf;
-    if (ANativeWindow_lock(mirror_, &buf, nullptr) < 0) {
-        //DeleteImage(image);
-        //return;
+    if (ANativeWindow_lock(mirror_, &buf, nullptr) == 0) {
+        Mirror(&buf, image);
+        ANativeWindow_unlockAndPost(mirror_);
+        ANativeWindow_release(mirror_);
     }
-    Mirror(&buf, image);
-    ANativeWindow_unlockAndPost(mirror_);
-    ANativeWindow_release(mirror_);
 
-    if (!recording_) {
-        AImage_delete(image);
-        return;
+    if (!recording_) AImage_delete(image);
+    else {
+        count_++;
+        std::thread(&ImageReader::WriteFile,/* this,*/ image, count_).detach();
     }
-    std::thread writeFileHandler(&ImageReader::WriteFile,/* this,*/ image, count_);
-    writeFileHandler.detach();
 }
 
 void ImageReader::SetMirrorWindow(ANativeWindow *window) {

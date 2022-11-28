@@ -77,9 +77,11 @@ Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
     else onPreviewSurfaceDestroyed(env, ndkCameraObj, surface);
 }
 
-/* TO-DO:
+/* TODO:
   * Problems:
+  * Use the latest image for mirroring while saving all frames, so that the preview won't backward.
   *
   * Notes:
   * The idea of defining a JNI interface header sucks!
+  * Beware that AImageReader_acquireLatestImage deletes the previous images.
   */
