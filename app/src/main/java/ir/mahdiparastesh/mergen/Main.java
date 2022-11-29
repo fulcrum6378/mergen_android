@@ -72,9 +72,11 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
          * should use this value as a minimum, and offer the user the option to override it.
          * The low latency output stream is typically either the device's primary output stream,
          * or another output stream with smaller buffers.
+         * -
+         * Math.min(dm.widthPixels, dm.heightPixels) outputs 1080,
+         * but getMinimumCompatiblePreviewSize changes it to 720!
          */
         ndkCamera = create(w, h);
-        Toast.makeText(this, w + "x" + h, Toast.LENGTH_LONG).show();
 
         onRecordingStopped();
         preview.setSurfaceTextureListener(this); // don't make it in-line.
@@ -82,7 +84,8 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
                 preview.getSurfaceTexture(), preview.getWidth(), preview.getHeight());
 
         File senses = new File(getFilesDir(), "senses.xml");
-        /*if (!senses.exists())*/ try {
+        /*if (!senses.exists())*/
+        try {
             InputStream src = getResources().openRawResource(R.raw.senses);
             FileOutputStream fos = new FileOutputStream(senses);
             int byt;

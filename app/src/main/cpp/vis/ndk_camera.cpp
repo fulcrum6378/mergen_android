@@ -113,17 +113,16 @@ bool NDKCamera::MatchCaptureSizeRequest(
 
     for (uint32_t i = 0; i < entry.count; i += 4) {
         int32_t input = entry.data.i32[i + 3];
-        int32_t format = entry.data.i32[i + 0];
+        //int32_t format = entry.data.i32[i + 0];
         if (input) continue;
 
-        if (format == VIS_IMAGE_FORMAT) {
-            DisplayDimension res(entry.data.i32[i + 1], entry.data.i32[i + 2]);
-            if (!disp.IsSameRatio(res)) continue;
-            if (foundRes > res) {
-                foundIt = true;
-                foundRes = res;
-            }
-        }
+        //if (format == VIS_IMAGE_FORMAT) {
+        DisplayDimension res(entry.data.i32[i + 1], entry.data.i32[i + 2]);
+        if (!disp.IsSameRatio(res)) continue;
+        if (foundRes > res) {
+            foundIt = true;
+            foundRes = res;
+        } //}
     }
 
     if (foundIt) {

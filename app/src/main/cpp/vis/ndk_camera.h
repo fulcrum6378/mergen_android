@@ -7,7 +7,8 @@
 
 #include "utils.h"
 
-#define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888 // AIMAGE_FORMAT_JPEG
+#define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
+// together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone apparently!
 
 enum class CaptureSessionState : int32_t {
     READY = 0,  // session is ready

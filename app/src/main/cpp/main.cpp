@@ -84,4 +84,5 @@ Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
   * Notes:
   * The idea of defining a JNI interface header sucks!
   * Beware that AImageReader_acquireLatestImage deletes the previous images.
+  * Use AImage_getTimestamp().
   */
