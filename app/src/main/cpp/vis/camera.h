@@ -1,5 +1,5 @@
-#ifndef VIS_NDK_CAMERA_H
-#define VIS_NDK_CAMERA_H
+#ifndef VIS_CAMERA_H
+#define VIS_CAMERA_H
 
 #include <camera/NdkCameraDevice.h>
 #include <camera/NdkCameraManager.h>
@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "image_reader.h"
 #include "../global.h"
 
 enum class CaptureSessionState : int32_t {
@@ -19,8 +20,13 @@ enum class CaptureSessionState : int32_t {
 
 class CameraId;
 
-class NDKCamera {
+class Camera {
 private:
+    JNIEnv *env_;
+    jobject surface_;
+    ImageReader *reader_{};
+    std::pair<int32_t, int32_t> dimensions_;
+
     ACameraManager *cameraMgr_;
     std::map<std::string, CameraId> cameras_;
     std::string activeCameraId_;
@@ -34,7 +40,16 @@ private:
     ACameraCaptureSession *captureSession_;
     CaptureSessionState captureSessionState_;
 
-    // Private Listeners
+    void CreateSession(JNIEnv *env, jobject surface);
+
+    void EnumerateCamera(void);
+
+    bool MatchCaptureSizeRequest(std::pair<int32_t, int32_t> *dimen);
+
+    void StartPreview(bool start);
+
+
+    // listeners.cpp
     ACameraManager_AvailabilityCallbacks *GetManagerListener();
 
     ACameraDevice_stateCallbacks *GetDeviceListener();
@@ -42,21 +57,22 @@ private:
     ACameraCaptureSession_stateCallbacks *GetSessionListener();
 
 public:
-    NDKCamera();
+    Camera(JNIEnv *env, jint w, jint h);
 
-    ~NDKCamera();
+    ~Camera();
 
-    void EnumerateCamera(void);
+    const std::pair<int32_t, int32_t> &GetDimensions() const;
 
-    bool MatchCaptureSizeRequest(std::pair<int32_t, int32_t> *dimen);
+    void onPreviewSurfaceCreated(JNIEnv *env, jobject surface);
 
-    void CreateSession(ANativeWindow *window);
+    //int32_t GetCameraSensorOrientation(int32_t facing);
 
-    //bool GetSensorOrientation(int32_t *facing, int32_t *angle);
+    bool SetRecording(bool b);
 
-    void StartPreview(bool start);
+    void onPreviewSurfaceDestroyed(JNIEnv *env, jobject surface);
 
-    // Public Listeners
+
+    // listeners.cpp
     void OnDeviceState(ACameraDevice *dev);
 
     void OnDeviceError(ACameraDevice *dev, int err);
@@ -78,4 +94,4 @@ public:
     explicit CameraId(void) { CameraId(""); }
 };
 
-#endif //VIS_NDK_CAMERA_H
+#endif //VIS_CAMERA_H

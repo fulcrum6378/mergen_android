@@ -1,10 +1,12 @@
 #ifndef VIS_IMAGE_READER_H
 #define VIS_IMAGE_READER_H
 
+#include <media/NdkImage.h>
 #include <media/NdkImageReader.h>
 #include <utility>
 
-#include "../global.h"
+#define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
+// together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone apparently!
 
 #define MAX_BUF_COUNT 4 // max image buffers
 #define MIN(a, b)           \

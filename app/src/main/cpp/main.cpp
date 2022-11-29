@@ -1,12 +1,14 @@
 #include "aud/engine.h"
-#include "vis/streamer.cpp" // don't put these in namespace brackets like AUD or VIS
+#include "vis/camera.h"
 
 static AudioEngine *aud = nullptr;
+static Camera *vis = nullptr;
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject, jint w, jint h) {
     aud = new AudioEngine();
-    return createCamera(env, w, h);
+    vis = new Camera(env, w, h);
+    return reinterpret_cast<jlong>(vis);
 }
 
 extern "C" JNIEXPORT jbyte JNICALL
@@ -16,7 +18,9 @@ Java_ir_mahdiparastesh_mergen_Main_start(JNIEnv *, jobject) {
         if (!aud->StartRecording()) ret = 1;
     } else ret = 2;
     if (ret > 0) return ret;
-    ret = startStreaming();
+    if (vis) {
+        if (!vis->SetRecording(true)) ret = 3;
+    } else ret = 4;
     return ret;
 }
 
@@ -27,7 +31,9 @@ Java_ir_mahdiparastesh_mergen_Main_stop(JNIEnv *, jobject) {
         if (!aud->StopRecording()) ret = 1;
     } else ret = 2;
     if (ret > 0) return ret;
-    ret = stopStreaming();
+    if (vis) {
+        if (!vis->SetRecording(false)) ret = 3;
+    } else ret = 4;
     return ret;
 }
 
@@ -61,7 +67,7 @@ extern "C" JNIEXPORT jobject JNICALL
 Java_ir_mahdiparastesh_mergen_Main_getMinimumCompatiblePreviewSize(
         JNIEnv *env, jobject, jlong ndkCameraObj) {
     if (!ndkCameraObj) return nullptr;
-    auto *pApp = reinterpret_cast<CameraEngine *>(ndkCameraObj);
+    auto *pApp = reinterpret_cast<Camera *>(ndkCameraObj);
     jclass cls = env->FindClass("android/util/Size");
     jobject previewSize = env->NewObject(
             cls, env->GetMethodID(cls, "<init>", "(II)V"),
@@ -72,8 +78,19 @@ Java_ir_mahdiparastesh_mergen_Main_getMinimumCompatiblePreviewSize(
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
         JNIEnv *env, jobject, jboolean available, jlong ndkCameraObj, jobject surface) {
-    if (available) onPreviewSurfaceCreated(env, ndkCameraObj, surface);
-    else onPreviewSurfaceDestroyed(env, ndkCameraObj, surface);
+    auto *pApp = reinterpret_cast<Camera *>(ndkCameraObj);
+    ASSERT(ndkCameraObj && vis == pApp,
+           "%s", ("NativeObject should not be null Pointer: " +
+                  std::to_string(ndkCameraObj) + " == " +
+                  std::to_string(reinterpret_cast<jlong>(vis))).c_str())
+    if (available) pApp->onPreviewSurfaceCreated(env, surface);
+    else {
+        pApp->onPreviewSurfaceDestroyed(env, surface);
+
+        // Don't put these in Main.destroy()
+        delete pApp;
+        vis = nullptr; // also reset the private global object
+    }
 }
 
 /* TODO:

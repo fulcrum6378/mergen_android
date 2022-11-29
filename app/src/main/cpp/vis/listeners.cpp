@@ -1,7 +1,7 @@
-#include "ndk_camera.h"
+#include "camera.h"
 #include "../global.h"
 
-ACameraManager_AvailabilityCallbacks *NDKCamera::GetManagerListener() {
+ACameraManager_AvailabilityCallbacks *Camera::GetManagerListener() {
     static ACameraManager_AvailabilityCallbacks cameraMgrListener = {
             .context = this,
             .onCameraAvailable = nullptr,
@@ -11,14 +11,14 @@ ACameraManager_AvailabilityCallbacks *NDKCamera::GetManagerListener() {
 }
 
 void OnDeviceStateChanges(void *ctx, ACameraDevice *dev) {
-    reinterpret_cast<NDKCamera *>(ctx)->OnDeviceState(dev);
+    reinterpret_cast<Camera *>(ctx)->OnDeviceState(dev);
 }
 
 void OnDeviceErrorChanges(void *ctx, ACameraDevice *dev, int err) {
-    reinterpret_cast<NDKCamera *>(ctx)->OnDeviceError(dev, err);
+    reinterpret_cast<Camera *>(ctx)->OnDeviceError(dev, err);
 }
 
-ACameraDevice_stateCallbacks *NDKCamera::GetDeviceListener() {
+ACameraDevice_stateCallbacks *Camera::GetDeviceListener() {
     static ACameraDevice_stateCallbacks cameraDeviceListener = {
             .context = this,
             .onDisconnected = ::OnDeviceStateChanges,
@@ -27,7 +27,7 @@ ACameraDevice_stateCallbacks *NDKCamera::GetDeviceListener() {
     return &cameraDeviceListener;
 }
 
-void NDKCamera::OnDeviceState(ACameraDevice *dev) {
+void Camera::OnDeviceState(ACameraDevice *dev) {
     std::string id(ACameraDevice_getId(dev));
     LOGW("device %s is disconnected", id.c_str());
 
@@ -35,26 +35,26 @@ void NDKCamera::OnDeviceState(ACameraDevice *dev) {
     cameras_.erase(id);
 }
 
-void NDKCamera::OnDeviceError(ACameraDevice */*dev*/, int /*err*/) {
+void Camera::OnDeviceError(ACameraDevice */*dev*/, int /*err*/) {
 }
 
 // CaptureSession state callbacks
 void OnSessionClosed(void *ctx, ACameraCaptureSession *ses) {
     LOGW("session %p closed", ses);
-    reinterpret_cast<NDKCamera *>(ctx)->OnSessionState(ses, CaptureSessionState::CLOSED);
+    reinterpret_cast<Camera *>(ctx)->OnSessionState(ses, CaptureSessionState::CLOSED);
 }
 
 void OnSessionReady(void *ctx, ACameraCaptureSession *ses) {
     LOGW("session %p ready", ses);
-    reinterpret_cast<NDKCamera *>(ctx)->OnSessionState(ses, CaptureSessionState::READY);
+    reinterpret_cast<Camera *>(ctx)->OnSessionState(ses, CaptureSessionState::READY);
 }
 
 void OnSessionActive(void *ctx, ACameraCaptureSession *ses) {
     LOGW("session %p active", ses);
-    reinterpret_cast<NDKCamera *>(ctx)->OnSessionState(ses, CaptureSessionState::ACTIVE);
+    reinterpret_cast<Camera *>(ctx)->OnSessionState(ses, CaptureSessionState::ACTIVE);
 }
 
-ACameraCaptureSession_stateCallbacks *NDKCamera::GetSessionListener() {
+ACameraCaptureSession_stateCallbacks *Camera::GetSessionListener() {
     static ACameraCaptureSession_stateCallbacks sessionListener = {
             .context = this,
             .onClosed = ::OnSessionClosed,
@@ -68,7 +68,7 @@ ACameraCaptureSession_stateCallbacks *NDKCamera::GetSessionListener() {
  * Handles capture session state changes.
  *   Update into internal session state.
  */
-void NDKCamera::OnSessionState(ACameraCaptureSession *ses, CaptureSessionState state) {
+void Camera::OnSessionState(ACameraCaptureSession *ses, CaptureSessionState state) {
     if (!ses || ses != captureSession_) {
         LOGW("CaptureSession is %s", (ses ? "NOT our session" : "NULL"));
         return;
