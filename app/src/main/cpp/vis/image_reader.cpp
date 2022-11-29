@@ -2,7 +2,7 @@
 #include <thread>
 
 #include "image_reader.h"
-#include "../otr/debug.h"
+#include "../global.h"
 
 static const char *path = "/data/data/ir.mahdiparastesh.mergen/files/vis/";
 
@@ -10,9 +10,9 @@ void OnImageCallback(void *ctx, AImageReader *reader) {
     reinterpret_cast<ImageReader *>(ctx)->ImageCallback(reader);
 }
 
-ImageReader::ImageReader(ImageFormat *format) : reader_(nullptr), mirror_(nullptr) {
+ImageReader::ImageReader(std::pair<int32_t, int32_t> *dimen) : reader_(nullptr), mirror_(nullptr) {
     media_status_t status = AImageReader_new(
-            format->width, format->height, format->format,
+            dimen->first, dimen->second, VIS_IMAGE_FORMAT,
             MAX_BUF_COUNT, &reader_);
     ASSERT(reader_ && status == AMEDIA_OK, "Failed to create AImageReader")
 

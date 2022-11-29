@@ -3,21 +3,16 @@
 #include <cstring>
 
 #include "camera_engine.h"
-#include "../otr/debug.h"
+#include "../global.h"
 
 CameraEngine::CameraEngine(JNIEnv *env, jint w, jint h)
-        : env_(env),
-          surface_(nullptr),
-          camera_(nullptr) {
+        : env_(env), surface_(nullptr), camera_(nullptr) {
     camera_ = new NDKCamera();
     ASSERT(camera_, "Failed to create CameraObject")
 
-    imageFormat = ImageFormat{0, 0, VIS_IMAGE_FORMAT};
-    camera_->MatchCaptureSizeRequest(w, h, &imageFormat);
-    ASSERT(imageFormat.width && imageFormat.height, "Could not find supportable resolution")
-
-    reader_ = new ImageReader(&imageFormat);
-    camera_->MatchCaptureSizeRequest(w, h, &imageFormat);
+    dimensions_ = std::pair<int32_t, int32_t>(w, h);
+    camera_->MatchCaptureSizeRequest(&dimensions_);
+    reader_ = new ImageReader(&dimensions_);
 }
 
 CameraEngine::~CameraEngine() {
@@ -25,12 +20,10 @@ CameraEngine::~CameraEngine() {
         delete camera_;
         camera_ = nullptr;
     }
-
     if (reader_) {
         delete reader_;
         reader_ = nullptr;
     }
-
     if (surface_) {
         env_->DeleteGlobalRef(surface_);
         surface_ = nullptr;
@@ -58,8 +51,8 @@ bool CameraEngine::SetRecording(bool b) {
 
 jobject CameraEngine::GetSurfaceObject() { return surface_; }
 
-const ImageFormat &CameraEngine::GetCompatibleCameraRes() const {
-    return imageFormat;
+const std::pair<int32_t, int32_t> &CameraEngine::GetDimensions() const {
+    return dimensions_;
 }
 
 /*int CameraEngine::GetCameraSensorOrientation(int32_t requestFacing) {

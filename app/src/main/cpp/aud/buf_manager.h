@@ -4,7 +4,7 @@
 #include <cassert>
 #include <memory>
 
-#include "../otr/debug.h"
+#include "../global.h"
 
 #define CACHE_ALIGN 64
 

@@ -65,8 +65,7 @@ Java_ir_mahdiparastesh_mergen_Main_getMinimumCompatiblePreviewSize(
     jclass cls = env->FindClass("android/util/Size");
     jobject previewSize = env->NewObject(
             cls, env->GetMethodID(cls, "<init>", "(II)V"),
-            pApp->GetCompatibleCameraRes().width,
-            pApp->GetCompatibleCameraRes().height);
+            pApp->GetDimensions().first, pApp->GetDimensions().second);
     return previewSize;
 }
 
@@ -85,4 +84,5 @@ Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
   * The idea of defining a JNI interface header sucks!
   * Beware that AImageReader_acquireLatestImage deletes the previous images.
   * Use AImage_getTimestamp().
+  * ACAMERA_LENS_FACING_BACK
   */

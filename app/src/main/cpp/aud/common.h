@@ -3,7 +3,7 @@
 
 #include <SLES/OpenSLES_Android.h>
 
-#include "../otr/debug.h" // do not include "recorder.h" here!
+#include "../global.h" // do not include "recorder.h" here!
 
 // Audio Sample Controls
 #define SAMPLE_RATE 48000000 // millihertz

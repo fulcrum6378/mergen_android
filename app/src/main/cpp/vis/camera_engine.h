@@ -16,7 +16,7 @@ public:
 
     bool SetRecording(bool b);
 
-    const ImageFormat &GetCompatibleCameraRes() const;
+    const std::pair<int32_t, int32_t> &GetDimensions() const;
 
     //int32_t GetCameraSensorOrientation(int32_t facing);
 
@@ -27,7 +27,7 @@ private:
     jobject surface_;
     NDKCamera *camera_;
     ImageReader *reader_{};
-    ImageFormat imageFormat{};
+    std::pair<int32_t, int32_t> dimensions_;
 };
 
 #endif //VIS_CAMERA_ENGINE_H

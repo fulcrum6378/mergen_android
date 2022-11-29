@@ -2,8 +2,9 @@
 #define VIS_IMAGE_READER_H
 
 #include <media/NdkImageReader.h>
+#include <utility>
 
-#include "utils.h"
+#include "../global.h"
 
 #define MAX_BUF_COUNT 4 // max image buffers
 #define MIN(a, b)           \
@@ -21,7 +22,7 @@
 
 class ImageReader {
 public:
-    explicit ImageReader(ImageFormat *format);
+    explicit ImageReader(std::pair<int32_t, int32_t> *dimen);
 
     ~ImageReader();
 

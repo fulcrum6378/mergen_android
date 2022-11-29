@@ -1,17 +1,16 @@
 #include <android/native_window_jni.h>
 
 #include "ndk_camera.h"
-#include "../otr/debug.h"
+#include "../global.h"
 
 NDKCamera::NDKCamera()
         : cameraMgr_(nullptr),
-        // cameraFacing_(ACAMERA_LENS_FACING_BACK),
-        // cameraOrientation_(0),
           window_(nullptr),
           sessionOutput_(nullptr),
           target_(nullptr),
           request_(nullptr),
           outputContainer_(nullptr),
+          captureSession_(nullptr),
           captureSessionState_(CaptureSessionState::MAX_STATE) {
     cameras_.clear();
     cameraMgr_ = ACameraManager_create();
@@ -22,144 +21,16 @@ NDKCamera::NDKCamera()
     ASSERT(!activeCameraId_.empty(), "Unknown ActiveCameraIdx")
 
     // Create back facing camera device
-    CALL_MGR(openCamera(cameraMgr_, activeCameraId_.c_str(), GetDeviceListener(),
-                        &cameras_[activeCameraId_].device_))
+    ACameraManager_openCamera(cameraMgr_, activeCameraId_.c_str(),
+                              GetDeviceListener(), &cameras_[activeCameraId_].device_);
 
-    CALL_MGR(registerAvailabilityCallback(cameraMgr_, GetManagerListener()))
+    ACameraManager_registerAvailabilityCallback(cameraMgr_, GetManagerListener());
 
     // Initialize camera controls(exposure time and sensitivity), pick
     // up value of 2% * range + min as starting value (just a number, no magic)
     ACameraMetadata *metadataObj;
-    CALL_MGR(getCameraCharacteristics(cameraMgr_, activeCameraId_.c_str(),
-                                      &metadataObj))
-}
-
-/**
- * A helper class to assist image size comparison, by comparing the absolute size
- * regardless of the portrait or landscape mode.
- */
-class DisplayDimension {
-public:
-    DisplayDimension(int32_t w, int32_t h) : w_(w), h_(h), portrait_(false) {
-        if (h > w) {
-            // make it landscape
-            w_ = h;
-            h_ = w;
-            portrait_ = true;
-        }
-    }
-
-    DisplayDimension(const DisplayDimension &other) {
-        w_ = other.w_;
-        h_ = other.h_;
-        portrait_ = other.portrait_;
-    }
-
-    DisplayDimension() {
-        w_ = 0;
-        h_ = 0;
-        portrait_ = false;
-    }
-
-    DisplayDimension &operator=(const DisplayDimension &other) = default;
-
-    bool IsSameRatio(DisplayDimension &other) const {
-        return (w_ * other.h_ == h_ * other.w_);
-    }
-
-    bool operator>(DisplayDimension &other) const {
-        return (w_ >= other.w_ & h_ >= other.h_);
-    }
-
-    bool operator==(DisplayDimension &other) const {
-        return (w_ == other.w_ && h_ == other.h_ && portrait_ == other.portrait_);
-    }
-
-    DisplayDimension operator-(DisplayDimension &other) const {
-        DisplayDimension delta(w_ - other.w_, h_ - other.h_);
-        return delta;
-    }
-
-    //void Flip() { portrait_ = !portrait_; }
-
-    bool IsPortrait() const { return portrait_; }
-
-    //int32_t width() const { return w_; }
-
-    //int32_t height() const { return h_; }
-
-    int32_t org_width() { return (portrait_ ? h_ : w_); }
-
-    int32_t org_height() { return (portrait_ ? w_ : h_); }
-
-private:
-    int32_t w_, h_;
-    bool portrait_;
-};
-
-bool NDKCamera::MatchCaptureSizeRequest(
-        int32_t requestWidth, int32_t requestHeight, ImageFormat *resView) {
-    DisplayDimension disp(requestWidth, requestHeight);
-    //if (cameraOrientation_ == 90 || cameraOrientation_ == 270) disp.Flip();
-    ACameraMetadata *metadata;
-    CALL_MGR(getCameraCharacteristics(
-            cameraMgr_, activeCameraId_.c_str(), &metadata))
-    ACameraMetadata_const_entry entry;
-    CALL_METADATA(getConstEntry(
-            metadata, ACAMERA_SCALER_AVAILABLE_STREAM_CONFIGURATIONS, &entry))
-    // format of the data: format, width, height, input?, type int32
-    bool foundIt = false;
-    DisplayDimension foundRes(4000, 4000);
-
-    for (uint32_t i = 0; i < entry.count; i += 4) {
-        int32_t input = entry.data.i32[i + 3];
-        //int32_t format = entry.data.i32[i + 0];
-        if (input) continue;
-
-        //if (format == VIS_IMAGE_FORMAT) {
-        DisplayDimension res(entry.data.i32[i + 1], entry.data.i32[i + 2]);
-        if (!disp.IsSameRatio(res)) continue;
-        if (foundRes > res) {
-            foundIt = true;
-            foundRes = res;
-        } //}
-    }
-
-    if (foundIt) {
-        resView->width = foundRes.org_width();
-        resView->height = foundRes.org_height();
-    } else {
-        LOGW("Did not find any compatible camera resolution, taking 640x480");
-        if (disp.IsPortrait()) {
-            resView->width = 480;
-            resView->height = 640;
-        } else {
-            resView->width = 640;
-            resView->height = 480;
-        }
-    }
-    return foundIt;
-}
-
-void NDKCamera::CreateSession(ANativeWindow *window) {
-    window_ = window;
-
-    CALL_CONTAINER(create(&outputContainer_))
-    if (window_) {
-        ANativeWindow_acquire(window_);
-        CALL_OUTPUT(create(window_, &sessionOutput_))
-        CALL_CONTAINER(add(outputContainer_, sessionOutput_))
-        CALL_TARGET(create(window_, &target_))
-        CALL_DEV(createCaptureRequest(cameras_[activeCameraId_].device_,
-                                      TEMPLATE_PREVIEW, &request_))
-        CALL_REQUEST(addTarget(request_, target_))
-    }
-
-    // Create a capture session for the given preview request
-    captureSessionState_ = CaptureSessionState::READY;
-    CALL_DEV(createCaptureSession(cameras_[activeCameraId_].device_,
-                                  outputContainer_, GetSessionListener(),
-                                  &captureSession_))
+    ACameraManager_getCameraCharacteristics(cameraMgr_, activeCameraId_.c_str(),
+                                      &metadataObj);
 }
 
 NDKCamera::~NDKCamera() {
@@ -169,11 +40,11 @@ NDKCamera::~NDKCamera() {
     ACameraCaptureSession_close(captureSession_);
 
     if (window_) {
-        CALL_REQUEST(removeTarget(request_, target_))
+        ACaptureRequest_removeTarget(request_, target_);
         ACaptureRequest_free(request_);
         ACameraOutputTarget_free(target_);
 
-        CALL_CONTAINER(remove(outputContainer_, sessionOutput_))
+        ACaptureSessionOutputContainer_remove(outputContainer_, sessionOutput_);
         ACaptureSessionOutput_free(sessionOutput_);
 
         ANativeWindow_release(window_);
@@ -181,13 +52,42 @@ NDKCamera::~NDKCamera() {
     ACaptureSessionOutputContainer_free(outputContainer_);
 
     for (auto &cam: cameras_)
-        if (cam.second.device_) CALL_DEV(close(cam.second.device_))
+        if (cam.second.device_) ACameraDevice_close(cam.second.device_);
     cameras_.clear();
     if (cameraMgr_) {
-        CALL_MGR(unregisterAvailabilityCallback(cameraMgr_, GetManagerListener()))
+        ACameraManager_unregisterAvailabilityCallback(cameraMgr_, GetManagerListener());
         ACameraManager_delete(cameraMgr_);
         cameraMgr_ = nullptr;
     }
+}
+
+bool NDKCamera::MatchCaptureSizeRequest(std::pair<int32_t, int32_t> *dimen) {
+    ACameraMetadata *metadata;
+    ACameraManager_getCameraCharacteristics(
+            cameraMgr_, activeCameraId_.c_str(), &metadata);
+    ACameraMetadata_const_entry entry;
+    ACameraMetadata_getConstEntry(
+            metadata, ACAMERA_SCALER_AVAILABLE_STREAM_CONFIGURATIONS, &entry);
+    // format of the data: format, width, height, input?, type int32
+    bool foundIt = false;
+    std::pair<int32_t, int32_t> ultimate(720, 720);
+
+    for (uint32_t i = 0; i < entry.count; i += 4) {
+        int32_t input = entry.data.i32[i + 3];
+        int32_t format = entry.data.i32[i + 0];
+        if (input || format != VIS_IMAGE_FORMAT) continue;
+
+        std::pair<int32_t, int32_t> ent(entry.data.i32[i + 1], entry.data.i32[i + 2]);
+        if (dimen->first * ent.second != dimen->second * ent.first) continue; // is the same ratio
+        if (ultimate.first >= ent.first & ultimate.second >= ent.second) {
+            foundIt = true;
+            ultimate = ent;
+        }
+    }
+    if (!foundIt) LOGW("Did not find any compatible camera resolution, taking 720x720");
+
+    *dimen = ultimate;
+    return foundIt;
 }
 
 /**
@@ -197,13 +97,13 @@ NDKCamera::~NDKCamera() {
  */
 void NDKCamera::EnumerateCamera() {
     ACameraIdList *cameraIds = nullptr;
-    CALL_MGR(getCameraIdList(cameraMgr_, &cameraIds))
+    ACameraManager_getCameraIdList(cameraMgr_, &cameraIds);
 
     for (int i = 0; i < cameraIds->numCameras; ++i) {
         const char *id = cameraIds->cameraIds[i];
 
         ACameraMetadata *metadataObj;
-        CALL_MGR(getCameraCharacteristics(cameraMgr_, id, &metadataObj))
+        ACameraManager_getCameraCharacteristics(cameraMgr_, id, &metadataObj);
 
         int32_t count = 0;
         const uint32_t *tags = nullptr;
@@ -211,7 +111,7 @@ void NDKCamera::EnumerateCamera() {
         for (int tagIdx = 0; tagIdx < count; ++tagIdx)
             if (ACAMERA_LENS_FACING == tags[tagIdx]) {
                 ACameraMetadata_const_entry lensInfo = {0};
-                CALL_METADATA(getConstEntry(metadataObj, tags[tagIdx], &lensInfo))
+                ACameraMetadata_getConstEntry(metadataObj, tags[tagIdx], &lensInfo);
                 CameraId cam(id);
                 cam.facing_ = static_cast<acamera_metadata_enum_android_lens_facing_t>(
                         lensInfo.data.u8[0]);
@@ -230,6 +130,27 @@ void NDKCamera::EnumerateCamera() {
         activeCameraId_ = cameras_.begin()->second.id_;
     }
     ACameraManager_deleteCameraIdList(cameraIds);
+}
+
+void NDKCamera::CreateSession(ANativeWindow *window) {
+    window_ = window;
+
+    ACaptureSessionOutputContainer_create(&outputContainer_);
+    if (window_) {
+        ANativeWindow_acquire(window_);
+        ACaptureSessionOutput_create(window_, &sessionOutput_);
+        ACaptureSessionOutputContainer_add(outputContainer_, sessionOutput_);
+        ACameraOutputTarget_create(window_, &target_);
+        ACameraDevice_createCaptureRequest(cameras_[activeCameraId_].device_,
+                                           TEMPLATE_PREVIEW, &request_);
+        ACaptureRequest_addTarget(request_, target_);
+    }
+
+    // Create a capture session for the given preview request
+    captureSessionState_ = CaptureSessionState::READY;
+    ACameraDevice_createCaptureSession(cameras_[activeCameraId_].device_,
+                                       outputContainer_, GetSessionListener(),
+                                       &captureSession_);
 }
 
 /**
@@ -263,9 +184,10 @@ void NDKCamera::EnumerateCamera() {
 
 // Toggle preview start/stop
 void NDKCamera::StartPreview(bool start) {
-    if (start) CALL_SESSION(setRepeatingRequest(
-            captureSession_, nullptr, 1,
-            &request_, nullptr))
+    if (start)
+        ACameraCaptureSession_setRepeatingRequest(
+                captureSession_, nullptr, 1,
+                &request_, nullptr);
     else if (captureSessionState_ == CaptureSessionState::ACTIVE)
         ACameraCaptureSession_stopRepeating(captureSession_);
 }
