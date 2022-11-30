@@ -1,13 +1,16 @@
 #include <android/native_window_jni.h>
 
 #include "aud/engine.h"
+#include "mem/queuer.h"
 #include "vis/camera.h"
 
 static AudioEngine *aud = nullptr;
 static Camera *vis = nullptr;
+static Queuer *mem = nullptr;
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *, jobject, jint w, jint h) {
+    mem = new Queuer();
     aud = new AudioEngine();
     vis = new Camera(w, h);
     return reinterpret_cast<jlong>(vis);
@@ -42,6 +45,8 @@ Java_ir_mahdiparastesh_mergen_Main_stop(JNIEnv *, jobject) {
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
     aud = nullptr;
+    delete &mem;
+    mem = nullptr;
 }
 
 
