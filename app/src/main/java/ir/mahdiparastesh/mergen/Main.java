@@ -102,7 +102,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         surfaceTexture.setDefaultBufferSize(
                 cameraPreviewSize.getWidth(), cameraPreviewSize.getHeight());
         surface = new Surface(surfaceTexture);
-        onSurfaceStatusChanged(true, ndkCamera, surface);
+        onSurfaceStatusChanged(ndkCamera, surface, true);
         preview.setClickable(true);
     }
 
@@ -118,7 +118,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
         preview.setClickable(false);
         recording(false);
-        onSurfaceStatusChanged(false, ndkCamera, surface);
+        onSurfaceStatusChanged(ndkCamera, surface, false);
         ndkCamera = 0;
         surface = null;
         return true;
@@ -142,6 +142,12 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
 
     private void onRecordingStarted() {
         preview.setOnClickListener(null);
+        /*preview.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return false;
+            }
+        });*/
     }
 
     private void onRecordingStopped() {
@@ -181,9 +187,9 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
 
     private native String test();
 
-    private native Size getMinimumCompatiblePreviewSize(long ndkCamera);
+    private native Size getMinimumCompatiblePreviewSize(long cameraObj);
 
-    private native void onSurfaceStatusChanged(boolean available, long ndkCamera, Surface surface);
+    private native void onSurfaceStatusChanged(long cameraObj, Surface surface, boolean available);
 
     static {
         System.loadLibrary("main");

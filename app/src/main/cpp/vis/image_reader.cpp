@@ -37,6 +37,7 @@ ImageReader::~ImageReader() {
     AImageReader_delete(reader_);
 }
 
+// called when a frame is captured
 void ImageReader::ImageCallback(AImageReader *reader) {
     AImage *image = nullptr;
     if (AImageReader_acquireNextImage(reader, &image) != AMEDIA_OK || !image) return;
@@ -109,6 +110,16 @@ static inline uint32_t YUV2RGB(int nY, int nU, int nV) {
 }
 
 /**
+ * Present camera image to the given display buffer. Avaliable image is converted
+ *   to display buffer format. Supported display format:
+ *      WINDOW_FORMAT_RGBX_8888
+ *      WINDOW_FORMAT_RGBA_8888
+ *   @param buf {@link ANativeWindow_Buffer} for image to display to.
+ *   @param image a {@link AImage} instance, source of image conversion.
+ *            it will be deleted via {@link AImage_delete}
+ *   @return true on success, false on failure
+ *   https://mathbits.com/MathBits/TISection/Geometry/Transformations2.htm
+ *
  * Show the image with 90 degrees rotation.
  * MUST BE:
  * buf->format == WINDOW_FORMAT_RGBX_8888 || buf->format == WINDOW_FORMAT_RGBA_8888

@@ -86,10 +86,8 @@ void AudioRecorder::SetBufQueues() {
 }
 
 bool AudioRecorder::Start() {
-    if (!freeQueue_ || !recQueue_ || !devShadowQueue_) {
-        LOGE("====NULL poiter to Start(%p, %p, %p)", freeQueue_, recQueue_, devShadowQueue_);
-        return false;
-    }
+    ASSERT(freeQueue_ && recQueue_ && devShadowQueue_, "Some of the queues are NULL: (%p, %p, %p)",
+           freeQueue_, recQueue_, devShadowQueue_)
     audioBufCount = 0;
 
     SLresult result;

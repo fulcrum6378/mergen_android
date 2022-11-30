@@ -5,8 +5,8 @@
 #include <media/NdkImageReader.h>
 #include <utility>
 
-#define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
 // together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone apparently!
+#define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
 
 #define MAX_BUF_COUNT 4 // max image buffers
 #define MIN(a, b)           \
@@ -32,20 +32,8 @@ public:
 
     ANativeWindow *GetNativeWindow(void);
 
-    // called when a frame is captured
     void ImageCallback(AImageReader *reader);
 
-    /**
-     * Present camera image to the given display buffer. Avaliable image is converted
-     *   to display buffer format. Supported display format:
-     *      WINDOW_FORMAT_RGBX_8888
-     *      WINDOW_FORMAT_RGBA_8888
-     *   @param buf {@link ANativeWindow_Buffer} for image to display to.
-     *   @param image a {@link AImage} instance, source of image conversion.
-     *            it will be deleted via {@link AImage_delete}
-     *   @return true on success, false on failure
-     *   https://mathbits.com/MathBits/TISection/Geometry/Transformations2.htm
-     */
     static bool Mirror(ANativeWindow_Buffer *buf, AImage *image);
 
     bool SetRecording(bool b);

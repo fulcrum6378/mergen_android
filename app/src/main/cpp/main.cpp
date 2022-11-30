@@ -44,6 +44,7 @@ Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
     aud = nullptr;
 }
 
+
 extern "C" JNIEXPORT jstring JNICALL
 Java_ir_mahdiparastesh_mergen_Main_test(JNIEnv */*env*/, jobject) {
     /*#include <chrono>
@@ -67,9 +68,9 @@ Java_ir_mahdiparastesh_mergen_Main_test(JNIEnv */*env*/, jobject) {
  */
 extern "C" JNIEXPORT jobject JNICALL
 Java_ir_mahdiparastesh_mergen_Main_getMinimumCompatiblePreviewSize(
-        JNIEnv *env, jobject, jlong ndkCameraObj) {
-    if (!ndkCameraObj) return nullptr;
-    auto *pApp = reinterpret_cast<Camera *>(ndkCameraObj);
+        JNIEnv *env, jobject, jlong cameraObj) {
+    if (!cameraObj) return nullptr;
+    auto *pApp = reinterpret_cast<Camera *>(cameraObj);
     jclass cls = env->FindClass("android/util/Size");
     jobject previewSize = env->NewObject(
             cls, env->GetMethodID(cls, "<init>", "(II)V"),
@@ -79,12 +80,9 @@ Java_ir_mahdiparastesh_mergen_Main_getMinimumCompatiblePreviewSize(
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
-        JNIEnv *env, jobject, jboolean available, jlong ndkCameraObj, jobject surface) {
-    auto *cam = reinterpret_cast<Camera *>(ndkCameraObj);
-    ASSERT(ndkCameraObj && vis == cam,
-           "%s", ("NativeObject should not be null Pointer: " +
-                  std::to_string(ndkCameraObj) + " == " +
-                  std::to_string(reinterpret_cast<jlong>(vis))).c_str())
+        JNIEnv *env, jobject, jlong cameraObj, jobject surface, jboolean available) {
+    auto *cam = reinterpret_cast<Camera *>(cameraObj);
+    assert(cam == vis);
     if (available) cam->CreateSession(ANativeWindow_fromSurface(env, surface));
     else { // don't put these in Main.destroy()
         delete cam;
