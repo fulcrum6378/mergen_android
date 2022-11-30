@@ -144,7 +144,7 @@ void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq) {
     devShadowQueue_->pop();
 
     if (buf != &silentBuf_) {
-        test.write((char *) buf->buf_, buf->size_);
+        test.write((char *) buf->buf_, buf->size_); // TODO MEM
 
         buf->size_ = 0;
         freeQueue_->push(buf);

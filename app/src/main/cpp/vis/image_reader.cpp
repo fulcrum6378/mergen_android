@@ -6,10 +6,6 @@
 
 static const char *path = "/data/data/ir.mahdiparastesh.mergen/files/vis/";
 
-void OnImageCallback(void *ctx, AImageReader *reader) {
-    reinterpret_cast<ImageReader *>(ctx)->ImageCallback(reader);
-}
-
 ImageReader::ImageReader(std::pair<int32_t, int32_t> *dimen) : reader_(nullptr), mirror_(nullptr) {
     media_status_t status = AImageReader_new(
             dimen->first, dimen->second, VIS_IMAGE_FORMAT,
@@ -27,14 +23,11 @@ ImageReader::ImageReader(std::pair<int32_t, int32_t> *dimen) : reader_(nullptr),
 
     AImageReader_ImageListener listener{
             .context = this,
-            .onImageAvailable = OnImageCallback,
+            .onImageAvailable = [](void *ctx, AImageReader *reader) {
+                reinterpret_cast<ImageReader *>(ctx)->ImageCallback(reader);
+            },
     };
     AImageReader_setImageListener(reader_, &listener);
-}
-
-ImageReader::~ImageReader() {
-    ASSERT(reader_, "NULL Pointer to %s", __FUNCTION__)
-    AImageReader_delete(reader_);
 }
 
 // called when a frame is captured
@@ -178,10 +171,15 @@ void ImageReader::WriteFile(AImage *image, int64_t i) {
     std::string fileName = path + std::to_string(i) + ".yuv";
     FILE *file = fopen(fileName.c_str(), "wb");
     if (file && data && len) {
-        fwrite(data, 1, len, file);
+        fwrite(data, 1, len, file); // TODO MEM
         fclose(file);
     } else {
         if (file) fclose(file);
     }
     AImage_delete(image);
+}
+
+ImageReader::~ImageReader() {
+    ASSERT(reader_, "NULL Pointer to %s", __FUNCTION__)
+    AImageReader_delete(reader_);
 }

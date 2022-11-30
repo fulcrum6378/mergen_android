@@ -26,8 +26,6 @@ class ImageReader {
 public:
     explicit ImageReader(std::pair<int32_t, int32_t> *dimen);
 
-    ~ImageReader();
-
     void SetMirrorWindow(ANativeWindow *window);
 
     ANativeWindow *GetNativeWindow(void);
@@ -39,6 +37,8 @@ public:
     bool SetRecording(bool b);
 
     static void WriteFile(AImage *image, int64_t i);
+
+    ~ImageReader();
 
 private:
     AImageReader *reader_;
