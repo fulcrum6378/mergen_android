@@ -137,29 +137,6 @@ bool Camera::MatchCaptureSizeRequest(std::pair<int32_t, int32_t> *dimen) {
     return foundIt;
 }
 
-void Camera::CreateSession(ANativeWindow *window) {
-    ASSERT(reader_, "reader_ is NULL!")
-    reader_->SetMirrorWindow(window);
-    window_ = reader_->GetNativeWindow();
-
-    ACaptureSessionOutputContainer_create(&outputContainer_);
-    ANativeWindow_acquire(window_);
-    ACaptureSessionOutput_create(window_, &sessionOutput_);
-    ACaptureSessionOutputContainer_add(outputContainer_, sessionOutput_);
-    ACameraOutputTarget_create(window_, &target_);
-    ACameraDevice_createCaptureRequest(cameras_[activeCameraId_].device_,
-                                       TEMPLATE_PREVIEW, &request_);
-    ACaptureRequest_addTarget(request_, target_);
-
-    // Create a capture session for the given preview request
-    captureSessionState_ = CaptureSessionState::READY;
-    ACameraDevice_createCaptureSession(
-            cameras_[activeCameraId_].device_, outputContainer_,
-            &sessionListener, &captureSession_);
-
-    StartPreview(true);
-}
-
 /**
  * GetSensorOrientation()
  *     Retrieve current sensor orientation regarding to the phone device
@@ -186,6 +163,29 @@ void Camera::CreateSession(ANativeWindow *window) {
     if (facing == requestFacing) return angle;
     ASSERT(false, "Failed for GetSensorOrientation()")
 }*/
+
+void Camera::CreateSession(ANativeWindow *window) {
+    ASSERT(reader_, "reader_ is NULL!")
+    reader_->SetMirrorWindow(window);
+    window_ = reader_->GetNativeWindow();
+
+    ACaptureSessionOutputContainer_create(&outputContainer_);
+    ANativeWindow_acquire(window_);
+    ACaptureSessionOutput_create(window_, &sessionOutput_);
+    ACaptureSessionOutputContainer_add(outputContainer_, sessionOutput_);
+    ACameraOutputTarget_create(window_, &target_);
+    ACameraDevice_createCaptureRequest(cameras_[activeCameraId_].device_,
+                                       TEMPLATE_PREVIEW, &request_);
+    ACaptureRequest_addTarget(request_, target_);
+
+    // Create a capture session for the given preview request
+    captureSessionState_ = CaptureSessionState::READY;
+    ACameraDevice_createCaptureSession(
+            cameras_[activeCameraId_].device_, outputContainer_,
+            &sessionListener, &captureSession_);
+
+    StartPreview(true);
+}
 
 void Camera::StartPreview(bool start) {
     if (start)

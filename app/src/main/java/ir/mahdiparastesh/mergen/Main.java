@@ -142,7 +142,6 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
 
     private void onRecordingStarted() {
         preview.setOnClickListener(null);
-        // TODO OnTouchListener isn't the answer!
     }
 
     private void onRecordingStopped() {

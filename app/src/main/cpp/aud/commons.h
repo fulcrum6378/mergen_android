@@ -1,16 +1,44 @@
-#ifndef AUD_BUF_MANAGER_H
-#define AUD_BUF_MANAGER_H
+#ifndef AUD_COMMONS_H
+#define AUD_COMMONS_H
 
 #include <cassert>
 #include <memory>
+#include <SLES/OpenSLES_Android.h>
 
-#include "../global.h"
+#include "../global.h" // do not include "recorder.h" here!
+
+// Audio Sample Controls
+#define SAMPLE_RATE 48000000 // millihertz
+#define FRAMES_PER_BUF 192
+#define AUDIO_SAMPLE_CHANNELS 1
+#define BITS_PER_SAMPLE SL_PCMSAMPLEFORMAT_FIXED_16
+
+// Sample Buffer Controls
+#define RECORD_DEVICE_KICKSTART_BUF_COUNT 2
+#define PLAY_KICKSTART_BUFFER_COUNT 3
+#define DEVICE_SHADOW_BUFFER_QUEUE_LEN 4
+#define BUF_COUNT 16
+
+struct SampleFormat {
+    uint32_t sampleRate_;
+    uint32_t framesPerBuf_;
+    uint16_t pcmFormat_;  // 8 bit, 16 bit, 24 bit ...
+    uint32_t representation_;  // android extensions
+};
+
+void ConvertToSLSampleFormat(SLAndroidDataFormat_PCM_EX *pFormat, SampleFormat *format);
+
+#define SLASSERT(x)                   \
+  do {                                \
+    assert(SL_RESULT_SUCCESS == (x)); \
+    (void)(x);                        \
+  } while (0)
+
 
 #define CACHE_ALIGN 64
 
-// ProducerConsumerQueue, borrowed from Ian NiLewis
 template<typename T>
-class ProducerConsumerQueue {
+class ProducerConsumerQueue { // borrowed from Ian NiLewis
 public:
     explicit ProducerConsumerQueue(uint32_t size)
             : ProducerConsumerQueue(size, new T[size]) {}
@@ -27,39 +55,6 @@ public:
             *ptr = item;
             return true;
         });
-    }
-
-    // get() is idempotent between calls to commit().
-    T *getWriteablePtr() {
-        T *result = nullptr;
-
-        bool check __attribute__((unused));  //= false;
-
-        check = push([&](T *head) -> bool {
-            result = head;
-            return false;  // don't increment
-        });
-
-        // if there's no space, result should not have been set, and vice versa
-        assert(check == (result != nullptr));
-
-        return result;
-    }
-
-    bool commitWriteablePtr(T *ptr) {
-        bool result = push([&](T *head) -> bool {
-            // this writer func does nothing, because we assume that the caller
-            // has already written to *ptr after acquiring it from a call to get().
-            // So just double-check that ptr is actually at the write head, and
-            // return true to indicate that it's safe to advance.
-
-            // if this isn't the same pointer we got from a call to get(), then
-            // something has gone terribly wrong. Either there was an intervening
-            // call to push() or commit(), or the pointer is spurious.
-            assert(ptr == head);
-            return true;
-        });
-        return result;
     }
 
     // writer() can return false, which indicates that the caller
@@ -142,8 +137,6 @@ struct sample_buf {
     uint32_t size_;  // audio sample size (n buf) in byte
 };
 
-using AudioQueue = ProducerConsumerQueue<sample_buf *>;
-
 __inline__ void releaseSampleBufs(sample_buf *bufs, uint32_t &count) {
     if (!bufs || !count) return;
     for (uint32_t i = 0; i < count; i++)
@@ -174,8 +167,7 @@ __inline__ sample_buf *allocateSampleBufs(uint32_t count, uint32_t sizeInByte) {
         releaseSampleBufs(bufs, i);
         bufs = nullptr;
     }
-    count = i;
     return bufs;
 }
 
-#endif //AUD_BUF_MANAGER_H
+#endif //AUD_COMMONS_H
