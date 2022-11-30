@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "image_reader.h"
-#include "../global.h"
 
 enum class CaptureSessionState : int32_t {
     READY = 0,  // session is ready
@@ -22,8 +21,6 @@ class CameraId;
 
 class Camera {
 private:
-    JNIEnv *env_;
-    jobject surface_;
     ImageReader *reader_{};
     std::pair<int32_t, int32_t> dimensions_;
 
@@ -35,52 +32,34 @@ private:
     ACaptureSessionOutput *sessionOutput_;
     ACameraOutputTarget *target_;
     ACaptureRequest *request_;
-
     ACaptureSessionOutputContainer *outputContainer_;
     ACameraCaptureSession *captureSession_;
     CaptureSessionState captureSessionState_;
 
-    void CreateSession(JNIEnv *env, jobject surface);
+    ACameraDevice_stateCallbacks cameraDeviceListener_{};
+    //ACameraManager_AvailabilityCallbacks cameraMgrListener_{};
+    ACameraCaptureSession_stateCallbacks sessionListener{};
 
     void EnumerateCamera(void);
 
     bool MatchCaptureSizeRequest(std::pair<int32_t, int32_t> *dimen);
 
+    //int32_t GetCameraSensorOrientation(int32_t facing);
+
     void StartPreview(bool start);
 
-
-    // listeners.cpp
-    ACameraManager_AvailabilityCallbacks *GetManagerListener();
-
-    ACameraDevice_stateCallbacks *GetDeviceListener();
-
-    ACameraCaptureSession_stateCallbacks *GetSessionListener();
-
 public:
-    Camera(JNIEnv *env, jint w, jint h);
-
-    ~Camera();
+    Camera(jint w, jint h);
 
     const std::pair<int32_t, int32_t> &GetDimensions() const;
 
-    void onPreviewSurfaceCreated(JNIEnv *env, jobject surface);
-
-    //int32_t GetCameraSensorOrientation(int32_t facing);
+    void CreateSession(ANativeWindow *window);
 
     bool SetRecording(bool b);
 
-    void onPreviewSurfaceDestroyed(JNIEnv *env, jobject surface);
-
-
-    // listeners.cpp
-    void OnDeviceState(ACameraDevice *dev);
-
-    void OnDeviceError(ACameraDevice *dev, int err);
-
-    void OnSessionState(ACameraCaptureSession *ses, CaptureSessionState state);
+    ~Camera();
 };
 
-// Helper classes to hold enumerated camera
 class CameraId {
 public:
     ACameraDevice *device_;

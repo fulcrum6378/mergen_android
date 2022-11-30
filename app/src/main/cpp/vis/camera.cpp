@@ -1,36 +1,59 @@
-#include <android/native_window_jni.h>
-
 #include "camera.h"
 #include "../global.h"
 
-Camera::Camera(JNIEnv *env, jint w, jint h)
-        : env_(env),
-          surface_(nullptr),
-          cameraMgr_(nullptr),
-          window_(nullptr),
-          sessionOutput_(nullptr),
-          target_(nullptr),
-          request_(nullptr),
-          outputContainer_(nullptr),
-          captureSession_(nullptr),
-          captureSessionState_(CaptureSessionState::MAX_STATE) {
+Camera::Camera(jint w, jint h) :
+        cameraMgr_(nullptr),
+        window_(nullptr),
+        sessionOutput_(nullptr),
+        target_(nullptr),
+        request_(nullptr),
+        outputContainer_(nullptr),
+        captureSession_(nullptr),
+        captureSessionState_(CaptureSessionState::MAX_STATE) {
+
+    cameraMgr_ = ACameraManager_create();
+    ASSERT(cameraMgr_, "Failed to create cameraManager")
+    cameras_.clear();
+    EnumerateCamera();
+    ASSERT(!activeCameraId_.empty(), "Unknown ActiveCameraIdx")
+
     dimensions_ = std::pair<int32_t, int32_t>(w, h);
     MatchCaptureSizeRequest(&dimensions_);
     reader_ = new ImageReader(&dimensions_);
 
-    cameras_.clear();
-    cameraMgr_ = ACameraManager_create();
-    ASSERT(cameraMgr_, "Failed to create cameraManager")
+    cameraDeviceListener_ = {
+            .context = this,
+            .onDisconnected = [](void *ctx, ACameraDevice *dev) {
+                auto *cam = reinterpret_cast<Camera *>(ctx);
+                std::string id(ACameraDevice_getId(dev));
+                LOGW("device %s is disconnected", id.c_str());
 
-    // Pick up a back-facing camera to preview
-    EnumerateCamera();
-    ASSERT(!activeCameraId_.empty(), "Unknown ActiveCameraIdx")
-
-    // Create back facing camera device
+                ACameraDevice_close(cam->cameras_[id].device_);
+                cam->cameras_.erase(id);
+            },
+            .onError = nullptr,
+    };
     ACameraManager_openCamera(cameraMgr_, activeCameraId_.c_str(),
-                              GetDeviceListener(), &cameras_[activeCameraId_].device_);
+                              &cameraDeviceListener_, &cameras_[activeCameraId_].device_);
 
-    ACameraManager_registerAvailabilityCallback(cameraMgr_, GetManagerListener());
+    /*cameraMgrListener_ = {
+            .context = this,
+            .onCameraAvailable = nullptr,
+            .onCameraUnavailable = nullptr,
+    };
+    ACameraManager_registerAvailabilityCallback(cameraMgr_, &cameraMgrListener_);*/
+    sessionListener = {
+            .context = this,
+            .onClosed = [](void *ctx, ACameraCaptureSession *ses) {
+                reinterpret_cast<Camera *>(ctx)->captureSessionState_ = CaptureSessionState::CLOSED;
+            },
+            .onReady = [](void *ctx, ACameraCaptureSession *ses) {
+                reinterpret_cast<Camera *>(ctx)->captureSessionState_ = CaptureSessionState::READY;
+            },
+            .onActive = [](void *ctx, ACameraCaptureSession *ses) {
+                reinterpret_cast<Camera *>(ctx)->captureSessionState_ = CaptureSessionState::ACTIVE;
+            },
+    };
 
     // Initialize camera controls(exposure time and sensitivity), pick
     // up value of 2% * range + min as starting value (just a number, no magic)
@@ -39,71 +62,8 @@ Camera::Camera(JNIEnv *env, jint w, jint h)
             cameraMgr_, activeCameraId_.c_str(), &metadataObj);
 }
 
-Camera::~Camera() {
-    if (captureSessionState_ == CaptureSessionState::ACTIVE)
-        ACameraCaptureSession_stopRepeating(captureSession_);
-    ACameraCaptureSession_close(captureSession_);
-
-    if (window_) {
-        ACaptureRequest_removeTarget(request_, target_);
-        ACaptureRequest_free(request_);
-        ACameraOutputTarget_free(target_);
-
-        ACaptureSessionOutputContainer_remove(outputContainer_, sessionOutput_);
-        ACaptureSessionOutput_free(sessionOutput_);
-
-        ANativeWindow_release(window_);
-    }
-    ACaptureSessionOutputContainer_free(outputContainer_);
-
-    for (auto &cam: cameras_)
-        if (cam.second.device_) ACameraDevice_close(cam.second.device_);
-    cameras_.clear();
-    if (cameraMgr_) {
-        ACameraManager_unregisterAvailabilityCallback(cameraMgr_, GetManagerListener());
-        ACameraManager_delete(cameraMgr_);
-        cameraMgr_ = nullptr;
-    }
-
-    if (reader_) {
-        delete reader_;
-        reader_ = nullptr;
-    }
-    if (surface_) {
-        env_->DeleteGlobalRef(surface_);
-        surface_ = nullptr;
-    }
-}
-
 const std::pair<int32_t, int32_t> &Camera::GetDimensions() const {
     return dimensions_;
-}
-
-void Camera::onPreviewSurfaceCreated(JNIEnv *env, jobject surface) {
-    CreateSession(env, surface);
-    StartPreview(true);
-}
-
-void Camera::CreateSession(JNIEnv *env, jobject surface) {
-    surface_ = env_->NewGlobalRef(surface);
-    ASSERT(reader_, "reader_ is NULL!")
-    reader_->SetMirrorWindow(ANativeWindow_fromSurface(env, surface));
-    window_ = reader_->GetNativeWindow();
-
-    ACaptureSessionOutputContainer_create(&outputContainer_);
-    ANativeWindow_acquire(window_);
-    ACaptureSessionOutput_create(window_, &sessionOutput_);
-    ACaptureSessionOutputContainer_add(outputContainer_, sessionOutput_);
-    ACameraOutputTarget_create(window_, &target_);
-    ACameraDevice_createCaptureRequest(cameras_[activeCameraId_].device_,
-                                       TEMPLATE_PREVIEW, &request_);
-    ACaptureRequest_addTarget(request_, target_);
-
-    // Create a capture session for the given preview request
-    captureSessionState_ = CaptureSessionState::READY;
-    ACameraDevice_createCaptureSession(
-            cameras_[activeCameraId_].device_, outputContainer_,
-            GetSessionListener(), &captureSession_);
 }
 
 /**
@@ -177,6 +137,29 @@ bool Camera::MatchCaptureSizeRequest(std::pair<int32_t, int32_t> *dimen) {
     return foundIt;
 }
 
+void Camera::CreateSession(ANativeWindow *window) {
+    ASSERT(reader_, "reader_ is NULL!")
+    reader_->SetMirrorWindow(window);
+    window_ = reader_->GetNativeWindow();
+
+    ACaptureSessionOutputContainer_create(&outputContainer_);
+    ANativeWindow_acquire(window_);
+    ACaptureSessionOutput_create(window_, &sessionOutput_);
+    ACaptureSessionOutputContainer_add(outputContainer_, sessionOutput_);
+    ACameraOutputTarget_create(window_, &target_);
+    ACameraDevice_createCaptureRequest(cameras_[activeCameraId_].device_,
+                                       TEMPLATE_PREVIEW, &request_);
+    ACaptureRequest_addTarget(request_, target_);
+
+    // Create a capture session for the given preview request
+    captureSessionState_ = CaptureSessionState::READY;
+    ACameraDevice_createCaptureSession(
+            cameras_[activeCameraId_].device_, outputContainer_,
+            &sessionListener, &captureSession_);
+
+    StartPreview(true);
+}
+
 /**
  * GetSensorOrientation()
  *     Retrieve current sensor orientation regarding to the phone device
@@ -219,22 +202,33 @@ bool Camera::SetRecording(bool b) {
     else return false;
 }
 
-void Camera::onPreviewSurfaceDestroyed(JNIEnv *env, jobject surface) {
-    jclass cls = env->FindClass("android/view/Surface");
-    jmethodID toString =
-            env->GetMethodID(cls, "toString", "()Ljava/lang/String;");
-
-    auto destroyObjStr =
-            reinterpret_cast<jstring>(env->CallObjectMethod(surface, toString));
-    const char *destroyObjName = env->GetStringUTFChars(destroyObjStr, nullptr);
-
-    auto appObjStr = reinterpret_cast<jstring>(
-            env->CallObjectMethod(surface_, toString));
-    const char *appObjName = env->GetStringUTFChars(appObjStr, nullptr);
-    ASSERT(!strcmp(destroyObjName, appObjName), "object Name MisMatch")
-
-    env->ReleaseStringUTFChars(destroyObjStr, destroyObjName);
-    env->ReleaseStringUTFChars(appObjStr, appObjName);
-
+Camera::~Camera() {
     StartPreview(false);
+    ACameraCaptureSession_close(captureSession_);
+
+    if (window_) {
+        ACaptureRequest_removeTarget(request_, target_);
+        ACaptureRequest_free(request_);
+        ACameraOutputTarget_free(target_);
+
+        ACaptureSessionOutputContainer_remove(outputContainer_, sessionOutput_);
+        ACaptureSessionOutput_free(sessionOutput_);
+
+        ANativeWindow_release(window_);
+    }
+    ACaptureSessionOutputContainer_free(outputContainer_);
+
+    for (auto &cam: cameras_)
+        if (cam.second.device_) ACameraDevice_close(cam.second.device_);
+    cameras_.clear();
+    if (cameraMgr_) {
+        // ACameraManager_unregisterAvailabilityCallback(cameraMgr_, &cameraMgrListener_);
+        ACameraManager_delete(cameraMgr_);
+        cameraMgr_ = nullptr;
+    }
+
+    if (reader_) {
+        delete reader_;
+        reader_ = nullptr;
+    }
 }

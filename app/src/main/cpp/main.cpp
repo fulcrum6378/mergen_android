@@ -1,3 +1,5 @@
+#include <android/native_window_jni.h>
+
 #include "aud/engine.h"
 #include "vis/camera.h"
 
@@ -5,9 +7,9 @@ static AudioEngine *aud = nullptr;
 static Camera *vis = nullptr;
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject, jint w, jint h) {
+Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *, jobject, jint w, jint h) {
     aud = new AudioEngine();
-    vis = new Camera(env, w, h);
+    vis = new Camera(w, h);
     return reinterpret_cast<jlong>(vis);
 }
 
@@ -78,17 +80,14 @@ Java_ir_mahdiparastesh_mergen_Main_getMinimumCompatiblePreviewSize(
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
         JNIEnv *env, jobject, jboolean available, jlong ndkCameraObj, jobject surface) {
-    auto *pApp = reinterpret_cast<Camera *>(ndkCameraObj);
-    ASSERT(ndkCameraObj && vis == pApp,
+    auto *cam = reinterpret_cast<Camera *>(ndkCameraObj);
+    ASSERT(ndkCameraObj && vis == cam,
            "%s", ("NativeObject should not be null Pointer: " +
                   std::to_string(ndkCameraObj) + " == " +
                   std::to_string(reinterpret_cast<jlong>(vis))).c_str())
-    if (available) pApp->onPreviewSurfaceCreated(env, surface);
-    else {
-        pApp->onPreviewSurfaceDestroyed(env, surface);
-
-        // Don't put these in Main.destroy()
-        delete pApp;
+    if (available) cam->CreateSession(ANativeWindow_fromSurface(env, surface));
+    else { // don't put these in Main.destroy()
+        delete cam;
         vis = nullptr; // also reset the private global object
     }
 }

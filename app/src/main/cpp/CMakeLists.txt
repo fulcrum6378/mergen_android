@@ -9,11 +9,8 @@ add_library(main SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/aud/common.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/aud/engine.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/aud/recorder.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/vis/camera_engine.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/vis/image_reader.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/vis/listeners.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/vis/camera.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/vis/streamer.cpp)
+        ${CMAKE_CURRENT_SOURCE_DIR}/vis/image_reader.cpp)
 #add_library(vis SHARED) # resulted in an error!
 
 target_link_libraries(main
