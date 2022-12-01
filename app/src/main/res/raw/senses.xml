@@ -6,6 +6,7 @@
     <Sense
         bufferSize="1000"
         height=""
+        length=""
         type="AUD"
         width=""
         x=""
@@ -14,6 +15,7 @@
     <Sense
         bufferSize="100"
         height=""
+        length=""
         type="HPT"
         width=""
         x=""
@@ -22,6 +24,7 @@
     <Sense
         bufferSize="500000"
         height=""
+        length=""
         type="VIS"
         width=""
         x=""

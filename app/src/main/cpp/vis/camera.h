@@ -11,7 +11,7 @@
 #include "image_reader.h"
 
 enum class CaptureSessionState : int32_t {
-    READY = 0,  // session is ready
+    READY,      // session is ready
     ACTIVE,     // session is busy
     CLOSED,     // session is closed(by itself or a new session evicts)
     MAX_STATE

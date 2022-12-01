@@ -5,7 +5,9 @@
 #include <mutex>
 #include <thread>
 
-class Queuer : /*public*/ std::thread {
+struct Sense;
+
+class Queuer : std::thread {
 public:
     Queuer();
 
@@ -13,14 +15,31 @@ public:
 
     std::map<int64_t, std::map<int8_t, int8_t[]>> input;
     std::mutex lock;
-    //std::map<int8_t, ???> manifest;
 
 private:
     bool active_{false};
+    std::map<int8_t, Sense> manifest;
 
     void Run();
 
+    void LoadManifest();
+
     void Handle();
+};
+
+enum class SenseType : int8_t {
+    REW, AUD, HPT, MOV, VIS
+};
+
+/**
+ * The two constructs are identical in C++ except that in structs the default accessibility is public,
+ * whereas in classes the default is private.
+ */
+struct Sense {
+    SenseType type;
+    int16_t bufferSize, bufferStart, bufferEnd;
+    float x, y, z;
+    int32_t dimensions[3];
 };
 
 #endif //MEM_QUEUER_H
