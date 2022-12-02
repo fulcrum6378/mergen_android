@@ -144,7 +144,8 @@ void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq, int64_t 
     devShadowQueue_->pop();
 
     if (buf != &silentBuf_) {
-        test.write((char *) buf->buf_, buf->size_);
+        LOGE("%s", ("AUD: " + std::to_string(buf->size_)).c_str());
+        test.write((char *) buf->buf_, buf->size_); // size=384 (FRAMES_PER_BUF*2)
         //queuer_->Input(SENSE_ID_MICROPHONE, buf->buf_, time); // FIXME
 
         buf->size_ = 0;

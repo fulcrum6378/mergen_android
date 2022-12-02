@@ -1,6 +1,4 @@
-plugins {
-    id 'com.android.application'
-}
+plugins { id 'com.android.application' }
 
 android {
     compileSdk 33
@@ -12,7 +10,7 @@ android {
         minSdk 28
         targetSdk 33
         versionCode 1
-        versionName '0.1.8'
+        versionName '0.1.9'
         externalNativeBuild { cmake { cppFlags '' } }
     }
 

@@ -7,11 +7,11 @@
 
 #include "../global.h" // do not include "recorder.h" here!
 
-// Audio Sample Controls
+// Audio Sample Controls (frame = sample, bytes < sample < buffer)
 #define SAMPLE_RATE 48000000 // millihertz
 #define FRAMES_PER_BUF 192
 #define AUDIO_SAMPLE_CHANNELS 1
-#define BITS_PER_SAMPLE SL_PCMSAMPLEFORMAT_FIXED_16
+#define BITS_PER_SAMPLE SL_PCMSAMPLEFORMAT_FIXED_16 // name BIT_DEPTH or BITS_PER_FRAME
 
 // Sample Buffer Controls
 #define RECORD_DEVICE_KICKSTART_BUF_COUNT 2
@@ -134,7 +134,7 @@ private:
 struct sample_buf {
     uint8_t *buf_;   // audio sample container
     uint32_t cap_;   // buffer capacity in byte
-    uint32_t size_;  // audio sample size (n buf) in byte
+    uint32_t size_;  // audio sample size (n buf) in byte (=> bytes per sample * FRAMES_PER_BUF)
 };
 
 __inline__ void releaseSampleBufs(sample_buf *bufs, uint32_t &count) {

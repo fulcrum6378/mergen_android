@@ -168,6 +168,8 @@ void Camera::CreateSession(ANativeWindow *window) {
     ASSERT(reader_, "reader_ is NULL!")
     reader_->SetMirrorWindow(window);
     window_ = reader_->GetNativeWindow();
+    // ANativeWindow_setFrameRate(window_, 1,1);
+    // needs API 30, when changed minSdk to 30, the audio engine gets a nasty deprecated error!
 
     ACaptureSessionOutputContainer_create(&outputContainer_);
     ANativeWindow_acquire(window_);
@@ -176,6 +178,15 @@ void Camera::CreateSession(ANativeWindow *window) {
     ACameraOutputTarget_create(window_, &target_);
     ACameraDevice_createCaptureRequest(cameras_[activeCameraId_].device_,
                                        TEMPLATE_PREVIEW, &request_);
+    /*// Trying to alter the frame rate...
+    int64_t ddd = 1;
+    ACaptureRequest_setEntry_i64(
+            request_, ACAMERA_SENSOR_FRAME_DURATION, 1, &ddd);
+
+    ACameraMetadata_const_entry entry2;
+    ACameraMetadata_getConstEntry(metadataObj, ACAMERA_SENSOR_FRAME_DURATION, &entry2);
+    ASSERT(false, "%s", ("FUCK => " + std::to_string(entry2.data.i64[0])).c_str())*/
+    // The default FPS is in range 22..24!
     ACaptureRequest_addTarget(request_, target_);
 
     // Create a capture session for the given preview request

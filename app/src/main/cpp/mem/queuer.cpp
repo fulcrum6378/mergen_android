@@ -13,7 +13,7 @@ Queuer::Queuer() : std::thread(&Queuer::Run, this) {
 void Queuer::Run() {
     LoadManifest();
     while (active_) {
-        LOGW("QUEUER: I AM ACTIVE!!!");
+        //LOGW("QUEUER: I AM ACTIVE!!!");
         lock.lock();
         if (!input.empty()) Handle();
         lock.unlock();
@@ -33,7 +33,7 @@ void Queuer::LoadManifest() {
             .75, .5, .8, 9, 26, 5
     };
     manifest[2] = Sense{
-            2, SenseType::AUD, 192, 518401, 518594,
+            2, SenseType::AUD, 96000, 518401, 614401,
             .5, .95, -1, 9, 3, 3
     };
     /*manifest[3] = Sense{
@@ -41,6 +41,7 @@ void Queuer::LoadManifest() {
     };*/
 }
 
+// Current time in microseconds
 int64_t Queuer::Now() {
     return std::chrono::system_clock::now().time_since_epoch().count();
 }
