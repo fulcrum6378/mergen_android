@@ -1,7 +1,7 @@
 #include "camera.h"
 #include "../global.h"
 
-Camera::Camera(jint w, jint h) :
+Camera::Camera(jint w, jint h, Queuer *queuer) :
         cameraMgr_(nullptr),
         window_(nullptr),
         sessionOutput_(nullptr),
@@ -19,7 +19,7 @@ Camera::Camera(jint w, jint h) :
 
     dimensions_ = std::pair<int32_t, int32_t>(w, h);
     MatchCaptureSizeRequest(&dimensions_);
-    reader_ = new ImageReader(&dimensions_);
+    reader_ = new ImageReader(&dimensions_, queuer);
 
     cameraDeviceListener_ = {
             .context = this,

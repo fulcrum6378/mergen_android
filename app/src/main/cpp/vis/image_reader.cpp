@@ -6,7 +6,8 @@
 
 static const char *path = "/data/data/ir.mahdiparastesh.mergen/files/vis/";
 
-ImageReader::ImageReader(std::pair<int32_t, int32_t> *dimen) : reader_(nullptr), mirror_(nullptr) {
+ImageReader::ImageReader(std::pair<int32_t, int32_t> *dimen, Queuer *queuer) :
+        reader_(nullptr), mirror_(nullptr), queuer_(queuer) {
     media_status_t status = AImageReader_new(
             dimen->first, dimen->second, VIS_IMAGE_FORMAT,
             MAX_BUF_COUNT, &reader_);
@@ -172,6 +173,7 @@ void ImageReader::WriteFile(AImage *image, int64_t i) {
     FILE *file = fopen(fileName.c_str(), "wb");
     if (file && data && len) {
         fwrite(data, 1, len, file); // TODO MEM
+        queuer_;
         fclose(file);
     } else {
         if (file) fclose(file);

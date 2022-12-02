@@ -49,7 +49,7 @@ private:
     void StartPreview(bool start);
 
 public:
-    Camera(jint w, jint h);
+    Camera(jint w, jint h, Queuer *queuer);
 
     const std::pair<int32_t, int32_t> &GetDimensions() const;
 

@@ -1,7 +1,7 @@
 #include "recorder.h"
 
-AudioRecorder::AudioRecorder(SLEngineItf slEngine)
-        : freeQueue_(nullptr), recQueue_(nullptr), devShadowQueue_(nullptr) {
+AudioRecorder::AudioRecorder(SLEngineItf slEngine, Queuer *queuer)
+        : freeQueue_(nullptr), recQueue_(nullptr), devShadowQueue_(nullptr), queuer_(queuer)  {
     sampleInfo_ = {
             SAMPLE_RATE, FRAMES_PER_BUF, static_cast<uint16_t>(BITS_PER_SAMPLE), 0
     };
@@ -145,6 +145,7 @@ void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq) {
 
     if (buf != &silentBuf_) {
         test.write((char *) buf->buf_, buf->size_); // TODO MEM
+        queuer_;
 
         buf->size_ = 0;
         freeQueue_->push(buf);

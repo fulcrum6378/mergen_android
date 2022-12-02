@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Manifest>
-    <Sense
-        bufferSize="1"
-        type="REW" />
+    <!-- Don't put reward here! -->
     <Sense
         bufferSize="1000"
         height=""

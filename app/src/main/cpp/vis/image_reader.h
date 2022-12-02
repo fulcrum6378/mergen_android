@@ -5,6 +5,8 @@
 #include <media/NdkImageReader.h>
 #include <utility>
 
+#include "../mem/queuer.h"
+
 // together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone apparently!
 #define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
 
@@ -24,7 +26,7 @@
 
 class ImageReader {
 public:
-    explicit ImageReader(std::pair<int32_t, int32_t> *dimen);
+    explicit ImageReader(std::pair<int32_t, int32_t> *dimen, Queuer *queuer);
 
     void SetMirrorWindow(ANativeWindow *window);
 
@@ -45,6 +47,7 @@ private:
     ANativeWindow *mirror_;
     bool recording_{false};
     int64_t count_{1};
+    Queuer *queuer_;
 };
 
 #endif  // VIS_IMAGE_READER_H

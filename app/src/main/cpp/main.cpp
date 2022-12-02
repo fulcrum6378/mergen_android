@@ -11,8 +11,8 @@ static Queuer *mem = nullptr;
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *, jobject, jint w, jint h) {
     mem = new Queuer();
-    aud = new AudioEngine();
-    vis = new Camera(w, h);
+    aud = new AudioEngine(mem);
+    vis = new Camera(w, h, mem);
     return reinterpret_cast<jlong>(vis);
 }
 

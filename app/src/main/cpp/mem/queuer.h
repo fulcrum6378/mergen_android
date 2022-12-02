@@ -37,7 +37,7 @@ enum class SenseType : int8_t {
  */
 struct Sense {
     SenseType type;
-    int16_t bufferSize, bufferStart, bufferEnd;
+    int32_t bufferSize, bufferStart, bufferEnd;
     float x, y, z;
     int32_t dimensions[3];
 };

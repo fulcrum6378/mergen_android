@@ -4,6 +4,7 @@
 #include <fstream>
 
 #include "commons.h"
+#include "../mem/queuer.h"
 
 class AudioRecorder {
     SLObjectItf recObjectItf_{};
@@ -21,13 +22,14 @@ class AudioRecorder {
     sample_buf silentBuf_{};
 
     std::ofstream test;
+    Queuer *queuer_;
 
     void SetBufQueues();
 
     void ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq);
 
 public:
-    AudioRecorder(SLEngineItf slEngine);
+    AudioRecorder(SLEngineItf slEngine, Queuer *queuer);
 
     bool Start(void);
 

@@ -1,6 +1,7 @@
 #include "engine.h"
 
-AudioEngine::AudioEngine() : slEngineObj_(nullptr), slEngineItf_(nullptr), recorder_(nullptr) {
+AudioEngine::AudioEngine(Queuer *queuer) :
+        slEngineObj_(nullptr), slEngineItf_(nullptr), recorder_(nullptr), queuer_(queuer) {
     SLresult result;
     result = slCreateEngine(
             &slEngineObj_, 0, nullptr, 0,
@@ -15,7 +16,7 @@ AudioEngine::AudioEngine() : slEngineObj_(nullptr), slEngineItf_(nullptr), recor
 }
 
 bool AudioEngine::StartRecording() {
-    recorder_ = new AudioRecorder(slEngineItf_);
+    recorder_ = new AudioRecorder(slEngineItf_, queuer_);
     return recorder_->Start();
 }
 

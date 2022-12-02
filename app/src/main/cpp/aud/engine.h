@@ -12,9 +12,10 @@ private:
     SLObjectItf slEngineObj_;
     SLEngineItf slEngineItf_;
     AudioRecorder *recorder_;
+    Queuer *queuer_;
 
 public:
-    AudioEngine();
+    AudioEngine(Queuer *queuer);
 
     bool StartRecording();
 
