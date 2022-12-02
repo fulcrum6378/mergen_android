@@ -23,22 +23,29 @@ void Queuer::Run() {
 
 void Queuer::LoadManifest() {
     // C++ has no split function; instead do "s.substr(0, s.find(delimiter));" on std::string
-    manifest = std::map<int8_t, Sense>();
+    manifest = std::map<uint8_t, Sense>();
     manifest[0] = Sense{
-            SenseType::REW, 1, 0, 1,
+            0, SenseType::REW, 1, 0, 1,
             0, 0, 0, 0, 0, 0
     };
     manifest[1] = Sense{
-            SenseType::VIS, 518400, 1, 518401,
+            1, SenseType::VIS, 518400, 1, 518401,
             .75, .5, .8, 9, 26, 5
     };
     manifest[2] = Sense{
-            SenseType::AUD, 192, 518401, 518594,
+            2, SenseType::AUD, 192, 518401, 518594,
             .5, .95, -1, 9, 3, 3
     };
     /*manifest[3] = Sense{
-            SenseType::HPT,
+            3, SenseType::HPT,
     };*/
+}
+
+int64_t Queuer::Now() {
+    return std::chrono::system_clock::now().time_since_epoch().count();
+}
+
+void Queuer::Input(uint8_t sense, uint8_t *ref, int64_t time) {
 }
 
 void Queuer::Handle() {

@@ -9,6 +9,7 @@
 
 // together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone apparently!
 #define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
+#define SENSE_ID_BACK_LENS 1
 
 #define MAX_BUF_COUNT 4 // max image buffers
 #define MIN(a, b)           \
@@ -38,7 +39,7 @@ public:
 
     bool SetRecording(bool b);
 
-    static void WriteFile(AImage *image, int64_t i);
+    void Submit(AImage *image, int64_t time);
 
     ~ImageReader();
 
@@ -46,7 +47,6 @@ private:
     AImageReader *reader_;
     ANativeWindow *mirror_;
     bool recording_{false};
-    int64_t count_{1};
     Queuer *queuer_;
 };
 

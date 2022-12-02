@@ -45,10 +45,7 @@ void ImageReader::ImageCallback(AImageReader *reader) {
     }
 
     if (!recording_) AImage_delete(image);
-    else {
-        count_++;
-        std::thread(&ImageReader::WriteFile,/* this,*/ image, count_).detach();
-    }
+    else std::thread(&ImageReader::Submit, this, image, Queuer::Now()).detach();
 }
 
 void ImageReader::SetMirrorWindow(ANativeWindow *window) {
@@ -160,20 +157,19 @@ bool ImageReader::Mirror(ANativeWindow_Buffer *buf, AImage *image) {
 bool ImageReader::SetRecording(bool b) {
     if (b == recording_) return false;
     recording_ = b;
-    if (recording_) count_ = 0;
     return true;
 }
 
-void ImageReader::WriteFile(AImage *image, int64_t i) {
+void ImageReader::Submit(AImage *image, int64_t time) {
     uint8_t *data = nullptr;
     int len = 0;
     AImage_getPlaneData(image, 0, &data, &len);
 
-    std::string fileName = path + std::to_string(i) + ".yuv";
+    std::string fileName = path + std::to_string(time) + ".yuv";
     FILE *file = fopen(fileName.c_str(), "wb");
     if (file && data && len) {
-        fwrite(data, 1, len, file); // TODO MEM
-        queuer_;
+        fwrite(data, 1, len, file);
+        queuer_->Input(SENSE_ID_BACK_LENS, data, time); // FIXME
         fclose(file);
     } else {
         if (file) fclose(file);

@@ -6,6 +6,8 @@
 #include "commons.h"
 #include "../mem/queuer.h"
 
+#define SENSE_ID_MICROPHONE 2
+
 class AudioRecorder {
     SLObjectItf recObjectItf_{};
     SLRecordItf recItf_{};
@@ -26,7 +28,7 @@ class AudioRecorder {
 
     void SetBufQueues();
 
-    void ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq);
+    void ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq, int64_t time);
 
 public:
     AudioRecorder(SLEngineItf slEngine, Queuer *queuer);

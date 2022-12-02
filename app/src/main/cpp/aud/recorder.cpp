@@ -1,7 +1,7 @@
 #include "recorder.h"
 
 AudioRecorder::AudioRecorder(SLEngineItf slEngine, Queuer *queuer)
-        : freeQueue_(nullptr), recQueue_(nullptr), devShadowQueue_(nullptr), queuer_(queuer)  {
+        : freeQueue_(nullptr), recQueue_(nullptr), devShadowQueue_(nullptr), queuer_(queuer) {
     sampleInfo_ = {
             SAMPLE_RATE, FRAMES_PER_BUF, static_cast<uint16_t>(BITS_PER_SAMPLE), 0
     };
@@ -50,7 +50,7 @@ AudioRecorder::AudioRecorder(SLEngineItf slEngine, Queuer *queuer)
             recBufQueueItf_,
             [](SLAndroidSimpleBufferQueueItf bq, void *recorder) {
                 // Called for every buffer is full; pass directly to handler.
-                (static_cast<AudioRecorder *>(recorder))->ProcessSLCallback(bq);
+                (static_cast<AudioRecorder *>(recorder))->ProcessSLCallback(bq, Queuer::Now());
             }, this);
     SLASSERT(result);
 
@@ -120,7 +120,7 @@ bool AudioRecorder::Start() {
     return result == SL_RESULT_SUCCESS;
 }
 
-void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq) {
+void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq, int64_t time) {
     assert(bq == recBufQueueItf_);
     sample_buf *buf = nullptr;
     devShadowQueue_->front(&buf);
@@ -144,8 +144,8 @@ void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq) {
     devShadowQueue_->pop();
 
     if (buf != &silentBuf_) {
-        test.write((char *) buf->buf_, buf->size_); // TODO MEM
-        queuer_;
+        test.write((char *) buf->buf_, buf->size_);
+        //queuer_->Input(SENSE_ID_MICROPHONE, buf->buf_, time); // FIXME
 
         buf->size_ = 0;
         freeQueue_->push(buf);
