@@ -178,7 +178,7 @@ void Camera::CreateSession(ANativeWindow *window) {
     ACameraOutputTarget_create(window_, &target_);
     ACameraDevice_createCaptureRequest(cameras_[activeCameraId_].device_,
                                        TEMPLATE_PREVIEW, &request_);
-    /*// Trying to alter the frame rate...
+    /*// TODO Trying to alter the frame rate...
     int64_t ddd = 1;
     ACaptureRequest_setEntry_i64(
             request_, ACAMERA_SENSOR_FRAME_DURATION, 1, &ddd);

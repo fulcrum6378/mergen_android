@@ -12,10 +12,6 @@ import android.view.TextureView;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 
 import ir.mahdiparastesh.mergen.otr.DoubleClickListener;
@@ -83,6 +79,10 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         if (preview.isAvailable()) onSurfaceTextureAvailable(
                 preview.getSurfaceTexture(), preview.getWidth(), preview.getHeight());
 
+        /*import java.io.File;
+        import java.io.FileOutputStream;
+        import java.io.IOException;
+        import java.io.InputStream;
         File senses = new File(getFilesDir(), "senses.xml");
         if (!senses.exists()) try {
             InputStream src = getResources().openRawResource(R.raw.senses);
@@ -92,7 +92,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
             src.close();
             fos.close();
         } catch (IOException ignored) {
-        }
+        }*/
     }
 
     @Override

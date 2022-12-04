@@ -169,7 +169,7 @@ void ImageReader::Submit(AImage *image, int64_t time) {
     FILE *file = fopen(fileName.c_str(), "wb");
     if (file && data && len) {
         fwrite(data, 1, len, file);
-        //queuer_->Input(SENSE_ID_BACK_LENS, data, time); // FIXME
+        //queuer_->Input(SENSE_ID_BACK_LENS, data, time);
         fclose(file);
     } else {
         if (file) fclose(file);
