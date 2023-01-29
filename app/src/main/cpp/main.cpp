@@ -1,4 +1,5 @@
 #include <android/native_window_jni.h>
+//#include <vulkan/vulkan.h>
 
 #include "aud/engine.h"
 #include "vis/camera.h"
@@ -90,7 +91,7 @@ Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
     if (available) cam->CreateSession(ANativeWindow_fromSurface(env, surface));
     else { // don't put these in Main.destroy()
         delete cam;
-        vis = nullptr; // also reset the private global object
+        vis = nullptr;
     }
 }
 
