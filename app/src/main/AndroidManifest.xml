@@ -26,8 +26,8 @@
         </activity>
 
         <activity
-            android:name="com.google.androidgamesdk.GameActivity"
-            android:exported="false">
+            android:name="android.app.NativeActivity"
+            android:exported="true">
 
             <intent-filter>
                 <action android:name="ir.mahdiparastesh.mergen.VULKAN_TEST" />

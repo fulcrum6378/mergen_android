@@ -12,8 +12,7 @@ android {
         targetSdk 33
         versionCode 1
         versionName '0.2.0'
-        externalNativeBuild { cmake { cppFlags ''
-            arguments "-DANDROID_STL=c++_shared" } }
+        externalNativeBuild { cmake { cppFlags '' } }
     }
 
     compileOptions {
@@ -26,10 +25,6 @@ android {
             version '3.22.1'
         }
     }
-    buildFeatures { prefab true }
 }
 
-dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.0'
-    implementation 'androidx.games:games-activity:2.0.0-alpha01'
-}
+dependencies {}
