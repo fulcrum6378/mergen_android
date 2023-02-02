@@ -6,12 +6,14 @@ android {
     ndkVersion '25.1.8937393'
 
     defaultConfig {
+        shaders { glslcArgs.addAll(['-c']) }
         applicationId "ir.mahdiparastesh.mergen"
         minSdk 28
         targetSdk 33
         versionCode 1
         versionName '0.2.0'
-        externalNativeBuild { cmake { cppFlags '' } }
+        externalNativeBuild { cmake { cppFlags ''
+            arguments "-DANDROID_STL=c++_shared" } }
     }
 
     compileOptions {
@@ -24,6 +26,10 @@ android {
             version '3.22.1'
         }
     }
+    buildFeatures { prefab true }
 }
 
-dependencies {}
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.0'
+    implementation 'androidx.games:games-activity:2.0.0-alpha01'
+}

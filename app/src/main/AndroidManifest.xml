@@ -23,20 +23,20 @@
             android:exported="true"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity">
+        </activity>
+
+        <activity
+            android:name="com.google.androidgamesdk.GameActivity"
+            android:exported="false">
+
+            <intent-filter>
+                <action android:name="ir.mahdiparastesh.mergen.VULKAN_TEST" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:name="android.app.NativeActivity"
-            android:exported="true">
-            <!--android:configChanges="orientation|keyboardHidden"-->
-
-            <intent-filter>
-                <action android:name="ir.mahdiparastesh.mergen.VULKAN_TEST" />
             </intent-filter>
 
             <meta-data
