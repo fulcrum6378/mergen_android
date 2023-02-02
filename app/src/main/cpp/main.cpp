@@ -1,5 +1,5 @@
 #include <android/native_window_jni.h>
-//#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.h>
 
 #include "aud/engine.h"
 #include "vis/camera.h"
