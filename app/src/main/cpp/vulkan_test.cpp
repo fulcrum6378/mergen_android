@@ -1,6 +1,6 @@
 #include <android_native_app_glue.h>
 
-#include "vulkan_test.h"
+#include "vlk/hello_vk.h"
 
 struct VulkanEngine {
     struct android_app *app{};
@@ -11,21 +11,11 @@ struct VulkanEngine {
 static void HandleCmd(struct android_app *app, int32_t cmd) {
     auto *engine = (VulkanEngine *) app->userData;
     switch (cmd) {
-        case APP_CMD_START:
+        case APP_CMD_INIT_WINDOW: // case APP_CMD_START:
             if (engine->app->window != nullptr) {
-                engine->app_backend->reset(app->window, app->activity->assetManager);
-                engine->app_backend->initVulkan();
-                engine->canRender = true;
-            }
-        case APP_CMD_INIT_WINDOW:
-            LOGI("Called - APP_CMD_INIT_WINDOW");
-            if (engine->app->window != nullptr) {
-                LOGI("Setting a new surface");
-                engine->app_backend->reset(app->window, app->activity->assetManager);
-                if (!engine->app_backend->initialized) {
-                    LOGI("Starting application");
-                    engine->app_backend->initVulkan();
-                }
+                engine->app_backend->reset(
+                        app->window, app->activity->assetManager);
+                if (!engine->app_backend->initialized) engine->app_backend->initVulkan();
                 engine->canRender = true;
             }
             break;
@@ -33,9 +23,7 @@ static void HandleCmd(struct android_app *app, int32_t cmd) {
             engine->canRender = false;
             break;
         case APP_CMD_DESTROY:
-            LOGI("Destroying");
             engine->app_backend->cleanup();
-        default:
             break;
     }
 }

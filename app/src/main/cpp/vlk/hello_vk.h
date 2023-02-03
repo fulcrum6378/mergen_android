@@ -1,0 +1,219 @@
+#ifndef HELLO_VK_H
+#define HELLO_VK_H
+
+#include <android/asset_manager.h>
+#include <android/native_window.h>
+#include <vulkan/vulkan.h>
+
+#include <array>
+#include <optional>
+#include <vector>
+
+#include "../global.h"
+
+#define VK_CHECK(x)                           \
+  do {                                        \
+    VkResult err = x;                         \
+    if (err) {                                \
+      LOGE("Detected Vulkan error: %d", err); \
+      abort();                                \
+    }                                         \
+  } while (0)
+
+
+const int MAX_FRAMES_IN_FLIGHT = 2;
+
+struct UniformBufferObject {
+    std::array<float, 16> mvp;
+};
+
+struct QueueFamilyIndices {
+    std::optional<uint32_t> graphicsFamily;
+    std::optional<uint32_t> presentFamily;
+
+    bool isComplete() {
+        return graphicsFamily.has_value() && presentFamily.has_value();
+    }
+};
+
+struct SwapChainSupportDetails {
+    VkSurfaceCapabilitiesKHR capabilities;
+    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkPresentModeKHR> presentModes;
+};
+
+struct ANativeWindowDeleter {
+    void operator()(ANativeWindow *window) { ANativeWindow_release(window); }
+};
+
+class HelloVK {
+public:
+    void initVulkan();
+
+    void render();
+
+    void cleanup();
+
+    void cleanupSwapChain();
+
+    void reset(ANativeWindow *newWindow, AAssetManager *newManager);
+
+    bool initialized = false;
+
+private:
+    void createInstance();
+
+    void createSurface();
+
+    void pickPhysicalDevice(); // DEVICE SUITABILITY
+    // **DEVICE SUITABILITY
+    // Functions to find a suitable physical device to execute Vulkan commands.
+
+    void createLogicalDeviceAndQueue();
+
+    void setupDebugMessenger();
+
+    void establishDisplaySizeIdentity();
+
+    void createSwapChain();
+
+    void createImageViews();
+
+    void createRenderPass();
+
+    void createDescriptorSetLayout();
+
+    void createUniformBuffers();
+
+    void createDescriptorPool();
+
+    void createDescriptorSets();
+
+    void createGraphicsPipeline();
+
+    void createFramebuffers();
+
+    void createCommandPool();
+
+    void createCommandBuffer();
+
+    void createSyncObjects();
+
+
+    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice dev) const; // DEVICE SUITABILITY
+
+    bool checkDeviceExtensionSupport(VkPhysicalDevice dev); // DEVICE SUITABILITY
+
+    SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice dev) const; // DEVICE SUITABILITY
+
+    bool isDeviceSuitable(VkPhysicalDevice dev); // DEVICE SUITABILITY
+
+    bool checkValidationLayerSupport();
+
+    static std::vector<const char *> getRequiredExtensions(bool _enableValidationLayers);
+
+    // VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
+
+    VkShaderModule createShaderModule(const std::vector<uint8_t> &code);
+
+    void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+
+    void recreateSwapChain();
+
+    void onOrientationChange();
+
+    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
+                      VkMemoryPropertyFlags properties, VkBuffer &buffer,
+                      VkDeviceMemory &bufferMemory);
+
+    void updateUniformBuffer(uint32_t currentImage);
+
+    /*
+     * In order to enable validation layer toggle this to true and
+     * follow the README.md instructions concerning the validation
+     * layers. You will be required to add separate vulkan validation
+     * '*.so' files in order to enable this.
+     *
+     * The validation layers are not shipped with the APK as they are sizeable.
+     */
+    bool enableValidationLayers = false;
+
+    const std::vector<const char *> validationLayers = {
+            "VK_LAYER_KHRONOS_validation"};
+    const std::vector<const char *> deviceExtensions = {
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+    std::unique_ptr<ANativeWindow, ANativeWindowDeleter> window;
+    AAssetManager *assetManager;
+
+    VkInstance instance;
+    VkDebugUtilsMessengerEXT debugMessenger;
+
+    VkSurfaceKHR surface;
+
+    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+    VkDevice device;
+
+    VkSwapchainKHR swapChain;
+    std::vector<VkImage> swapChainImages;
+    VkFormat swapChainImageFormat;
+    VkExtent2D swapChainExtent;
+    VkExtent2D displaySizeIdentity;
+    std::vector<VkImageView> swapChainImageViews;
+    std::vector<VkFramebuffer> swapChainFramebuffers;
+    VkCommandPool commandPool;
+    std::vector<VkCommandBuffer> commandBuffers;
+
+    VkQueue graphicsQueue;
+    VkQueue presentQueue;
+
+    VkRenderPass renderPass;
+    VkDescriptorSetLayout descriptorSetLayout;
+    VkPipelineLayout pipelineLayout;
+    VkPipeline graphicsPipeline;
+
+    std::vector<VkBuffer> uniformBuffers;
+    std::vector<VkDeviceMemory> uniformBuffersMemory;
+
+    std::vector<VkSemaphore> imageAvailableSemaphores;
+    std::vector<VkSemaphore> renderFinishedSemaphores;
+    std::vector<VkFence> inFlightFences;
+    VkDescriptorPool descriptorPool;
+    std::vector<VkDescriptorSet> descriptorSets;
+
+    uint32_t currentFrame = 0;
+    bool orientationChanged = false;
+    VkSurfaceTransformFlagBitsKHR pretransformFlag;
+
+
+    static std::vector<uint8_t> LoadBinaryFileToVector(
+            const char *file_path, AAssetManager *assetManager);
+
+    static const char *toStringMessageSeverity(VkDebugUtilsMessageSeverityFlagBitsEXT s);
+
+    static const char *toStringMessageType(VkDebugUtilsMessageTypeFlagsEXT s);
+
+    static VKAPI_ATTR VkBool32 VKAPI_CALL
+    debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                  VkDebugUtilsMessageTypeFlagsEXT messageType,
+                  const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
+                  void *pUserData);
+
+    static void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
+
+    static VkResult CreateDebugUtilsMessengerEXT(
+            VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
+            const VkAllocationCallbacks *pAllocator,
+            VkDebugUtilsMessengerEXT *pDebugMessenger);
+
+    static void DestroyDebugUtilsMessengerEXT(
+            VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
+            const VkAllocationCallbacks *pAllocator);
+
+    static void getPrerotationMatrix(const VkSurfaceCapabilitiesKHR &capabilities,
+                                     const VkSurfaceTransformFlagBitsKHR &pretransformFlag,
+                                     std::array<float, 16> &mat);
+};
+
+#endif //HELLO_VK_H
