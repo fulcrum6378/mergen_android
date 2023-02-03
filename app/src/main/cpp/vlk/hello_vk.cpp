@@ -151,8 +151,8 @@ void HelloVK::createInstance() {
 
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "Hello Triangle";
-    appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+    appInfo.pApplicationName = "Mergen";
+    appInfo.applicationVersion = VK_MAKE_VERSION(0, 2, 0);
     appInfo.pEngineName = "No Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_0;
@@ -162,12 +162,10 @@ void HelloVK::createInstance() {
     createInfo.pApplicationInfo = &appInfo;
     createInfo.enabledExtensionCount = (uint32_t) requiredExtensions.size();
     createInfo.ppEnabledExtensionNames = requiredExtensions.data();
-    createInfo.pApplicationInfo = &appInfo;
 
     if (enableValidationLayers) {
         VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-        createInfo.enabledLayerCount =
-                static_cast<uint32_t>(validationLayers.size());
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();
         populateDebugMessengerCreateInfo(debugCreateInfo);
         createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT *) &debugCreateInfo;
@@ -186,26 +184,33 @@ void HelloVK::createInstance() {
     LOGI("available extensions");
     for (const auto &extension: extensions)
         LOGI("\t %s", extension.extensionName);
+    /* VK_KHR_surface
+  	 VK_KHR_android_surface
+  	 VK_EXT_swapchain_colorspace
+  	 VK_KHR_get_surface_capabilities2
+  	 VK_EXT_debug_report
+  	 VK_KHR_device_group_creation
+  	 VK_KHR_external_fence_capabilities
+  	 VK_KHR_external_memory_capabilities
+  	 VK_KHR_external_semaphore_capabilities
+  	 VK_KHR_get_physical_device_properties2 */
 }
 
 /*
  * createSurface can only be called after the android ecosystem has had the
  * chance to provide a native window. This happens after the APP_CMD_START event
  * has had a chance to be called.
- *
- * Notice the window.get() call which is only valid after window has been set to
- * a non null value
  */
 void HelloVK::createSurface() {
-    assert(window != nullptr);  // window not initialized
+    assert(window != nullptr);  // window must have been initialized
     const VkAndroidSurfaceCreateInfoKHR create_info{
             .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
             .pNext = nullptr,
             .flags = 0,
             .window = window.get()};
 
-    VK_CHECK(vkCreateAndroidSurfaceKHR(instance, &create_info,
-                                       nullptr /* pAllocator */, &surface));
+    VK_CHECK(vkCreateAndroidSurfaceKHR(
+            instance, &create_info,nullptr, &surface));
 }
 
 void HelloVK::pickPhysicalDevice() {
