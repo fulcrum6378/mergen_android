@@ -181,9 +181,9 @@ void HelloVK::createInstance() {
     std::vector<VkExtensionProperties> extensions(extensionCount);
     vkEnumerateInstanceExtensionProperties(
             nullptr, &extensionCount, extensions.data());
-    LOGI("available extensions");
+    /*LOGI("available extensions");
     for (const auto &extension: extensions)
-        LOGI("\t %s", extension.extensionName);
+        LOGI("\t %s", extension.extensionName);*/
     /* VK_KHR_surface
   	 VK_KHR_android_surface
   	 VK_EXT_swapchain_colorspace
@@ -210,7 +210,7 @@ void HelloVK::createSurface() {
             .window = window.get()};
 
     VK_CHECK(vkCreateAndroidSurfaceKHR(
-            instance, &create_info,nullptr, &surface));
+            instance, &create_info, nullptr, &surface));
 }
 
 void HelloVK::pickPhysicalDevice() {
@@ -848,7 +848,8 @@ std::vector<const char *> HelloVK::getRequiredExtensions(bool _enableValidationL
     std::vector<const char *> extensions;
     extensions.push_back("VK_KHR_surface");
     extensions.push_back("VK_KHR_android_surface");
-    if (_enableValidationLayers) extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    if (_enableValidationLayers)
+        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME); // "VK_EXT_debug_utils"
     return extensions;
 }
 
@@ -1026,18 +1027,18 @@ std::vector<uint8_t> HelloVK::LoadBinaryFileToVector(
     return file_content;
 }
 
-const char *HelloVK::toStringMessageSeverity(VkDebugUtilsMessageSeverityFlagBitsEXT s) {
+android_LogPriority HelloVK::toStringMessageSeverity(VkDebugUtilsMessageSeverityFlagBitsEXT s) {
     switch (s) {
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-            return "VERBOSE";
-        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-            return "ERROR";
-        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-            return "WARNING";
+            return ANDROID_LOG_VERBOSE;
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-            return "INFO";
-        default:
-            return "UNKNOWN";
+            return ANDROID_LOG_INFO;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+            return ANDROID_LOG_WARN;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+            return ANDROID_LOG_ERROR;
+        default: // impossible
+            return ANDROID_LOG_UNKNOWN;
     }
 }
 
@@ -1059,25 +1060,26 @@ const char *HelloVK::toStringMessageType(VkDebugUtilsMessageTypeFlagsEXT s) {
         return "General | Validation";
     if (s == VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) return "Validation";
     if (s == VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT) return "General";
-    return "Unknown";
+    return "IMPOSSIBLE";
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL
 HelloVK::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                        VkDebugUtilsMessageTypeFlagsEXT messageType,
                        const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-                       void * /* pUserData */) {
-    auto ms = toStringMessageSeverity(messageSeverity);
-    auto mt = toStringMessageType(messageType);
-    printf("[%s: %s]\n%s\n", ms, mt, pCallbackData->pMessage);
+                       void * /*pUserData*/) {
+    __android_log_print(
+            toStringMessageSeverity(messageSeverity), LOG_TAG,
+            "VKAPI [%s]: %s", toStringMessageType(messageType), pCallbackData->pMessage);
 
-    return VK_FALSE;
+    return VK_FALSE; // means "do not abort the Vulkan call and continue"
 }
 
 void HelloVK::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo) {
     createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+                                 VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
                                  VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
                                  VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
     createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
@@ -1087,23 +1089,24 @@ void HelloVK::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEX
 }
 
 VkResult HelloVK::CreateDebugUtilsMessengerEXT(
-        VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
+        VkInstance instance,
+        const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
         const VkAllocationCallbacks *pAllocator,
         VkDebugUtilsMessengerEXT *pDebugMessenger) {
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(
-            instance, "vkCreateDebugUtilsMessengerEXT");
+    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)
+            vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
     if (func != nullptr)
         return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
     else return VK_ERROR_EXTENSION_NOT_PRESENT;
 }
 
 void HelloVK::DestroyDebugUtilsMessengerEXT(
-        VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
+        VkInstance instance,
+        VkDebugUtilsMessengerEXT debugMessenger,
         const VkAllocationCallbacks *pAllocator) {
     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)
             vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-    if (func != nullptr)
-        func(instance, debugMessenger, pAllocator);
+    if (func != nullptr) func(instance, debugMessenger, pAllocator);
 }
 
 /*

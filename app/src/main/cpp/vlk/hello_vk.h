@@ -46,6 +46,7 @@ struct ANativeWindowDeleter {
     void operator()(ANativeWindow *window) { ANativeWindow_release(window); }
 };
 
+/** @see <a href="https://github.com/android/ndk-samples/tree/main/hello-vulkan">Hello VK</a> */
 class HelloVK {
 public:
     void initVulkan();
@@ -130,15 +131,10 @@ private:
 
     void updateUniformBuffer(uint32_t currentImage);
 
-    /*
-     * In order to enable validation layer toggle this to true and
-     * follow the README.md instructions concerning the validation
-     * layers. You will be required to add separate vulkan validation
-     * '*.so' files in order to enable this.
-     *
-     * The validation layers are not shipped with the APK as they are sizeable.
-     */
-    bool enableValidationLayers = false;
+    /** You need to download the latest binaries in
+     * <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/releases">
+     * Vulkan-ValidationLayers</a>in order to be able to change this value to "true". */
+    bool enableValidationLayers = true;
 
     const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
     const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
@@ -188,7 +184,7 @@ private:
     static std::vector<uint8_t> LoadBinaryFileToVector(
             const char *file_path, AAssetManager *assetManager);
 
-    static const char *toStringMessageSeverity(VkDebugUtilsMessageSeverityFlagBitsEXT s);
+    static android_LogPriority toStringMessageSeverity(VkDebugUtilsMessageSeverityFlagBitsEXT s);
 
     static const char *toStringMessageType(VkDebugUtilsMessageTypeFlagsEXT s);
 
