@@ -236,7 +236,7 @@ void HelloVK::pickPhysicalDevice() {
 void HelloVK::createLogicalDeviceAndQueue() {
     QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-    std::set < uint32_t > uniqueQueueFamilies =
+    std::set<uint32_t> uniqueQueueFamilies =
             {indices.graphicsFamily.value(), indices.presentFamily.value()};
     float queuePriority = 1.0f;
     for (uint32_t queueFamily: uniqueQueueFamilies) {
@@ -255,9 +255,9 @@ void HelloVK::createLogicalDeviceAndQueue() {
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.pEnabledFeatures = &deviceFeatures;
-    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
-    if (enableValidationLayers) {
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size()); // COMPAT
+    createInfo.ppEnabledExtensionNames = deviceExtensions.data(); // COMPAT
+    if (enableValidationLayers) { // for Vulkan versions compatibility (no longer needed)
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();
     } else createInfo.enabledLayerCount = 0;
@@ -267,7 +267,7 @@ void HelloVK::createLogicalDeviceAndQueue() {
 
     vkGetDeviceQueue(
             device, indices.graphicsFamily.value(), 0,
-            &graphicsQueue);
+            &graphicsQueue); // queueIndex means its index in its own family
     vkGetDeviceQueue(
             device, indices.presentFamily.value(), 0,
             &presentQueue);
@@ -803,7 +803,7 @@ bool HelloVK::checkDeviceExtensionSupport(VkPhysicalDevice dev) {
             dev, nullptr, &extensionCount,
             availableExtensions.data());
 
-    std::set < std::string > requiredExtensions(
+    std::set<std::string> requiredExtensions(
             deviceExtensions.begin(), deviceExtensions.end());
 
     for (const auto &extension: availableExtensions)
