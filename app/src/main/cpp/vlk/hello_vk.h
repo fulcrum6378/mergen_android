@@ -66,9 +66,7 @@ private:
 
     void createSurface();
 
-    void pickPhysicalDevice(); // DEVICE SUITABILITY
-    // **DEVICE SUITABILITY
-    // Functions to find a suitable physical device to execute Vulkan commands.
+    void pickPhysicalDevice();
 
     void createLogicalDeviceAndQueue();
 
@@ -101,17 +99,17 @@ private:
     void createSyncObjects();
 
 
-    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice dev) const; // DEVICE SUITABILITY
-
-    bool checkDeviceExtensionSupport(VkPhysicalDevice dev); // DEVICE SUITABILITY
-
-    SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice dev) const; // DEVICE SUITABILITY
-
-    bool isDeviceSuitable(VkPhysicalDevice dev); // DEVICE SUITABILITY
+    static std::vector<const char *> getRequiredExtensions(bool _enableValidationLayers);
 
     bool checkValidationLayerSupport();
 
-    static std::vector<const char *> getRequiredExtensions(bool _enableValidationLayers);
+    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice dev) const;
+
+    bool checkDeviceExtensionSupport(VkPhysicalDevice dev);
+
+    SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice dev) const;
+
+    bool isDeviceSuitable(VkPhysicalDevice dev);
 
     // VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
 

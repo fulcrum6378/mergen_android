@@ -213,11 +213,12 @@ void HelloVK::createSurface() {
             instance, &create_info, nullptr, &surface));
 }
 
+/** Pick only the first suitable device */
 void HelloVK::pickPhysicalDevice() {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
-
-    assert(deviceCount > 0);  // failed to find GPUs with Vulkan support!
+    // LOGE("Vulkan GPUs available: %u", deviceCount); // 1
+    assert(deviceCount > 0); // No GPUs with Vulkan support!
 
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(
@@ -738,6 +739,34 @@ void HelloVK::createSyncObjects() {
 
 // PRIVATE (MISC):
 
+std::vector<const char *> HelloVK::getRequiredExtensions(bool _enableValidationLayers) {
+    std::vector<const char *> extensions;
+    extensions.push_back("VK_KHR_surface");
+    extensions.push_back("VK_KHR_android_surface");
+    if (_enableValidationLayers)
+        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME); // "VK_EXT_debug_utils"
+    return extensions;
+}
+
+bool HelloVK::checkValidationLayerSupport() {
+    uint32_t layerCount;
+    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+    std::vector<VkLayerProperties> availableLayers(layerCount);
+    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+    for (const char *layerName: validationLayers) {
+        bool layerFound = false;
+        for (const auto &layerProperties: availableLayers)
+            if (strcmp(layerName, layerProperties.layerName) == 0) {
+                layerFound = true;
+                break;
+            }
+        if (!layerFound) return false;
+    }
+    return true;
+}
+
 QueueFamilyIndices HelloVK::findQueueFamilies(VkPhysicalDevice dev) const {
     QueueFamilyIndices indices;
 
@@ -823,34 +852,6 @@ bool HelloVK::isDeviceSuitable(VkPhysicalDevice dev) {
                             !swapChainSupport.presentModes.empty();
     }
     return indices.isComplete() && extensionsSupported && swapChainAdequate;
-}
-
-bool HelloVK::checkValidationLayerSupport() {
-    uint32_t layerCount;
-    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-
-    std::vector<VkLayerProperties> availableLayers(layerCount);
-    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-
-    for (const char *layerName: validationLayers) {
-        bool layerFound = false;
-        for (const auto &layerProperties: availableLayers)
-            if (strcmp(layerName, layerProperties.layerName) == 0) {
-                layerFound = true;
-                break;
-            }
-        if (!layerFound) return false;
-    }
-    return true;
-}
-
-std::vector<const char *> HelloVK::getRequiredExtensions(bool _enableValidationLayers) {
-    std::vector<const char *> extensions;
-    extensions.push_back("VK_KHR_surface");
-    extensions.push_back("VK_KHR_android_surface");
-    if (_enableValidationLayers)
-        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME); // "VK_EXT_debug_utils"
-    return extensions;
 }
 
 /*VkExtent2D HelloVK::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {

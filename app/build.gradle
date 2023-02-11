@@ -2,8 +2,8 @@ plugins { id 'com.android.application' }
 
 android {
     compileSdk 33
-    buildToolsVersion '33.0.1'
-    ndkVersion '25.1.8937393'
+    buildToolsVersion '34.0.0-rc1'
+    ndkVersion '25.2.9519653'
 
     defaultConfig {
         shaders { glslcArgs.addAll(['-c']) }
