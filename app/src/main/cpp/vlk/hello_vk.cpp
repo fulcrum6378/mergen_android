@@ -11,10 +11,10 @@
 
 void HelloVK::initVulkan() {
     createInstance();
+    setupDebugMessenger();
     createSurface();
     pickPhysicalDevice();
     createLogicalDeviceAndQueue();
-    setupDebugMessenger();
     establishDisplaySizeIdentity();
     createSwapChain();
     createImageViews();
@@ -116,9 +116,9 @@ void HelloVK::cleanup() {
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
     vkDestroyRenderPass(device, renderPass, nullptr);
     vkDestroyDevice(device, nullptr);
+    vkDestroySurfaceKHR(instance, surface, nullptr);
     if (enableValidationLayers)
         DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
-    vkDestroySurfaceKHR(instance, surface, nullptr);
     vkDestroyInstance(instance, nullptr);
     initialized = false;
 }
@@ -196,6 +196,16 @@ void HelloVK::createInstance() {
   	 VK_KHR_get_physical_device_properties2 */
 }
 
+void HelloVK::setupDebugMessenger() {
+    if (!enableValidationLayers) return;
+
+    VkDebugUtilsMessengerCreateInfoEXT createInfo{};
+    populateDebugMessengerCreateInfo(createInfo);
+
+    VK_CHECK(CreateDebugUtilsMessengerEXT(
+            instance, &createInfo, nullptr, &debugMessenger));
+}
+
 /*
  * createSurface can only be called after the android ecosystem has had the
  * chance to provide a native window. This happens after the APP_CMD_START event
@@ -271,16 +281,6 @@ void HelloVK::createLogicalDeviceAndQueue() {
     vkGetDeviceQueue(
             device, indices.presentFamily.value(), 0,
             &presentQueue);
-}
-
-void HelloVK::setupDebugMessenger() {
-    if (!enableValidationLayers) return;
-
-    VkDebugUtilsMessengerCreateInfoEXT createInfo{};
-    populateDebugMessengerCreateInfo(createInfo);
-
-    VK_CHECK(CreateDebugUtilsMessengerEXT(
-            instance, &createInfo, nullptr, &debugMessenger));
 }
 
 void HelloVK::establishDisplaySizeIdentity() {
