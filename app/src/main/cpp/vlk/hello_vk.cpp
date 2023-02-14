@@ -265,8 +265,8 @@ void HelloVK::createLogicalDeviceAndQueue() {
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.pEnabledFeatures = &deviceFeatures;
-    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size()); // COMPAT
-    createInfo.ppEnabledExtensionNames = deviceExtensions.data(); // COMPAT
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
     if (enableValidationLayers) { // for Vulkan versions compatibility (no longer needed)
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -316,13 +316,7 @@ void HelloVK::createSwapChain() {
     VkSurfaceFormatKHR surfaceFormat =
             chooseSwapSurfaceFormat(swapChainSupport.formats);
 
-    // Please check
-    // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkPresentModeKHR.html
-    // for a discourse on different present modes.
-    //
-    // VK_PRESENT_MODE_FIFO_KHR = Hard Vsync
-    // This is always supported on Android phones
-    VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
+    VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR; // always supported on Android phones
 
     uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
     if (swapChainSupport.capabilities.maxImageCount > 0 &&
@@ -821,7 +815,6 @@ SwapChainSupportDetails HelloVK::querySwapChainSupport(VkPhysicalDevice dev) con
     uint32_t formatCount;
     vkGetPhysicalDeviceSurfaceFormatsKHR(
             dev, surface, &formatCount, nullptr);
-
     if (formatCount != 0) {
         details.formats.resize(formatCount);
         vkGetPhysicalDeviceSurfaceFormatsKHR(
@@ -832,13 +825,13 @@ SwapChainSupportDetails HelloVK::querySwapChainSupport(VkPhysicalDevice dev) con
     uint32_t presentModeCount;
     vkGetPhysicalDeviceSurfacePresentModesKHR(
             dev, surface, &presentModeCount, nullptr);
-
     if (presentModeCount != 0) {
         details.presentModes.resize(presentModeCount);
         vkGetPhysicalDeviceSurfacePresentModesKHR(
                 dev, surface, &presentModeCount,
                 details.presentModes.data());
     }
+
     return details;
 }
 
@@ -854,7 +847,10 @@ bool HelloVK::isDeviceSuitable(VkPhysicalDevice dev) {
     return indices.isComplete() && extensionsSupported && swapChainAdequate;
 }
 
-/*VkExtent2D HelloVK::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
+/*#include <cstdint> // Necessary for uint32_t
+#include <limits> // Necessary for std::numeric_limits
+#include <algorithm> // Necessary for std::clamp
+VkExtent2D HelloVK::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
         return capabilities.currentExtent;
     else {
