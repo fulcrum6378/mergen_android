@@ -1,11 +1,13 @@
 #version 450
 
+// The input variable does not necessarily have to use the same name.
 // Input colour coming from the vertex shader
-layout(location = 0) in vec3 fragColor;
+layout(location/*of framebuffer*/ = 0) in/*put*/ vec3 fragColor;
 
 // Output colour for the fragment
-layout(location = 0) out vec4 outColor;
+layout(location/*of framebuffer*/ = 0) out/*put*/ vec4 outColor;
 
+/** Invoked on every fragment of the one and only framebuffer */
 void main() {
-    outColor = vec4(fragColor, 1.0);
+    outColor = vec4(fragColor, /*alpha:*/1.0);
 }
