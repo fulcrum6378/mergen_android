@@ -20,7 +20,7 @@ vec3 colors[3] = vec3[]( // Madde3e's yellow dress (#EAB044)
 vec3(0.9176, 0.6902, 0.2667),
 vec3(0.9176, 0.6902, 0.2667),
 vec3(0.9176, 0.6902, 0.2667)
-); // Her scarf: #332D39
+); // Her hair: #332D39
 
 /** Invoked on every vertex (3 times) changing gl_VertexIndex */
 void main() {
