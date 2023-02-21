@@ -1,25 +1,13 @@
-#ifndef HELLO_VK_H
-#define HELLO_VK_H
+#ifndef VLK_HELLO_VK_H
+#define VLK_HELLO_VK_H
 
-#include <android/asset_manager.h>
 #include <android/native_window.h>
-#include <vulkan/vulkan.h>
 
 #include <array>
 #include <optional>
-#include <vector>
 
 #include "../global.h"
-
-#define VK_CHECK(x)                           \
-  do {                                        \
-    VkResult err = x;                         \
-    if (err) {                                \
-      LOGE("Detected Vulkan error: %d", err); \
-      abort();                                \
-    }                                         \
-  } while (0)
-
+#include "global.h"
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -208,4 +196,4 @@ private:
                                      std::array<float, 16> &mat);
 };
 
-#endif //HELLO_VK_H
+#endif //VLK_HELLO_VK_H

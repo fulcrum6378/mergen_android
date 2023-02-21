@@ -22,6 +22,7 @@ add_library(main SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/vis/image_reader.cpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/vlk/hello_vk.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/vlk/compute_vk.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/vulkan_test.cpp
         )
 target_include_directories(main PRIVATE ${ANDROID_NDK}/sources/android/native_app_glue)
