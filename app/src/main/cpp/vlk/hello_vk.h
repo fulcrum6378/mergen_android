@@ -6,7 +6,6 @@
 #include <array>
 #include <optional>
 
-#include "../global.h"
 #include "global.h"
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
@@ -166,9 +165,6 @@ private:
     bool orientationChanged = false;
     VkSurfaceTransformFlagBitsKHR pretransformFlag;
 
-
-    static std::vector<uint8_t> LoadBinaryFileToVector(
-            const char *file_path, AAssetManager *assetManager);
 
     static void getPrerotationMatrix(const VkSurfaceCapabilitiesKHR &capabilities,
                                      const VkSurfaceTransformFlagBitsKHR &pretransformFlag,

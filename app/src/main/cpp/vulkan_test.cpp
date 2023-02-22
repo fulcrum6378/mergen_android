@@ -1,5 +1,6 @@
 #include <android_native_app_glue.h>
 
+#include "vlk/compute_vk.h"
 #include "vlk/hello_vk.h"
 
 struct VulkanEngine {
@@ -39,6 +40,8 @@ _Noreturn void android_main(struct android_app *state) {
     engine.app_backend = &vulkanBackend;
     state->userData = &engine;
     state->onAppCmd = HandleCmd;
+
+    ComputeVK().run(state->activity->assetManager);
 
     while (true) {
         int events;

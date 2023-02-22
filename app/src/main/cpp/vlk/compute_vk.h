@@ -1,12 +1,19 @@
 #ifndef VLK_COMPUTE_VK_H
 #define VLK_COMPUTE_VK_H
 
-#include "../global.h"
 #include "global.h"
+
+const int WIDTH = 3200; // Size of rendered mandelbrot set.
+const int HEIGHT = 2400; // Size of renderered mandelbrot set.
+const int WORKGROUP_SIZE = 32; // Workgroup size in compute shader.
+
+struct Pixel {
+    float r, g, b, a;
+};
 
 class ComputeVK {
 public:
-    void run();
+    void run(AAssetManager *assets);
 
 private:
     void createInstance();
@@ -23,7 +30,7 @@ private:
 
     void createDescriptorSet();
 
-    void createComputePipeline();
+    void createComputePipeline(AAssetManager *newManager);
 
     void createCommandBuffer();
 
@@ -34,11 +41,11 @@ private:
     void cleanup();
 
 
-    static std::vector<const char *> getRequiredExtensions(bool _enableValidationLayers);
-
     bool checkValidationLayerSupport();
 
     uint32_t getComputeQueueFamilyIndex();
+
+    uint32_t findMemoryType(uint32_t memoryTypeBits, VkMemoryPropertyFlags properties);
 
 
     bool enableValidationLayers = true;
@@ -58,15 +65,29 @@ private:
      * graphics operations, for instance. For this application, we at least want a queue
      * that supports compute operations. */
     VkQueue queue;
-
-    /**
-     * Groups of queues that have the same capabilities(for instance, they all supports
-     * graphics and computer operations), are grouped into queue families.
-     *
-     * When submitting a command buffer, you must specify to which queue in the family
-     * you are submitting to.
-     * This variable keeps track of the index of that queue in its family. */
     uint32_t queueFamilyIndex;
+
+    VkDescriptorPool descriptorPool;
+    VkDescriptorSet descriptorSet;
+    VkDescriptorSetLayout descriptorSetLayout;
+
+    /** The pipeline specifies the pipeline that all graphics and compute commands pass though
+     * in Vulkan. We will be creating a simple compute pipeline in this application. */
+    VkPipeline pipeline;
+    VkPipelineLayout pipelineLayout;
+
+    /** The command buffer is used to record commands, that will be submitted to a queue.
+     * To allocate such command buffers, we use a command pool. */
+    VkCommandPool commandPool;
+    VkCommandBuffer commandBuffer;
+
+    /** The mandelbrot set will be rendered to this buffer.
+     * The memory that backs the buffer is bufferMemory. */
+    VkBuffer buffer;
+    VkDeviceMemory bufferMemory;
+
+    /** size of `buffer` in bytes */
+    uint32_t bufferSize;
 };
 
 #endif //VLK_COMPUTE_VK_H

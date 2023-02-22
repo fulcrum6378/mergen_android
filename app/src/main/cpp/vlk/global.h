@@ -4,7 +4,10 @@
 #include <android/asset_manager.h>
 #include <vulkan/vulkan.h>
 
+#include <cassert>
 #include <vector>
+
+#include "../global.h"
 
 #define VK_CHECK(x)                           \
   do {                                        \
@@ -15,7 +18,24 @@
     }                                         \
   } while (0)
 
-android_LogPriority toStringMessageSeverity(VkDebugUtilsMessageSeverityFlagBitsEXT s) {
+// All functions here MUST be STATIC!
+
+static std::vector<uint8_t> LoadBinaryFileToVector(
+        const char *file_path, AAssetManager *assetManager) {
+    std::vector<uint8_t> file_content;
+    assert(assetManager);
+    AAsset *file =
+            AAssetManager_open(assetManager, file_path, AASSET_MODE_BUFFER);
+    size_t file_length = AAsset_getLength(file);
+
+    file_content.resize(file_length);
+
+    AAsset_read(file, file_content.data(), file_length);
+    AAsset_close(file);
+    return file_content;
+}
+
+static android_LogPriority toStringMessageSeverity(VkDebugUtilsMessageSeverityFlagBitsEXT s) {
     switch (s) {
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
             return ANDROID_LOG_VERBOSE;
@@ -30,7 +50,7 @@ android_LogPriority toStringMessageSeverity(VkDebugUtilsMessageSeverityFlagBitsE
     }
 }
 
-const char *toStringMessageType(VkDebugUtilsMessageTypeFlagsEXT s) {
+static const char *toStringMessageType(VkDebugUtilsMessageTypeFlagsEXT s) {
     if (s == (VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
               VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
               VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT))
@@ -51,7 +71,7 @@ const char *toStringMessageType(VkDebugUtilsMessageTypeFlagsEXT s) {
     return "IMPOSSIBLE";
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL
+static VKAPI_ATTR VkBool32 VKAPI_CALL
 debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
               VkDebugUtilsMessageTypeFlagsEXT messageType,
               const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
@@ -63,7 +83,7 @@ debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     return VK_FALSE; // means "do not abort the Vulkan call and continue"
 }
 
-void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo) {
+static void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo) {
     createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
@@ -76,7 +96,7 @@ void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &create
     createInfo.pfnUserCallback = debugCallback;
 }
 
-VkResult CreateDebugUtilsMessengerEXT(
+static VkResult CreateDebugUtilsMessengerEXT(
         VkInstance instance,
         const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
         const VkAllocationCallbacks *pAllocator,
@@ -88,7 +108,7 @@ VkResult CreateDebugUtilsMessengerEXT(
     else return VK_ERROR_EXTENSION_NOT_PRESENT;
 }
 
-void DestroyDebugUtilsMessengerEXT(
+static void DestroyDebugUtilsMessengerEXT(
         VkInstance instance,
         VkDebugUtilsMessengerEXT debugMessenger,
         const VkAllocationCallbacks *pAllocator) {

@@ -1,4 +1,3 @@
-#include <cassert>
 #include <fstream>
 #include <map>
 #include <set>
@@ -6,6 +5,9 @@
 #include <string>
 
 #include "hello_vk.h"
+
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCDFAInspection"
 
 // PUBLIC:
 
@@ -538,9 +540,9 @@ void HelloVK::createDescriptorSets() {
  */
 void HelloVK::createGraphicsPipeline() {
     auto vertShaderCode =
-            LoadBinaryFileToVector("shaders/shader.vert.spv", assetManager);
+            LoadBinaryFileToVector("shaders/triangle.vert.spv", assetManager);
     auto fragShaderCode =
-            LoadBinaryFileToVector("shaders/shader.frag.spv", assetManager);
+            LoadBinaryFileToVector("shaders/triangle.frag.spv", assetManager);
 
     VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
     VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -1003,25 +1005,8 @@ void HelloVK::updateUniformBuffer(uint32_t currentImage) {
 
 // STATIC:
 
-std::vector<uint8_t> HelloVK::LoadBinaryFileToVector(
-        const char *file_path, AAssetManager *assetManager) {
-    std::vector<uint8_t> file_content;
-    assert(assetManager);
-    AAsset *file =
-            AAssetManager_open(assetManager, file_path, AASSET_MODE_BUFFER);
-    size_t file_length = AAsset_getLength(file);
-
-    file_content.resize(file_length);
-
-    AAsset_read(file, file_content.data(), file_length);
-    AAsset_close(file);
-    return file_content;
-}
-
-/*
- * getPrerotationMatrix handles screen rotation with 3 hardcoded rotation
- * matrices (detailed below). We skip the 180 degrees rotation.
- */
+/** Handles screen rotation with 3 hardcoded rotation
+ * matrices (detailed below). We skip the 180 degrees rotation. */
 void HelloVK::getPrerotationMatrix(const VkSurfaceCapabilitiesKHR &capabilities,
                                    const VkSurfaceTransformFlagBitsKHR &pretransformFlag,
                                    std::array<float, 16> &mat) {
@@ -1035,3 +1020,5 @@ void HelloVK::getPrerotationMatrix(const VkSurfaceCapabilitiesKHR &capabilities,
         mat = {0., -1., 0., 0., 1., 0, 0., 0., 0., 0., 1., 0., 0., 0., 0., 1.};
     }
 }
+
+#pragma clang diagnostic pop
