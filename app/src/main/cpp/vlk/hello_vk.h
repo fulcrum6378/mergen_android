@@ -170,27 +170,6 @@ private:
     static std::vector<uint8_t> LoadBinaryFileToVector(
             const char *file_path, AAssetManager *assetManager);
 
-    static android_LogPriority toStringMessageSeverity(VkDebugUtilsMessageSeverityFlagBitsEXT s);
-
-    static const char *toStringMessageType(VkDebugUtilsMessageTypeFlagsEXT s);
-
-    static VKAPI_ATTR VkBool32 VKAPI_CALL
-    debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                  VkDebugUtilsMessageTypeFlagsEXT messageType,
-                  const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-                  void *pUserData);
-
-    static void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
-
-    static VkResult CreateDebugUtilsMessengerEXT(
-            VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
-            const VkAllocationCallbacks *pAllocator,
-            VkDebugUtilsMessengerEXT *pDebugMessenger);
-
-    static void DestroyDebugUtilsMessengerEXT(
-            VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
-            const VkAllocationCallbacks *pAllocator);
-
     static void getPrerotationMatrix(const VkSurfaceCapabilitiesKHR &capabilities,
                                      const VkSurfaceTransformFlagBitsKHR &pretransformFlag,
                                      std::array<float, 16> &mat);
