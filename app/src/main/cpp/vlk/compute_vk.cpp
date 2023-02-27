@@ -11,9 +11,6 @@ void ComputeVK::run(AAssetManager *assets) {
     // Buffer size of the storage buffer that will contain the rendered mandelbrot set.
     bufferSize = sizeof(Pixel) * WIDTH * HEIGHT;
 
-    LOGE("FUCK MAX: %d", VkPhysicalDeviceLimits().maxComputeWorkGroupInvocations); // 0
-    return;
-
     createInstance();
     setupDebugMessenger();
     pickPhysicalDevice();
@@ -309,7 +306,9 @@ void ComputeVK::saveRenderedImage() {
     // Done reading, so unmap.
     vkUnmapMemory(device, bufferMemory);
 
-    unsigned error = lodepng::encode("mandelbrot.png", image, WIDTH, HEIGHT);
+    unsigned error = lodepng::encode(
+            "/data/data/ir.mahdiparastesh.mergen/files/mandelbrot.png",
+            image, WIDTH, HEIGHT);
     if (error) printf("encoder error %d: %s", error, lodepng_error_text(error));
 }
 
