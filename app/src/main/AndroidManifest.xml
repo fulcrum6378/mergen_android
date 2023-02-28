@@ -22,16 +22,6 @@
             android:exported="true"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity">
-        </activity>
-
-        <activity
-            android:name="android.app.NativeActivity"
-            android:exported="true">
-
-            <intent-filter>
-                <action android:name="ir.mahdiparastesh.mergen.VULKAN_TEST" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

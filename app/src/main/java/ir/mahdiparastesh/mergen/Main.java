@@ -3,7 +3,6 @@ package ir.mahdiparastesh.mergen;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Intent;
 import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -157,10 +156,6 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
             public void onDoubleClick() {
                 recording(true);
             }
-        });
-        preview.setOnLongClickListener(v -> {
-            startActivity(new Intent("ir.mahdiparastesh.mergen.VULKAN_TEST"));
-            return true;
         });
     }
 

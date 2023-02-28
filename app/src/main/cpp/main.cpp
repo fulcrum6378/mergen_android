@@ -12,6 +12,9 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *, jobject, jint w, jint h) {
     //mem = new Queuer();
     aud = new AudioEngine(/*mem*/nullptr);
     vis = new Camera(w, h, /*mem*/nullptr);
+
+    // ComputeVK().run(state->activity->assetManager);
+
     return reinterpret_cast<jlong>(vis);
 }
 
