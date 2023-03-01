@@ -7,13 +7,13 @@ android {
     ndkVersion '25.2.9519653'
 
     defaultConfig {
-        shaders { glslcArgs.addAll(['-c']) }
         applicationId "ir.mahdiparastesh.mergen"
         minSdk 28
         targetSdk 33
         versionCode 1
         versionName '0.2.0'
         externalNativeBuild { cmake { cppFlags '' } }
+        shaders { glslcArgs.addAll(['-c']) } // invokes Shaderc to compile shaders into SPIR-V
     }
 
     compileOptions {

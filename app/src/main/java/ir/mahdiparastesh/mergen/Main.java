@@ -3,8 +3,13 @@ package ir.mahdiparastesh.mergen;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.SurfaceTexture;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.os.VibratorManager;
 import android.util.DisplayMetrics;
 import android.util.Size;
 import android.view.Surface;
@@ -157,6 +162,14 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
                 recording(true);
             }
         });
+    }
+
+    @SuppressWarnings("unused")
+    void shake(long dur) {
+        Vibrator vib = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) ?
+                ((VibratorManager) getSystemService(Context.VIBRATOR_MANAGER_SERVICE))
+                        .getDefaultVibrator() : (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        vib.vibrate(VibrationEffect.createOneShot(dur, VibrationEffect.DEFAULT_AMPLITUDE));
     }
 
     @Override

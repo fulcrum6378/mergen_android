@@ -60,6 +60,11 @@ Java_ir_mahdiparastesh_mergen_Main_test(JNIEnv */*env*/, jobject) {
     ts.operator+=(std::chrono::duration<std::int64_t, std::ratio<31556952>>(1));
     std::tm* lc = std::gmtime(reinterpret_cast<const time_t *>(ts.time_since_epoch().count()));
     return env->NewStringUTF(std::to_string(lc->tm_year).c_str());*/
+
+    /*jlong testShake = 200;
+    jmethodID shakeMethod = env->GetMethodID(
+            env->FindClass("ir/mahdiparastesh/mergen/Main"), "shake", "(J)V");
+    env->CallVoidMethod(main, shakeMethod, testShake);*/
     return nullptr;
 }
 
