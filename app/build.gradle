@@ -3,7 +3,7 @@ plugins { id 'com.android.application' }
 android {
     namespace 'ir.mahdiparastesh.mergen'
     compileSdk 33
-    buildToolsVersion '34.0.0-rc1'
+    buildToolsVersion '34.0.0-rc2'
     ndkVersion '25.2.9519653'
 
     defaultConfig {
@@ -20,6 +20,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
     externalNativeBuild {
         cmake {
             path file('src/main/cpp/CMakeLists.txt')
