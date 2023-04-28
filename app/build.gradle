@@ -3,11 +3,11 @@ plugins { id 'com.android.application' }
 android {
     namespace 'ir.mahdiparastesh.mergen'
     compileSdk 33
-    buildToolsVersion '34.0.0-rc2'
+    buildToolsVersion '34.0.0 rc3'
     ndkVersion '25.2.9519653'
 
     defaultConfig {
-        applicationId "ir.mahdiparastesh.mergen"
+        applicationId 'ir.mahdiparastesh.mergen'
         minSdk 28
         targetSdk 33
         versionCode 1
@@ -17,8 +17,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     externalNativeBuild {
