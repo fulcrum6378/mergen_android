@@ -1,9 +1,10 @@
 #include "recorder.h"
 
-AudioRecorder::AudioRecorder(SLEngineItf slEngine, Queuer *queuer)
-        : freeQueue_(nullptr), recQueue_(nullptr), devShadowQueue_(nullptr), queuer_(queuer) {
+AudioRecorder::AudioRecorder(SLEngineItf slEngine, Queuer *)
+        : freeQueue_(nullptr), recQueue_(nullptr), devShadowQueue_(nullptr), queuer_() {
     sampleInfo_ = {
-            SAMPLE_RATE, FRAMES_PER_BUF, static_cast<uint16_t>(BITS_PER_SAMPLE), 0
+            SAMPLE_RATE, FRAMES_PER_BUF,
+            static_cast<uint16_t>(BITS_PER_SAMPLE), 0
     };
     SLAndroidDataFormat_PCM_EX format_pcm;
     ConvertToSLSampleFormat(&format_pcm, &sampleInfo_);
@@ -120,7 +121,7 @@ bool AudioRecorder::Start() {
     return result == SL_RESULT_SUCCESS;
 }
 
-void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq, int64_t time) {
+void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq, int64_t) {
     assert(bq == recBufQueueItf_);
     sample_buf *buf = nullptr;
     devShadowQueue_->front(&buf);

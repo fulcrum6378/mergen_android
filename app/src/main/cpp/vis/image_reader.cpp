@@ -6,8 +6,8 @@
 
 static const char *path = "/data/data/ir.mahdiparastesh.mergen/files/vis/";
 
-ImageReader::ImageReader(std::pair<int32_t, int32_t> *dimen, Queuer *queuer) :
-        reader_(nullptr), mirror_(nullptr), queuer_(queuer) {
+ImageReader::ImageReader(std::pair<int32_t, int32_t> *dimen, Queuer *) :
+        reader_(nullptr), mirror_(nullptr), queuer_() {
     media_status_t status = AImageReader_new(
             dimen->first, dimen->second, VIS_IMAGE_FORMAT,
             MAX_BUF_COUNT, &reader_);
@@ -63,8 +63,7 @@ ANativeWindow *ImageReader::GetNativeWindow() {
 static const int kMaxChannelValue = 262143;
 
 /**
- * Helper function for YUV_420 to RGB conversion. Courtesy of Tensorflow
- * ImageClassifier Sample:
+ * Helper function for YUV_420 to RGB conversion. Courtesy of Tensorflow ImageClassifier Sample:
  * https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/android/jni/yuv2rgb.cc
  * The difference is that here we have to swap UV plane when calling it.
  *
@@ -108,16 +107,8 @@ static inline uint32_t YUV2RGB(int nY, int nU, int nV) {
  *   @param buf {@link ANativeWindow_Buffer} for image to display to.
  *   @param image a {@link AImage} instance, source of image conversion.
  *            it will be deleted via {@link AImage_delete}
- *   @return true on success, false on failure
- *   https://mathbits.com/MathBits/TISection/Geometry/Transformations2.htm
- *
- * Show the image with 90 degrees rotation.
- * MUST BE:
- * buf->format == WINDOW_FORMAT_RGBX_8888 || buf->format == WINDOW_FORMAT_RGBA_8888
- * int32_t srcFormat = -1; AImage_getFormat(image, &srcFormat); AIMAGE_FORMAT_YUV_420_888 == srcFormat
- * int32_t srcPlanes = 0; AImage_getNumberOfPlanes(image, &srcPlanes); srcPlanes == 3
  */
-bool ImageReader::Mirror(ANativeWindow_Buffer *buf, AImage *image) {
+void ImageReader::Mirror(ANativeWindow_Buffer *buf, AImage *image) {
     AImageCropRect srcRect;
     AImage_getCropRect(image, &srcRect);
 
@@ -136,7 +127,6 @@ bool ImageReader::Mirror(ANativeWindow_Buffer *buf, AImage *image) {
     int32_t width = MIN(buf->height, (srcRect.right - srcRect.left));
 
     auto *out = static_cast<uint32_t *>(buf->bits);
-    out += height - 1;
     for (int32_t y = 0; y < height; y++) {
         const uint8_t *pY = yPixel + yStride * (y + srcRect.top) + srcRect.left;
 
@@ -146,12 +136,10 @@ bool ImageReader::Mirror(ANativeWindow_Buffer *buf, AImage *image) {
 
         for (int32_t x = 0; x < width; x++) {
             const int32_t uv_offset = (x >> 1) * uvPixelStride;
-            // [x, y]--> [-y, x]
-            out[x * buf->stride] = YUV2RGB(pY[x], pU[uv_offset], pV[uv_offset]);
+            out[x] = YUV2RGB(pY[x], pU[uv_offset], pV[uv_offset]);
         }
-        out -= 1; // move to the next column
+        out += buf->stride;
     }
-    return true;
 }
 
 bool ImageReader::SetRecording(bool b) {

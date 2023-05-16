@@ -1,8 +1,10 @@
+#include <cstdlib>
+
 #include "camera.h"
 #include "../global.h"
 
-Camera::Camera(jint w, jint h, Queuer *queuer) :
-        cameraMgr_(nullptr),
+Camera::Camera(Queuer *queuer) :
+        cameraMgr_(),
         window_(nullptr),
         sessionOutput_(nullptr),
         target_(nullptr),
@@ -17,8 +19,7 @@ Camera::Camera(jint w, jint h, Queuer *queuer) :
     EnumerateCamera();
     ASSERT(!activeCameraId_.empty(), "Unknown ActiveCameraIdx")
 
-    dimensions_ = std::pair<int32_t, int32_t>(w, h);
-    MatchCaptureSizeRequest(&dimensions_);
+    DetermineCaptureDimensions(&dimensions_);
     reader_ = new ImageReader(&dimensions_, queuer);
 
     cameraDeviceListener_ = {
@@ -108,7 +109,7 @@ void Camera::EnumerateCamera() {
     ACameraManager_deleteCameraIdList(cameraIds);
 }
 
-bool Camera::MatchCaptureSizeRequest(std::pair<int32_t, int32_t> *dimen) {
+bool Camera::DetermineCaptureDimensions(std::pair<int32_t, int32_t> *dimen) {
     ACameraMetadata *metadata;
     ACameraManager_getCameraCharacteristics(
             cameraMgr_, activeCameraId_.c_str(), &metadata);
@@ -123,10 +124,14 @@ bool Camera::MatchCaptureSizeRequest(std::pair<int32_t, int32_t> *dimen) {
         int32_t input = entry.data.i32[i + 3];
         int32_t format = entry.data.i32[i + 0];
         if (input || format != VIS_IMAGE_FORMAT) continue;
+        /*LOGW("FUCK %s", (std::to_string(entry.data.i32[i + 1]) + " : " +
+                         std::to_string(entry.data.i32[i + 2])).c_str());*/
 
         std::pair<int32_t, int32_t> ent(entry.data.i32[i + 1], entry.data.i32[i + 2]);
-        if (dimen->first * ent.second != dimen->second * ent.first) continue; // is the same ratio
-        if (ultimate.first >= ent.first & ultimate.second >= ent.second) {
+        if (ent.first == ent.second) continue; // discard square dimensions
+
+        if (abs(ent.second - VIS_IMAGE_NEAREST_HEIGHT) <
+            abs(ultimate.second - VIS_IMAGE_NEAREST_HEIGHT)) {
             foundIt = true;
             ultimate = ent;
         }
@@ -137,12 +142,6 @@ bool Camera::MatchCaptureSizeRequest(std::pair<int32_t, int32_t> *dimen) {
     return foundIt;
 }
 
-/**
- * GetSensorOrientation()
- *     Retrieve current sensor orientation regarding to the phone device
- * orientation
- *     SensorOrientation is NOT settable.
- */
 /*int NDKCamera::GetCameraSensorOrientation(int32_t requestFacing) {
     if (!cameraMgr_) return false;
     ASSERT(requestFacing == ACAMERA_LENS_FACING_BACK, "Only support rear facing camera")
@@ -168,6 +167,9 @@ void Camera::CreateSession(ANativeWindow *window) {
     ASSERT(reader_, "reader_ is NULL!")
     reader_->SetMirrorWindow(window);
     window_ = reader_->GetNativeWindow();
+    /*ANativeWindow_setBuffersGeometry(
+            window_, dimensions_.first, dimensions_.second,
+            WINDOW_FORMAT_RGBX_8888);*/
     // ANativeWindow_setFrameRate(window_, 1,1);
     // needs API 30, when changed minSdk to 30, the audio engine gets a nasty deprecated error!
 

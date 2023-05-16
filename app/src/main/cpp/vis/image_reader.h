@@ -10,6 +10,7 @@
 // together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone apparently!
 #define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
 #define SENSE_ID_BACK_LENS 1
+#define VIS_IMAGE_NEAREST_HEIGHT 800
 
 #define MAX_BUF_COUNT 4 // max image buffers
 #define MIN(a, b)           \
@@ -35,7 +36,7 @@ public:
 
     void ImageCallback(AImageReader *reader);
 
-    static bool Mirror(ANativeWindow_Buffer *buf, AImage *image);
+    static void Mirror(ANativeWindow_Buffer *buf, AImage *image);
 
     bool SetRecording(bool b);
 

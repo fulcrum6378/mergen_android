@@ -7,26 +7,21 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
-import android.util.DisplayMetrics;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
 import java.util.Arrays;
 
-import ir.mahdiparastesh.mergen.otr.DoubleClickListener;
-
-@SuppressLint("ClickableViewAccessibility")
 public class Main extends Activity implements TextureView.SurfaceTextureListener {
     private final int permCode = 372;
-    private final String[] requiredPerms =
-            new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO};
-    private DisplayMetrics dm;
     private long ndkCamera;
     private TextureView preview;
     private Surface surface = null;
@@ -38,12 +33,15 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         preview = findViewById(R.id.preview);
-        dm = getResources().getDisplayMetrics();
 
+        // ask for camera and microphone permissions
+        String[] requiredPerms =
+                new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO};
         if (Arrays.stream(requiredPerms).anyMatch(s -> checkSelfPermission(s) < 0))
             requestPermissions(requiredPerms, permCode);
         else permitted();
 
+        // toast any test string values
         String tested = test();
         if (tested != null) Toast.makeText(this, tested, Toast.LENGTH_LONG).show();
     }
@@ -57,15 +55,8 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         }
     }
 
-    @SuppressWarnings("UnnecessaryLocalVariable")
-    private void permitted() {
-        int dim = Math.min(dm.widthPixels, dm.heightPixels),
-                w = dim, h = dim;
-        ViewGroup.LayoutParams previewLP = preview.getLayoutParams();
-        previewLP.width = w;
-        previewLP.height = h;
-        preview.setLayoutParams(previewLP);
 
+    private void permitted() {
         /*TODO README
          * AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER
          * Used as a key for {@link #getProperty} to request the native or optimal output buffer size
@@ -73,16 +64,20 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
          * should use this value as a minimum, and offer the user the option to override it.
          * The low latency output stream is typically either the device's primary output stream,
          * or another output stream with smaller buffers.
-         * -
-         * Math.min(dm.widthPixels, dm.heightPixels) outputs 1080,
-         * but getMinimumCompatiblePreviewSize changes it to 720!
          */
-        ndkCamera = create(w, h);
+        ndkCamera = create();
+        Size size = getCameraDimensions(ndkCamera);
+        Toast.makeText(this, size.getWidth() + " : " + size.getHeight(),
+                Toast.LENGTH_SHORT).show();
+        /*ViewGroup.LayoutParams previewLP = preview.getLayoutParams();
+        previewLP.width = size.getWidth();
+        previewLP.height = size.getHeight();
+        preview.setLayoutParams(previewLP);*/
 
         onRecordingStopped();
         preview.setSurfaceTextureListener(this); // don't make it in-line.
         if (preview.isAvailable()) onSurfaceTextureAvailable(
-                preview.getSurfaceTexture(), preview.getWidth(), preview.getHeight());
+                preview.getSurfaceTexture(), size.getWidth(), size.getHeight());
 
         /*import java.io.File;
         import java.io.FileOutputStream;
@@ -102,9 +97,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
-        Size cameraPreviewSize = getMinimumCompatiblePreviewSize(ndkCamera);
-        surfaceTexture.setDefaultBufferSize(
-                cameraPreviewSize.getWidth(), cameraPreviewSize.getHeight());
+        surfaceTexture.setDefaultBufferSize(width, height);
         surface = new Surface(surfaceTexture);
         onSurfaceStatusChanged(ndkCamera, surface, true);
         preview.setClickable(true);
@@ -154,10 +147,11 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         });*/
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void onRecordingStopped() {
         preview.setOnTouchListener(null);
         preview.setOnClickListener(new DoubleClickListener() {
-            @Override // never use it like lambda!
+            @Override
             public void onDoubleClick() {
                 recording(true);
             }
@@ -189,17 +183,37 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     }
 
 
-    private native long create(int width, int height);
+    public abstract static class DoubleClickListener implements View.OnClickListener {
+        private long lastClickAt = 0;
 
+        @Override
+        public void onClick(View v) {
+            if ((SystemClock.elapsedRealtime() - lastClickAt) < 200)
+                onDoubleClick();
+            lastClickAt = SystemClock.elapsedRealtime();
+        }
+
+        public abstract void onDoubleClick();
+    }
+
+
+    /** Structs utilities required for recording. */
+    private native long create();
+
+    /** Starts recording. */
     private native byte start();
 
+    /** Stops recording. */
     private native byte stop();
 
+    /** Destructs utilities required for recording. */
     private native void destroy();
 
+    /** Shows test string values coming from C++ */
     private native String test();
 
-    private native Size getMinimumCompatiblePreviewSize(long cameraObj);
+    /** Camera cannot record in any dimension you want! */
+    private native Size getCameraDimensions(long cameraObj);
 
     private native void onSurfaceStatusChanged(long cameraObj, Surface surface, boolean available);
 

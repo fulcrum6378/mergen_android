@@ -8,10 +8,10 @@ static Camera *vis = nullptr;
 // static Queuer *mem = nullptr; #include "mem/queuer.h"
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *, jobject, jint w, jint h) {
+Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *, jobject) {
     //mem = new Queuer();
     aud = new AudioEngine(/*mem*/nullptr);
-    vis = new Camera(w, h, /*mem*/nullptr);
+    vis = new Camera(/*mem*/nullptr);
 
     // ComputeVK().run(state->activity->assetManager);
 
@@ -68,25 +68,15 @@ Java_ir_mahdiparastesh_mergen_Main_test(JNIEnv */*env*/, jobject) {
     return nullptr;
 }
 
-/**
- * @returns minimium camera preview window size for the given
- * requested camera size in CreateCamera() function, with the same
- * ascpect ratio. essentially,
- *   1) Display device size decides NDKCamera object preview size
- *   2) Chosen NDKCamera preview size passed to TextView to
- *      reset textureView size
- *   3) textureView size is stretched when previewing image
- *      on display device
- */
 extern "C" JNIEXPORT jobject JNICALL
-Java_ir_mahdiparastesh_mergen_Main_getMinimumCompatiblePreviewSize(
+Java_ir_mahdiparastesh_mergen_Main_getCameraDimensions(
         JNIEnv *env, jobject, jlong cameraObj) {
     if (!cameraObj) return nullptr;
-    auto *pApp = reinterpret_cast<Camera *>(cameraObj);
+    auto *cam = reinterpret_cast<Camera *>(cameraObj);
     jclass cls = env->FindClass("android/util/Size");
     jobject previewSize = env->NewObject(
             cls, env->GetMethodID(cls, "<init>", "(II)V"),
-            pApp->GetDimensions().first, pApp->GetDimensions().second);
+            cam->GetDimensions().first, cam->GetDimensions().second);
     return previewSize;
 }
 

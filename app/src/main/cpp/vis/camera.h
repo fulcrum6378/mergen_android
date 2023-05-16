@@ -42,14 +42,14 @@ private:
 
     void EnumerateCamera(void);
 
-    bool MatchCaptureSizeRequest(std::pair<int32_t, int32_t> *dimen);
+    bool DetermineCaptureDimensions(std::pair<int32_t, int32_t> *dimen);
 
     //int32_t GetCameraSensorOrientation(int32_t facing);
 
     void StartPreview(bool start);
 
 public:
-    Camera(jint w, jint h, Queuer *queuer);
+    Camera(Queuer *queuer);
 
     const std::pair<int32_t, int32_t> &GetDimensions() const;
 
