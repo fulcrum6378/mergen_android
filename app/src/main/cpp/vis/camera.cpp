@@ -124,8 +124,6 @@ bool Camera::DetermineCaptureDimensions(std::pair<int32_t, int32_t> *dimen) {
         int32_t input = entry.data.i32[i + 3];
         int32_t format = entry.data.i32[i + 0];
         if (input || format != VIS_IMAGE_FORMAT) continue;
-        /*LOGW("FUCK %s", (std::to_string(entry.data.i32[i + 1]) + " : " +
-                         std::to_string(entry.data.i32[i + 2])).c_str());*/
 
         std::pair<int32_t, int32_t> ent(entry.data.i32[i + 1], entry.data.i32[i + 2]);
         if (ent.first == ent.second) continue; // discard square dimensions

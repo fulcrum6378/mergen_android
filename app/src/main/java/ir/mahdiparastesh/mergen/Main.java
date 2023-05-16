@@ -15,7 +15,6 @@ import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
 import java.util.Arrays;
@@ -67,12 +66,9 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
          */
         ndkCamera = create();
         Size size = getCameraDimensions(ndkCamera);
-        Toast.makeText(this, size.getWidth() + " : " + size.getHeight(),
-                Toast.LENGTH_SHORT).show();
-        /*ViewGroup.LayoutParams previewLP = preview.getLayoutParams();
-        previewLP.width = size.getWidth();
-        previewLP.height = size.getHeight();
-        preview.setLayoutParams(previewLP);*/
+        /*Toast.makeText(this, size.getWidth() + " : " + size.getHeight(),
+                Toast.LENGTH_SHORT).show();*/
+        // Never resize the TextureView after create()
 
         onRecordingStopped();
         preview.setSurfaceTextureListener(this); // don't make it in-line.

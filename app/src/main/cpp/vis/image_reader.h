@@ -10,6 +10,7 @@
 // together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone apparently!
 #define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
 #define SENSE_ID_BACK_LENS 1
+// TextureView gets fucked up when height of buffer is larger than its height.
 #define VIS_IMAGE_NEAREST_HEIGHT 800
 
 #define MAX_BUF_COUNT 4 // max image buffers
