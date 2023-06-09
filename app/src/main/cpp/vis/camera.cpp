@@ -126,7 +126,7 @@ bool Camera::DetermineCaptureDimensions(std::pair<int32_t, int32_t> *dimen) {
         if (input || format != VIS_IMAGE_FORMAT) continue;
 
         std::pair<int32_t, int32_t> ent(entry.data.i32[i + 1], entry.data.i32[i + 2]);
-        if (ent.first == ent.second) continue; // discard square dimensions
+        //if (ent.first == ent.second) continue; // discard square dimensions
 
         if (abs(ent.second - VIS_IMAGE_NEAREST_HEIGHT) <
             abs(ultimate.second - VIS_IMAGE_NEAREST_HEIGHT)) {

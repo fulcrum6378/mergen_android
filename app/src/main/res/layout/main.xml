@@ -8,11 +8,8 @@
 
     <TextureView
         android:id="@+id/preview"
-        android:layout_width="1024px"
-        android:layout_height="1024px"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:clickable="false"
-        android:scaleX="1.41"
-        android:scaleY="1.41"
-        android:translationY="180px"
         tools:ignore="PxUsage" />
 </RelativeLayout>
