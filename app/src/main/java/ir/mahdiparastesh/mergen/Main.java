@@ -65,8 +65,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         ndkCamera = create();
         Size size = getCameraDimensions(ndkCamera);
         /*Toast.makeText(this, size.getWidth() + " : " + size.getHeight(),
-                Toast.LENGTH_SHORT).show();*/// must be 6.5cm
-        // Never resize the TextureView after create()
+                Toast.LENGTH_SHORT).show();*/
 
         onRecordingStopped();
         int bufDim = Math.max(size.getWidth(), size.getHeight());
@@ -74,7 +73,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         previewLP.width = bufDim;
         previewLP.height = bufDim;
         preview.setLayoutParams(previewLP);
-        preview.setTranslationY();
+        preview.setTranslationY((bufDim - size.getHeight()) / 2f);
         preview.setSurfaceTextureListener(this); // don't make it in-line.
         if (preview.isAvailable()) onSurfaceTextureAvailable(
                 preview.getSurfaceTexture(), size.getWidth(), size.getHeight());
@@ -95,15 +94,13 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         }*/
     }
 
-    /** The width and height dimensions of a buffer are always equal even in 1024x768!  */
+    /** The width and height dimensions of a buffer are always equal even in 1024x768! */
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
         surfaceTexture.setDefaultBufferSize(width, height);
         surface = new Surface(surfaceTexture);
-        //surface.setFrameRate(); // TODO
         onSurfaceStatusChanged(ndkCamera, surface, true);
         preview.setClickable(true);
-        Toast.makeText(this, preview.getHeight() + "", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -191,8 +188,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
 
         @Override
         public void onClick(View v) {
-            if ((SystemClock.elapsedRealtime() - lastClickAt) < 200)
-                onDoubleClick();
+            if ((SystemClock.elapsedRealtime() - lastClickAt) < 200) onDoubleClick();
             lastClickAt = SystemClock.elapsedRealtime();
         }
 

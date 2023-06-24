@@ -3,6 +3,11 @@
 
 #include "global.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+#pragma ide diagnostic ignored "OCUnusedStructInspection"
+
 const int WIDTH = 3200; // Size of rendered mandelbrot set.
 const int HEIGHT = 2400; // Size of renderered mandelbrot set.
 const int WORKGROUP_SIZE = 18; // Workgroup size in compute shader.
@@ -89,5 +94,7 @@ private:
     /** size of `buffer` in bytes */
     uint32_t bufferSize;
 };
+
+#pragma clang diagnostic pop
 
 #endif //VLK_COMPUTE_VK_H

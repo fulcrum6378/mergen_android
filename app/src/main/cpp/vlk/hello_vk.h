@@ -8,6 +8,11 @@
 
 #include "global.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+#pragma ide diagnostic ignored "OCUnusedStructInspection"
+
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
 struct UniformBufferObject {
@@ -170,5 +175,7 @@ private:
                                      const VkSurfaceTransformFlagBitsKHR &pretransformFlag,
                                      std::array<float, 16> &mat);
 };
+
+#pragma clang diagnostic pop
 
 #endif //VLK_HELLO_VK_H
