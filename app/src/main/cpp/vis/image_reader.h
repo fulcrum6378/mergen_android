@@ -11,7 +11,7 @@
 #define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
 #define SENSE_ID_BACK_LENS 1
 // TextureView gets fucked up when height of buffer is larger than its height.
-#define VIS_IMAGE_NEAREST_HEIGHT 800
+#define VIS_IMAGE_NEAREST_HEIGHT 800 // it would result in 1024x768 in Galaxy A50.
 
 #define MAX_BUF_COUNT 4 // max image buffers
 #define MIN(a, b)           \

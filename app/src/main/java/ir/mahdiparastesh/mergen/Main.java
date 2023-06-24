@@ -15,12 +15,12 @@ import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import java.util.Arrays;
 
 public class Main extends Activity implements TextureView.SurfaceTextureListener {
-    private final int permCode = 372;
     private long ndkCamera;
     private TextureView preview;
     private Surface surface = null;
@@ -37,7 +37,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         String[] requiredPerms =
                 new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO};
         if (Arrays.stream(requiredPerms).anyMatch(s -> checkSelfPermission(s) < 0))
-            requestPermissions(requiredPerms, permCode);
+            requestPermissions(requiredPerms, 1);
         else permitted();
 
         // toast any test string values
@@ -48,10 +48,8 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == permCode) {
-            if (Arrays.stream(grantResults).sum() == 0) permitted();
-            else onBackPressed();
-        }
+        if (Arrays.stream(grantResults).sum() == 0) permitted();
+        else onBackPressed();
     }
 
 
@@ -67,10 +65,16 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         ndkCamera = create();
         Size size = getCameraDimensions(ndkCamera);
         /*Toast.makeText(this, size.getWidth() + " : " + size.getHeight(),
-                Toast.LENGTH_SHORT).show();*/
+                Toast.LENGTH_SHORT).show();*/// must be 6.5cm
         // Never resize the TextureView after create()
 
         onRecordingStopped();
+        int bufDim = Math.max(size.getWidth(), size.getHeight());
+        ViewGroup.LayoutParams previewLP = preview.getLayoutParams();
+        previewLP.width = bufDim;
+        previewLP.height = bufDim;
+        preview.setLayoutParams(previewLP);
+        preview.setTranslationY();
         preview.setSurfaceTextureListener(this); // don't make it in-line.
         if (preview.isAvailable()) onSurfaceTextureAvailable(
                 preview.getSurfaceTexture(), size.getWidth(), size.getHeight());
@@ -91,12 +95,15 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         }*/
     }
 
+    /** The width and height dimensions of a buffer are always equal even in 1024x768!  */
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
         surfaceTexture.setDefaultBufferSize(width, height);
         surface = new Surface(surfaceTexture);
+        //surface.setFrameRate(); // TODO
         onSurfaceStatusChanged(ndkCamera, surface, true);
         preview.setClickable(true);
+        Toast.makeText(this, preview.getHeight() + "", Toast.LENGTH_SHORT).show();
     }
 
     @Override
