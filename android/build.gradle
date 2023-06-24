@@ -15,6 +15,11 @@ android {
         externalNativeBuild { cmake { cppFlags '' } }
         shaders { glslcArgs.addAll(['-c']) } // invokes Shaderc to compile shaders into SPIR-V
     }
-
-    externalNativeBuild { cmake { path file('src/main/cpp/CMakeLists.txt'); version '3.22.1' } }
+    sourceSets.main {
+        manifest.srcFile 'AndroidManifest.xml'
+        java.srcDirs = ['java']
+        res.srcDirs = ['res']
+        shaders.srcDirs = ['../shaders']
+    }
+    externalNativeBuild { cmake { path file('../cpp/CMakeLists.txt'); version '3.22.1' } }
 }
