@@ -3,7 +3,6 @@
 
 #include <media/NdkImage.h>
 #include <media/NdkImageReader.h>
-//#include "NdkImageReaderPriv.h"
 
 #include "utils/List.h"
 #include "utils/Mutex.h"
@@ -11,7 +10,6 @@
 
 #include "gui/BufferItemConsumer.h"
 
-//#include <android/looper.h>
 #include <android/data_space.h>
 #include "media/stagefright/foundation/ALooper.h"
 #include "media/stagefright/foundation/AMessage.h"
@@ -77,6 +75,12 @@ public:
     ~ImageReader();
 
 private:
+    /**
+     * AImageReader creates an IGraphicBufferProducer (input) and an IGraphicBufferConsumer (output),
+     * then it creates a BufferQueue from them, then it listens data from that IGraphicBufferConsumer,
+     * THEN IT CREATES A Surface OUT OF THE IGraphicBufferProducer (input), which is the same as
+     * ANativeWindow; so AImageReader has no choice except creating it, itself!
+     */
     AImageReader *reader_;
     bool recording_{false};
     Queuer *queuer_;

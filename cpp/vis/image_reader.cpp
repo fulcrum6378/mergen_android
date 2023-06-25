@@ -1,6 +1,9 @@
 #include <dirent.h>
 #include <thread>
 
+#include "cutils/atomic.h"
+#include "cutils/log.h"
+
 #include "image_reader.h"
 #include "../global.h"
 
