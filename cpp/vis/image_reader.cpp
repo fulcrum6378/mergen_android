@@ -1,21 +1,10 @@
 #include <dirent.h>
 #include <thread>
 
-#include "cutils/atomic.h"
-#include "cutils/log.h"
-
 #include "image_reader.h"
 #include "../global.h"
 
 static const char *path = "/data/data/ir.mahdiparastesh.mergen/files/vis/";
-
-static int32_t createProcessUniqueId() { // FIXME
-    static volatile int32_t globalCounter = 0;
-    return android_atomic_inc(&globalCounter);
-}
-const char* ImageReader::kCallbackFpKey = "Callback";
-const char* ImageReader::kContextKey    = "Context";
-const char* ImageReader::kGraphicBufferKey = "GraphicBuffer";
 
 ImageReader::ImageReader(std::pair<int32_t, int32_t> *dimen, Queuer *) :
         reader_(nullptr), queuer_() {
@@ -33,82 +22,13 @@ ImageReader::ImageReader(std::pair<int32_t, int32_t> *dimen, Queuer *) :
         system(cmd.c_str());
     }
 
-    ImageReader_ImageListener listener{
+    AImageReader_ImageListener listener{
             .context = this,
-            .onImageAvailable = [](void *ctx, ImageReader *reader) {
-                //reinterpret_cast<ImageReader *>(ctx)->ImageCallback(reader);
+            .onImageAvailable = [](void *ctx, AImageReader *reader) {
+                reinterpret_cast<ImageReader *>(ctx)->ImageCallback(reader);
             },
     };
-    //AImageReader_setImageListener(reader_, &listener);
-
-
-    //// FIXME
-    const int32_t mWidth = dimen->first;
-    const int32_t mHeight = dimen->second;
-    const int32_t mFormat = VIS_IMAGE_FORMAT;
-    const uint64_t mUsage = AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN;  // AHARDWAREBUFFER_USAGE_* flags.
-    const int32_t mMaxImages = MAX_BUF_COUNT;
-
-    mFrameListener = new FrameListener(this);
-    mFrameListener->setImageListener(&listener);
-
-    auto publicFormat = static_cast<PublicFormat>(mFormat);
-    int mHalFormat = mapPublicFormatToHalFormat(publicFormat);
-    android_dataspace_t mHalDataSpace = mapPublicFormatToHalDataspace(publicFormat);
-    uint64_t mHalUsage = AHardwareBuffer_convertToGrallocUsageBits(
-            AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN);
-    sp<IGraphicBufferProducer> gbProducer;
-    sp<IGraphicBufferConsumer> gbConsumer;
-    BufferQueue::createBufferQueue(&gbProducer, &gbConsumer);
-    String8 consumerName = String8::format("ImageReader-%dx%df%xu%" PRIu64 "m%d-%d-%d",
-                                           mWidth, mHeight, mFormat, mUsage, mMaxImages, getpid(),
-                                           createProcessUniqueId());
-    mBufferItemConsumer = new BufferItemConsumer(
-            gbConsumer, mHalUsage, MAX_BUF_COUNT,
-            /*controlledByApp*/ true);
-    if (mBufferItemConsumer == nullptr) {
-        ALOGE("Failed to allocate BufferItemConsumer");
-        //return AMEDIA_ERROR_UNKNOWN;
-    }
-    sp<IGraphicBufferProducer> mProducer = gbProducer;
-    mBufferItemConsumer->setName(consumerName);
-    mBufferItemConsumer->setFrameAvailableListener(mFrameListener);
-    mBufferItemConsumer->setBufferFreedListener(mBufferRemovedListener);
-    status_t res;
-    res = mBufferItemConsumer->setDefaultBufferSize(mWidth, mHeight);
-    if (res != OK) {
-        ALOGE("Failed to set BufferItemConsumer buffer size");
-        //return AMEDIA_ERROR_UNKNOWN;
-    }
-    res = mBufferItemConsumer->setDefaultBufferFormat(mHalFormat);
-    if (res != OK) {
-        ALOGE("Failed to set BufferItemConsumer buffer format");
-        //return AMEDIA_ERROR_UNKNOWN;
-    }
-    res = mBufferItemConsumer->setDefaultBufferDataSpace(mHalDataSpace);
-    if (res != OK) {
-        ALOGE("Failed to set BufferItemConsumer buffer dataSpace");
-        //return AMEDIA_ERROR_UNKNOWN;
-    }
-    if (mUsage & AHARDWAREBUFFER_USAGE_PROTECTED_CONTENT) {
-        gbConsumer->setConsumerIsProtected(true);
-    }
-    sp<ANativeWindow> mWindow = TODO();
-
-    mCbLooper = new ALooper();
-    //mCbLooper->setName(consumerName.string());
-    res = mCbLooper->start(
-            /*runOnCallingThread*/false,
-            /*canCallJava*/       true,
-                                  PRIORITY_DEFAULT);
-    if (res != OK) {
-        ALOGE("Failed to start the looper");
-        //return AMEDIA_ERROR_UNKNOWN;
-    }
-    mHandler = new CallbackHandler(this);
-    mCbLooper->registerHandler(mHandler);
-
-    // FIXME mBufferItemConsumer has 3 more usages in acquireImageLocked and releaseImageLocked
+    AImageReader_setImageListener(reader_, &listener);
 }
 
 // called when a frame is captured
@@ -116,7 +36,7 @@ void ImageReader::ImageCallback(AImageReader *reader) {
     AImage *image = nullptr;
     if (AImageReader_acquireNextImage(reader, &image) != AMEDIA_OK || !image) return;
 
-    /*ANativeWindow_acquire(mirror_);
+    /*ANativeWindow_acquire(mirror_); TODO
     ANativeWindow_Buffer buf;
     if (ANativeWindow_lock(mirror_, &buf, nullptr) == 0) {
         Mirror(&buf, image);
@@ -242,78 +162,6 @@ void ImageReader::Submit(AImage *image, int64_t time) {
 }
 
 ImageReader::~ImageReader() {
-    if (mBufferItemConsumer != nullptr) {
-        mBufferItemConsumer->abandon();
-        mBufferItemConsumer->setFrameAvailableListener(nullptr);
-    }
-
-    //// FIXME
-
     ASSERT(reader_, "NULL Pointer to %s", __FUNCTION__)
     AImageReader_delete(reader_);
-}
-
-
-void
-ImageReader::FrameListener::onFrameAvailable(const BufferItem& /*item*/) {
-    sp<ImageReader> reader = mReader.promote();
-    if (reader == nullptr) {
-        ALOGW("A frame is available after ImageReader closed!");
-        return; // reader has been closed
-    }
-    Mutex::Autolock _l(mLock);
-    if (mListener.onImageAvailable == nullptr) {
-        return; // No callback registered
-    }
-    sp<AMessage> msg = new AMessage(ImageReader::kWhatImageAvailable, reader->mHandler);
-    msg->setPointer(ImageReader::kCallbackFpKey, (void *) mListener.onImageAvailable);
-    msg->setPointer(ImageReader::kContextKey, mListener.context);
-    msg->post();
-}
-media_status_t
-ImageReader::FrameListener::setImageListener(ImageReader_ImageListener* listener) {
-    Mutex::Autolock _l(mLock);
-    if (listener == nullptr) {
-        mListener.context = nullptr;
-        mListener.onImageAvailable = nullptr;
-    } else {
-        mListener = *listener;
-    }
-    return AMEDIA_OK;
-}
-
-void
-ImageReader::BufferRemovedListener::onBufferFreed(const wp<GraphicBuffer>& graphicBuffer) {
-    sp<ImageReader> reader = mReader.promote();
-    if (reader == nullptr) {
-        ALOGW("A frame is available after ImageReader closed!");
-        return; // reader has been closed
-    }
-    Mutex::Autolock _l(mLock);
-    if (mListener.onBufferRemoved == nullptr) {
-        return; // No callback registered
-    }
-    sp<GraphicBuffer> gBuffer = graphicBuffer.promote();
-    if (gBuffer == nullptr) {
-        ALOGW("A buffer being freed has gone away!");
-        return; // buffer is already destroyed
-    }
-    sp<AMessage> msg = new AMessage(ImageReader::kWhatBufferRemoved, reader->mHandler);
-    msg->setPointer(
-            ImageReader::kCallbackFpKey, (void*) mListener.onBufferRemoved);
-    msg->setPointer(ImageReader::kContextKey, mListener.context);
-    msg->setObject(ImageReader::kGraphicBufferKey, gBuffer);
-    msg->post();
-}
-media_status_t
-ImageReader::BufferRemovedListener::setBufferRemovedListener(
-        ImageReader_BufferRemovedListener* listener) {
-    Mutex::Autolock _l(mLock);
-    if (listener == nullptr) {
-        mListener.context = nullptr;
-        mListener.onBufferRemoved = nullptr;
-    } else {
-        mListener = *listener;
-    }
-    return AMEDIA_OK;
 }

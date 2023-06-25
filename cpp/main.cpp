@@ -93,6 +93,7 @@ Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
     } else { // don't put these in Main.destroy()
         delete cam;
         vis = nullptr;
+        return nullptr;
     }
 }
 
