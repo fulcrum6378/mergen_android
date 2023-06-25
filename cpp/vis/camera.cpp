@@ -161,10 +161,10 @@ bool Camera::DetermineCaptureDimensions(std::pair<int32_t, int32_t> *dimen) {
     ASSERT(false, "Failed for GetSensorOrientation()")
 }*/
 
-void Camera::CreateSession(ANativeWindow *window) {
+void Camera::CreateSession(ANativeWindow **window) {
     ASSERT(reader_, "reader_ is NULL!")
-    reader_->SetMirrorWindow(window);
     window_ = reader_->GetNativeWindow();
+    window = &window_;
     /*ANativeWindow_setBuffersGeometry(
             window_, dimensions_.first, dimensions_.second,
             WINDOW_FORMAT_RGBX_8888);*/

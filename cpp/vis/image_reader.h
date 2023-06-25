@@ -31,8 +31,6 @@ class ImageReader {
 public:
     explicit ImageReader(std::pair<int32_t, int32_t> *dimen, Queuer *queuer);
 
-    void SetMirrorWindow(ANativeWindow *window);
-
     ANativeWindow *GetNativeWindow(void);
 
     void ImageCallback(AImageReader *reader);
@@ -47,7 +45,6 @@ public:
 
 private:
     AImageReader *reader_;
-    ANativeWindow *mirror_;
     bool recording_{false};
     Queuer *queuer_;
 };

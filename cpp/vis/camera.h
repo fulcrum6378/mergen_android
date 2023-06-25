@@ -53,7 +53,7 @@ public:
 
     const std::pair<int32_t, int32_t> &GetDimensions() const;
 
-    void CreateSession(ANativeWindow *window);
+    void CreateSession(ANativeWindow **window);
 
     bool SetRecording(bool b);
 

@@ -80,13 +80,17 @@ Java_ir_mahdiparastesh_mergen_Main_getCameraDimensions(
     return previewSize;
 }
 
-extern "C" JNIEXPORT void JNICALL
+extern "C" JNIEXPORT jobject JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
-        JNIEnv *env, jobject, jlong cameraObj, jobject surface, jboolean available) {
+        JNIEnv *env, jobject, jlong cameraObj, jboolean available) {
     auto *cam = reinterpret_cast<Camera *>(cameraObj);
     assert(cam == vis);
-    if (available) cam->CreateSession(ANativeWindow_fromSurface(env, surface));
-    else { // don't put these in Main.destroy()
+
+    if (available) {
+        ANativeWindow *window;
+        cam->CreateSession(&window);
+        return ANativeWindow_toSurface(env, window);
+    } else { // don't put these in Main.destroy()
         delete cam;
         vis = nullptr;
     }

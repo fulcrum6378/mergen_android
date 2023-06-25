@@ -7,10 +7,10 @@
 static const char *path = "/data/data/ir.mahdiparastesh.mergen/files/vis/";
 
 ImageReader::ImageReader(std::pair<int32_t, int32_t> *dimen, Queuer *) :
-        reader_(nullptr), mirror_(nullptr), queuer_() {
-    media_status_t status = AImageReader_new(
+        reader_(nullptr), queuer_() {
+    media_status_t status = AImageReader_newWithUsage(
             dimen->first, dimen->second, VIS_IMAGE_FORMAT,
-            MAX_BUF_COUNT, &reader_);
+            AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN, MAX_BUF_COUNT, &reader_);
     ASSERT(reader_ && status == AMEDIA_OK, "Failed to create AImageReader")
 
     // Create the destination directory
@@ -36,20 +36,16 @@ void ImageReader::ImageCallback(AImageReader *reader) {
     AImage *image = nullptr;
     if (AImageReader_acquireNextImage(reader, &image) != AMEDIA_OK || !image) return;
 
-    ANativeWindow_acquire(mirror_);
+    /*ANativeWindow_acquire(mirror_);
     ANativeWindow_Buffer buf;
     if (ANativeWindow_lock(mirror_, &buf, nullptr) == 0) {
         Mirror(&buf, image);
         ANativeWindow_unlockAndPost(mirror_);
         ANativeWindow_release(mirror_);
-    }
+    }*/
 
     if (!recording_) AImage_delete(image);
     else std::thread(&ImageReader::Submit, this, image, Queuer::Now()).detach();
-}
-
-void ImageReader::SetMirrorWindow(ANativeWindow *window) {
-    mirror_ = window;
 }
 
 ANativeWindow *ImageReader::GetNativeWindow() {
