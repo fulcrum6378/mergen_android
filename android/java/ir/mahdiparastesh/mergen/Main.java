@@ -104,12 +104,6 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
         surfaceTexture.setDefaultBufferSize(width, height);
-        preview.setSurfaceTexture();
-        SurfaceTexture.
-        new SurfaceTexture(0).(surface);
-        new TextureView(Main.this).setSurfaceTexture(surface);
-        preview.getSurfaceTexture();
-        new SurfaceView(Main.this).getHolder().(surface);
         surface = onSurfaceStatusChanged(ndkCamera, true);
         preview.setClickable(true);
     }
