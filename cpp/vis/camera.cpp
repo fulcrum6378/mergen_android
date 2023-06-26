@@ -1,9 +1,13 @@
 #include <cstdlib>
+#include <dirent.h>
+#include <thread>
 
 #include "camera.h"
 #include "../global.h"
 
-Camera::Camera(Queuer *queuer) : captureSessionState_(CaptureSessionState::MAX_STATE) {
+static const char *path = "/data/data/ir.mahdiparastesh.mergen/files/vis/";
+
+Camera::Camera() : captureSessionState_(CaptureSessionState::MAX_STATE) {
     cameraMgr_ = ACameraManager_create();
     ASSERT(cameraMgr_, "Failed to create cameraManager")
     cameras_.clear();
@@ -11,8 +15,30 @@ Camera::Camera(Queuer *queuer) : captureSessionState_(CaptureSessionState::MAX_S
     ASSERT(!activeCameraId_.empty(), "Unknown ActiveCameraIdx")
 
     DetermineCaptureDimensions(&dimensions_);
-    reader_ = new ImageReader(&dimensions_, queuer);
-    readerWindow_ = reader_->GetNativeWindow();
+
+    // Initialise AImageReader (reader_)
+    media_status_t status = AImageReader_newWithUsage(
+            dimensions_.first, dimensions_.second, VIS_IMAGE_FORMAT,
+            AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN, MAX_BUF_COUNT, &reader_);
+    ASSERT(reader_ && status == AMEDIA_OK, "Failed to create AImageReader")
+    AImageReader_ImageListener listener{
+            .context = this,
+            .onImageAvailable = [](void *ctx, AImageReader *reader) {
+                reinterpret_cast<Camera *>(ctx)->ImageCallback(reader);
+            },
+    };
+    AImageReader_setImageListener(reader_, &listener);
+    status = AImageReader_getWindow(reader_, &readerWindow_);
+    ASSERT(status == AMEDIA_OK, "Could not get ANativeWindow")
+
+    // Create the destination directory
+    DIR *dir = opendir(path);
+    if (dir) closedir(dir);
+    else {
+        std::string cmd = "mkdir -p ";
+        cmd += path;
+        system(cmd.c_str());
+    }
 
     cameraDeviceListener_ = {
             .context = this,
@@ -42,12 +68,6 @@ Camera::Camera(Queuer *queuer) : captureSessionState_(CaptureSessionState::MAX_S
                 reinterpret_cast<Camera *>(ctx)->captureSessionState_ = CaptureSessionState::ACTIVE;
             },
     };
-
-    // Initialize camera controls(exposure time and sensitivity), pick
-    // up value of 2% * range + min as starting value (just a number, no magic)
-    ACameraMetadata *metadataObj;
-    ACameraManager_getCameraCharacteristics(
-            cameraMgr_, activeCameraId_.c_str(), &metadataObj);
 }
 
 const std::pair<int32_t, int32_t> &Camera::GetDimensions() const {
@@ -175,10 +195,10 @@ void Camera::CreateSession(ANativeWindow *displayWindow) {
     ACameraDevice_createCaptureSession(
             cameras_[activeCameraId_].device_, outputContainer_,
             &sessionListener, &captureSession_);
-    Watch(true);
+    Preview(true);
 }
 
-void Camera::Watch(bool start) {
+void Camera::Preview(bool start) {
     if (start)
         ACameraCaptureSession_setRepeatingRequest(
                 captureSession_, nullptr, 2,
@@ -189,13 +209,78 @@ void Camera::Watch(bool start) {
 }
 
 bool Camera::SetRecording(bool b) {
-    if (reader_)
-        return reader_->SetRecording(b);
-    else return false;
+    if (captureSessionState_ != CaptureSessionState::ACTIVE || b == recording_) return false;
+    recording_ = b;
+    return true;
+}
+
+// called when a frame is captured
+void Camera::ImageCallback(AImageReader *reader) const {
+    AImage *image = nullptr;
+    if (AImageReader_acquireNextImage(reader, &image) != AMEDIA_OK || !image) return;
+
+    if (!recording_) AImage_delete(image);
+    else std::thread(&Camera::Submit/*, this*/, image, Queuer::Now()).detach();
+}
+
+/**
+ * Helper function for YUV_420 to RGB conversion. Courtesy of Tensorflow ImageClassifier Sample:
+ * https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/android/jni/yuv2rgb.cc
+ * The difference is that here we have to swap UV plane when calling it.
+ *
+ * This value is 2 ^ 18 - 1, and is used to clamp the RGB values before their ranges are normalized
+ * to eight bits.
+ *
+ * Refer to commit 2023.06.26 - 1 were the implementation was delete thereafter.
+ */
+/*inline uint32_t Camera::YUV2RGB(int nY, int nU, int nV) {
+    nY -= 16;
+    nU -= 128;
+    nV -= 128;
+    if (nY < 0) nY = 0;
+
+    // This is the floating point equivalent. We do the conversion in integer
+    // because some Android devices do not have floating point in hardware.
+    // nR = (int)(1.164 * nY + 1.596 * nV);
+    // nG = (int)(1.164 * nY - 0.813 * nV - 0.391 * nU);
+    // nB = (int)(1.164 * nY + 2.018 * nU);
+
+    int nR = (int) (1192 * nY + 1634 * nV);
+    int nG = (int) (1192 * nY - 833 * nV - 400 * nU);
+    int nB = (int) (1192 * nY + 2066 * nU);
+
+    int maxR = MAX(0, nR), maxG = MAX(0, nG), maxB = MAX(0, nB);
+    // inlining these will cause mere-IDE error
+    nR = MIN(kMaxChannelValue, maxR);
+    nG = MIN(kMaxChannelValue, maxG);
+    nB = MIN(kMaxChannelValue, maxB);
+
+    nR = (nR >> 10) & 0xff;
+    nG = (nG >> 10) & 0xff;
+    nB = (nB >> 10) & 0xff;
+
+    return 0xff000000 | (nR << 16) | (nG << 8) | nB;
+}*/
+
+void Camera::Submit(AImage *image, int64_t time) {
+    uint8_t *data = nullptr;
+    int len = 0;
+    AImage_getPlaneData(image, 0, &data, &len);
+
+    std::string fileName = path + std::to_string(time) + ".yuv";
+    FILE *file = fopen(fileName.c_str(), "wb");
+    if (file && data && len) {
+        fwrite(data, 1, len, file);
+        //queuer_->Input(SENSE_ID_BACK_LENS, data, time);
+        fclose(file);
+    } else {
+        if (file) fclose(file);
+    }
+    AImage_delete(image);
 }
 
 Camera::~Camera() {
-    Watch(false);
+    Preview(false);
     ACameraCaptureSession_close(captureSession_);
 
     if (readerWindow_) {
@@ -229,7 +314,7 @@ Camera::~Camera() {
     }
 
     if (reader_) {
-        delete reader_;
+        AImageReader_delete(reader_);
         reader_ = nullptr;
     }
 }

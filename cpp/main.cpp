@@ -11,8 +11,7 @@ extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *, jobject) {
     //mem = new Queuer();
     aud = new AudioEngine(/*mem*/nullptr);
-    vis = new Camera(/*mem*/nullptr);
-
+    vis = new Camera();
     // ComputeVK().run(state->activity->assetManager);
 
     return reinterpret_cast<jlong>(vis);
@@ -54,13 +53,6 @@ Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
 
 extern "C" JNIEXPORT jstring JNICALL
 Java_ir_mahdiparastesh_mergen_Main_test(JNIEnv */*env*/, jobject) {
-    /*#include <chrono>
-    #include <ctime>
-    std::chrono::system_clock::time_point ts = std::chrono::system_clock::now();
-    ts.operator+=(std::chrono::duration<std::int64_t, std::ratio<31556952>>(1));
-    std::tm* lc = std::gmtime(reinterpret_cast<const time_t *>(ts.time_since_epoch().count()));
-    return env->NewStringUTF(std::to_string(lc->tm_year).c_str());*/
-
     /*jlong testShake = 200;
     jmethodID shakeMethod = env->GetMethodID(
             env->FindClass("ir/mahdiparastesh/mergen/Main"), "shake", "(J)V");
@@ -100,6 +92,5 @@ Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
   * The idea of defining a JNI interface header sucks!
   * Beware that AImageReader_acquireLatestImage deletes the previous images.
   * Use AImage_getTimestamp().
-  * ACAMERA_LENS_FACING_BACK
   * LET'S TEMPORARILY LEAVE "MEM" AND MERGE ITS JOB ALONG WITH "REW" INTO "TNK"!
   */

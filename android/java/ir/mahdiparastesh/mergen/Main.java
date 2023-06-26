@@ -66,15 +66,12 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         Size size = getCameraDimensions(ndkCamera);
         /*Toast.makeText(this, size.getWidth() + " : " + size.getHeight(),
                 Toast.LENGTH_SHORT).show();*/
-
         onRecordingStopped();
-        int bufDim = Math.max(size.getWidth(), size.getHeight());
         ViewGroup.LayoutParams previewLP = preview.getLayoutParams();
-        previewLP.width = bufDim;
-        previewLP.height = bufDim;
+        previewLP.width = size.getWidth();
+        previewLP.height = size.getHeight();
         preview.setLayoutParams(previewLP);
-        preview.setTranslationY((bufDim - size.getHeight()) / 2f);
-        preview.setSurfaceTextureListener(this); // don't make it in-line.
+        preview.setSurfaceTextureListener(this);
         if (preview.isAvailable()) onSurfaceTextureAvailable(
                 preview.getSurfaceTexture(), size.getWidth(), size.getHeight());
 
@@ -94,7 +91,6 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         }*/
     }
 
-    /** The width and height dimensions of a buffer are always equal even in 1024x768! */
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
         surfaceTexture.setDefaultBufferSize(width, height);

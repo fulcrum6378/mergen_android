@@ -5,10 +5,35 @@
 #include <camera/NdkCameraManager.h>
 #include <camera/NdkCameraMetadataTags.h>
 #include <map>
+#include <media/NdkImage.h>
+#include <media/NdkImageReader.h>
 #include <string>
 #include <utility>
 
-#include "image_reader.h"
+#include "../mem/queuer.h"
+
+// together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone apparently!
+#define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
+//#define SENSE_ID_BACK_LENS 1
+/**
+ * Let's make it a sqaure for less trouble, at least for now!
+ * it would result in 2336x1080 in Galaxy A50.
+ */
+#define VIS_IMAGE_NEAREST_HEIGHT 1088
+
+#define MAX_BUF_COUNT 4 // max image buffers
+/*#define MIN(a, b)           \
+  ({                        \
+    __typeof__(a) _a = (a); \
+    __typeof__(b) _b = (b); \
+    _a < _b ? _a : _b;      \
+  })
+#define MAX(a, b)           \
+  ({                        \
+    __typeof__(a) _a = (a); \
+    __typeof__(b) _b = (b); \
+    _a > _b ? _a : _b;      \
+  })*/
 
 enum class CaptureSessionState : int32_t {
     READY,      // session is ready
@@ -21,8 +46,17 @@ class CameraId;
 
 class Camera {
 private:
-    ImageReader *reader_{};
+    /**
+     * AImageReader creates an IGraphicBufferProducer (input) and an IGraphicBufferConsumer (output),
+     * then it creates a BufferQueue from them, then it listens data from that IGraphicBufferConsumer,
+     * THEN IT CREATES A Surface OUT OF THE IGraphicBufferProducer (input), which is the same as
+     * ANativeWindow; so AImageReader has no choice except creating it, itself!
+     */
+    AImageReader *reader_{};
     std::pair<int32_t, int32_t> dimensions_;
+    bool recording_{false};
+    //static const int kMaxChannelValue = 262143;
+    [[maybe_unused]] Queuer *queuer_{};
 
     // Managing cameras
     ACameraManager *cameraMgr_;
@@ -55,10 +89,16 @@ private:
 
     //int32_t GetCameraSensorOrientation(int32_t facing);
 
-    void Watch(bool start);
+    void Preview(bool start);
+
+    void ImageCallback(AImageReader *reader) const;
+
+    //static inline uint32_t YUV2RGB(int nY, int nU, int nV);
+
+    static void Submit(AImage *image, int64_t time);
 
 public:
-    Camera(Queuer *queuer);
+    Camera();
 
     const std::pair<int32_t, int32_t> &GetDimensions() const;
 
