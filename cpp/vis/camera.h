@@ -24,21 +24,30 @@ private:
     ImageReader *reader_{};
     std::pair<int32_t, int32_t> dimensions_;
 
+    // Managing cameras
     ACameraManager *cameraMgr_;
     std::map<std::string, CameraId> cameras_;
     std::string activeCameraId_;
-
-    ANativeWindow *window_;
-    ACaptureSessionOutput *sessionOutput_;
-    ACameraOutputTarget *target_;
-    ACaptureRequest *request_;
-    ACaptureSessionOutputContainer *outputContainer_;
-    ACameraCaptureSession *captureSession_;
-    CaptureSessionState captureSessionState_;
-
     ACameraDevice_stateCallbacks cameraDeviceListener_{};
-    //ACameraManager_AvailabilityCallbacks cameraMgrListener_{};
+
+    // Capture session (GLOBAL)
+    ACaptureSessionOutputContainer *outputContainer_{};
+    ACameraCaptureSession *captureSession_{};
+    CaptureSessionState captureSessionState_;
     ACameraCaptureSession_stateCallbacks sessionListener{};
+
+    // Capture session (Reader)
+    ANativeWindow *readerWindow_{};
+    ACaptureSessionOutput *readerOutput_{};
+    ACameraOutputTarget *readerTarget_{};
+    ACaptureRequest *readerRequest_{};
+
+    // Capture session (Display)
+    ANativeWindow *displayWindow_{};
+    ACaptureSessionOutput *displayOutput_{};
+    ACameraOutputTarget *displayTarget_{};
+    ACaptureRequest *displayRequest_{};
+
 
     void EnumerateCamera(void);
 
@@ -46,14 +55,14 @@ private:
 
     //int32_t GetCameraSensorOrientation(int32_t facing);
 
-    void StartPreview(bool start);
+    void Watch(bool start);
 
 public:
     Camera(Queuer *queuer);
 
     const std::pair<int32_t, int32_t> &GetDimensions() const;
 
-    void CreateSession(ANativeWindow **window);
+    void CreateSession(ANativeWindow *displayWindow);
 
     bool SetRecording(bool b);
 

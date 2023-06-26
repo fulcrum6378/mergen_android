@@ -36,14 +36,6 @@ void ImageReader::ImageCallback(AImageReader *reader) {
     AImage *image = nullptr;
     if (AImageReader_acquireNextImage(reader, &image) != AMEDIA_OK || !image) return;
 
-    /*ANativeWindow_acquire(mirror_); TODO
-    ANativeWindow_Buffer buf;
-    if (ANativeWindow_lock(mirror_, &buf, nullptr) == 0) {
-        Mirror(&buf, image);
-        ANativeWindow_unlockAndPost(mirror_);
-        ANativeWindow_release(mirror_);
-    }*/
-
     if (!recording_) AImage_delete(image);
     else std::thread(&ImageReader::Submit, this, image, Queuer::Now()).detach();
 }
@@ -104,7 +96,7 @@ static inline uint32_t YUV2RGB(int nY, int nU, int nV) {
  *   @param image a {@link AImage} instance, source of image conversion.
  *            it will be deleted via {@link AImage_delete}
  */
-void ImageReader::Mirror(ANativeWindow_Buffer *buf, AImage *image) {
+/*void ImageReader::Mirror(ANativeWindow_Buffer *buf, AImage *image) {
     AImageCropRect srcRect;
     AImage_getCropRect(image, &srcRect);
 
@@ -136,7 +128,7 @@ void ImageReader::Mirror(ANativeWindow_Buffer *buf, AImage *image) {
         }
         out += buf->stride;
     }
-}
+}*/
 
 bool ImageReader::SetRecording(bool b) {
     if (b == recording_) return false;

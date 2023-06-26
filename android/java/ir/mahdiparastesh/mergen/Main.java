@@ -4,10 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
-import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -16,9 +13,6 @@ import android.os.Vibrator;
 import android.os.VibratorManager;
 import android.util.Size;
 import android.view.Surface;
-import android.view.SurfaceControlViewHost;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -104,7 +98,8 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
         surfaceTexture.setDefaultBufferSize(width, height);
-        surface = onSurfaceStatusChanged(ndkCamera, true);
+        surface = new Surface(surfaceTexture);
+        onSurfaceStatusChanged(ndkCamera, surface, true);
         preview.setClickable(true);
     }
 
@@ -120,7 +115,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
         preview.setClickable(false);
         recording(false);
-        onSurfaceStatusChanged(ndkCamera, false);
+        onSurfaceStatusChanged(ndkCamera, surface, false);
         ndkCamera = 0;
         surface = null;
         return true;
@@ -219,7 +214,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     /** Camera cannot record in any dimension you want! */
     private native Size getCameraDimensions(long cameraObj);
 
-    private native Surface onSurfaceStatusChanged(long cameraObj, boolean available);
+    private native void onSurfaceStatusChanged(long cameraObj, Surface surface, boolean available);
 
     static {
         System.loadLibrary("main");

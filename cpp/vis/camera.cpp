@@ -3,16 +3,7 @@
 #include "camera.h"
 #include "../global.h"
 
-Camera::Camera(Queuer *queuer) :
-        cameraMgr_(),
-        window_(nullptr),
-        sessionOutput_(nullptr),
-        target_(nullptr),
-        request_(nullptr),
-        outputContainer_(nullptr),
-        captureSession_(nullptr),
-        captureSessionState_(CaptureSessionState::MAX_STATE) {
-
+Camera::Camera(Queuer *queuer) : captureSessionState_(CaptureSessionState::MAX_STATE) {
     cameraMgr_ = ACameraManager_create();
     ASSERT(cameraMgr_, "Failed to create cameraManager")
     cameras_.clear();
@@ -21,6 +12,7 @@ Camera::Camera(Queuer *queuer) :
 
     DetermineCaptureDimensions(&dimensions_);
     reader_ = new ImageReader(&dimensions_, queuer);
+    readerWindow_ = reader_->GetNativeWindow();
 
     cameraDeviceListener_ = {
             .context = this,
@@ -34,15 +26,10 @@ Camera::Camera(Queuer *queuer) :
             },
             .onError = nullptr,
     };
-    ACameraManager_openCamera(cameraMgr_, activeCameraId_.c_str(),
-                              &cameraDeviceListener_, &cameras_[activeCameraId_].device_);
+    ACameraManager_openCamera(
+            cameraMgr_, activeCameraId_.c_str(), &cameraDeviceListener_,
+            &cameras_[activeCameraId_].device_);
 
-    /*cameraMgrListener_ = {
-            .context = this,
-            .onCameraAvailable = nullptr,
-            .onCameraUnavailable = nullptr,
-    };
-    ACameraManager_registerAvailabilityCallback(cameraMgr_, &cameraMgrListener_);*/
     sessionListener = {
             .context = this,
             .onClosed = [](void *ctx, ACameraCaptureSession *ses) {
@@ -161,48 +148,42 @@ bool Camera::DetermineCaptureDimensions(std::pair<int32_t, int32_t> *dimen) {
     ASSERT(false, "Failed for GetSensorOrientation()")
 }*/
 
-void Camera::CreateSession(ANativeWindow **window) {
-    ASSERT(reader_, "reader_ is NULL!")
-    window_ = reader_->GetNativeWindow();
-    window = &window_;
-    /*ANativeWindow_setBuffersGeometry(
-            window_, dimensions_.first, dimensions_.second,
-            WINDOW_FORMAT_RGBX_8888);*/
-    // ANativeWindow_setFrameRate(window_, 1,1);
-    // needs API 30, when changed minSdk to 30, the audio engine gets a nasty deprecated error!
-
+/** The default FPS is in range 22..24! */
+void Camera::CreateSession(ANativeWindow *displayWindow) {
+    displayWindow_ = displayWindow;
     ACaptureSessionOutputContainer_create(&outputContainer_);
-    ANativeWindow_acquire(window_);
-    ACaptureSessionOutput_create(window_, &sessionOutput_);
-    ACaptureSessionOutputContainer_add(outputContainer_, sessionOutput_);
-    ACameraOutputTarget_create(window_, &target_);
+
+    // READER
+    ANativeWindow_acquire(readerWindow_);
+    ACaptureSessionOutput_create(readerWindow_, &readerOutput_);
+    ACaptureSessionOutputContainer_add(outputContainer_, readerOutput_);
+    ACameraOutputTarget_create(readerWindow_, &readerTarget_);
     ACameraDevice_createCaptureRequest(cameras_[activeCameraId_].device_,
-                                       TEMPLATE_PREVIEW, &request_);
-    /*// TODO Trying to alter the frame rate...
-    int64_t ddd = 1;
-    ACaptureRequest_setEntry_i64(
-            request_, ACAMERA_SENSOR_FRAME_DURATION, 1, &ddd);
+                                       TEMPLATE_PREVIEW, &readerRequest_);
+    ACaptureRequest_addTarget(readerRequest_, readerTarget_);
 
-    ACameraMetadata_const_entry entry2;
-    ACameraMetadata_getConstEntry(metadataObj, ACAMERA_SENSOR_FRAME_DURATION, &entry2);
-    ASSERT(false, "%s", ("FUCK => " + std::to_string(entry2.data.i64[0])).c_str())*/
-    // The default FPS is in range 22..24!
-    ACaptureRequest_addTarget(request_, target_);
+    // DISPLAY
+    ANativeWindow_acquire(displayWindow_);
+    ACaptureSessionOutput_create(displayWindow_, &displayOutput_);
+    ACaptureSessionOutputContainer_add(outputContainer_, displayOutput_);
+    ACameraOutputTarget_create(displayWindow_, &displayTarget_);
+    ACameraDevice_createCaptureRequest(cameras_[activeCameraId_].device_,
+                                       TEMPLATE_PREVIEW, &displayRequest_);
+    ACaptureRequest_addTarget(displayRequest_, displayTarget_);
 
-    // Create a capture session for the given preview request
     captureSessionState_ = CaptureSessionState::READY;
     ACameraDevice_createCaptureSession(
             cameras_[activeCameraId_].device_, outputContainer_,
             &sessionListener, &captureSession_);
-
-    StartPreview(true);
+    Watch(true);
 }
 
-void Camera::StartPreview(bool start) {
+void Camera::Watch(bool start) {
     if (start)
         ACameraCaptureSession_setRepeatingRequest(
-                captureSession_, nullptr, 1,
-                &request_, nullptr);
+                captureSession_, nullptr, 2,
+                new ACaptureRequest *[2]{readerRequest_, displayRequest_},
+                nullptr);
     else if (captureSessionState_ == CaptureSessionState::ACTIVE)
         ACameraCaptureSession_stopRepeating(captureSession_);
 }
@@ -214,18 +195,28 @@ bool Camera::SetRecording(bool b) {
 }
 
 Camera::~Camera() {
-    StartPreview(false);
+    Watch(false);
     ACameraCaptureSession_close(captureSession_);
 
-    if (window_) {
-        ACaptureRequest_removeTarget(request_, target_);
-        ACaptureRequest_free(request_);
-        ACameraOutputTarget_free(target_);
+    if (readerWindow_) {
+        ACaptureRequest_removeTarget(readerRequest_, readerTarget_);
+        ACaptureRequest_free(readerRequest_);
+        ACameraOutputTarget_free(readerTarget_);
 
-        ACaptureSessionOutputContainer_remove(outputContainer_, sessionOutput_);
-        ACaptureSessionOutput_free(sessionOutput_);
+        ACaptureSessionOutputContainer_remove(outputContainer_, readerOutput_);
+        ACaptureSessionOutput_free(readerOutput_);
 
-        ANativeWindow_release(window_);
+        ANativeWindow_release(readerWindow_);
+    }
+    if (displayWindow_) {
+        ACaptureRequest_removeTarget(displayRequest_, displayTarget_);
+        ACaptureRequest_free(displayRequest_);
+        ACameraOutputTarget_free(displayTarget_);
+
+        ACaptureSessionOutputContainer_remove(outputContainer_, displayOutput_);
+        ACaptureSessionOutput_free(displayOutput_);
+
+        ANativeWindow_release(displayWindow_);
     }
     ACaptureSessionOutputContainer_free(outputContainer_);
 
@@ -233,7 +224,6 @@ Camera::~Camera() {
         if (cam.second.device_) ACameraDevice_close(cam.second.device_);
     cameras_.clear();
     if (cameraMgr_) {
-        // ACameraManager_unregisterAvailabilityCallback(cameraMgr_, &cameraMgrListener_);
         ACameraManager_delete(cameraMgr_);
         cameraMgr_ = nullptr;
     }
