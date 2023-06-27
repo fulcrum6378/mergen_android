@@ -12,7 +12,6 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
 import android.util.Size;
-import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -130,15 +129,12 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         else onRecordingStopped();
     }
 
+    /** MotionEvent::getPressure() is always 1.0! */
     private void onRecordingStarted() {
         root.setOnClickListener(null);
         root.setOnTouchListener((v, ev) -> {
-            if (ev.getAction() != MotionEvent.ACTION_DOWN &&
-                    ev.getAction() != MotionEvent.ACTION_UP &&
-                    ev.getAction() != MotionEvent.ACTION_MOVE &&
-                    ev.getAction() != MotionEvent.ACTION_CANCEL) return false;
-            Main.this.onTouch(new float[]{
-                    ev.getAction(), ev.getRawX(), ev.getRawY(), ev.getSize()});
+            if (ev.getAction() < 0 || ev.getAction() > 3) return false;
+            Main.this.onTouch(ev.getAction(), ev.getRawX(), ev.getRawY(), ev.getSize());
             return true;
         });
     }
@@ -209,9 +205,11 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     /** Camera cannot record in any dimension you want! */
     private native Size getCameraDimensions(long cameraObj);
 
+    /** Lets Camera be created or destroyed. */
     private native void onSurfaceStatusChanged(long cameraObj, Surface surface, boolean available);
 
-    private native void onTouch(float[] properties);
+    /** Sends specific touch events. */
+    private native void onTouch(int action, float x, float y, float size);
 
     static {
         System.loadLibrary("main");

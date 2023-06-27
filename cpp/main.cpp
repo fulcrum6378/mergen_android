@@ -87,10 +87,10 @@ Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
 #include <sstream>
 
 extern "C" JNIEXPORT void JNICALL
-Java_ir_mahdiparastesh_mergen_Main_onTouch(JNIEnv *env, jobject, jfloatArray properties) {
-    jfloat *arr = env->GetFloatArrayElements(properties, nullptr);
+Java_ir_mahdiparastesh_mergen_Main_onTouch(
+        JNIEnv *, jobject, jint action, jfloat x, jfloat y, jfloat size) {
     std::stringstream ss;
-    switch (static_cast<int>(arr[0])) {
+    switch (action) {
         case 0:
             ss << "ACTION_DOWN";
             break;
@@ -104,9 +104,9 @@ Java_ir_mahdiparastesh_mergen_Main_onTouch(JNIEnv *env, jobject, jfloatArray pro
             ss << "ACTION_CANCEL";
             break;
         default:
-            ss << "UNKNOWN{" << arr[0] << "}";
+            ss << "UNKNOWN{" << action << "}";
     }
-    ss << ", " << arr[1] << ", " << arr[2] << ", " << arr[3];
+    ss << ", " << x << ", " << y << ", " << size;
     LOGW("%s", ss.str().c_str());
 }
 

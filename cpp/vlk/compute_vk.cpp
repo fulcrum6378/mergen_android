@@ -1,5 +1,4 @@
 #include "compute_vk.h"
-#include "lodepng.h"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-pragmas"
@@ -307,10 +306,10 @@ void ComputeVK::saveRenderedImage() {
     // Done reading, so unmap.
     vkUnmapMemory(device, bufferMemory);
 
-    unsigned error = lodepng::encode(
+    /*unsigned error = lodepng::encode(
             "/data/data/ir.mahdiparastesh.mergen/files/mandelbrot.png",
             image, WIDTH, HEIGHT);
-    if (error) printf("encoder error %d: %s", error, lodepng_error_text(error));
+    if (error) printf("encoder error %d: %s", error, lodepng_error_text(error));*/
 }
 
 void ComputeVK::cleanup() {

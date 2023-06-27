@@ -17,7 +17,6 @@ add_library(main SHARED
 
         ${CMAKE_CURRENT_SOURCE_DIR}/vlk/hello_vk.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/vlk/compute_vk.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/vlk/lodepng.cpp
         )
 
 target_link_libraries(main
