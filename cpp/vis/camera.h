@@ -11,8 +11,9 @@
 #include <utility>
 
 #include "../mem/queuer.h"
+#include "bitmap.h"
 
-// together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone apparently!
+// together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone!
 #define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
 //#define SENSE_ID_BACK_LENS 1
 /**
@@ -22,7 +23,7 @@
 #define VIS_IMAGE_NEAREST_HEIGHT 1088
 
 #define MAX_BUF_COUNT 4 // max image buffers
-/*#define MIN(a, b)           \
+#define MIN(a, b)           \
   ({                        \
     __typeof__(a) _a = (a); \
     __typeof__(b) _b = (b); \
@@ -33,7 +34,7 @@
     __typeof__(a) _a = (a); \
     __typeof__(b) _b = (b); \
     _a > _b ? _a : _b;      \
-  })*/
+  })
 
 enum class CaptureSessionState : int32_t {
     READY,      // session is ready
@@ -55,7 +56,7 @@ private:
     AImageReader *reader_{};
     std::pair<int32_t, int32_t> dimensions_;
     bool recording_{false};
-    //static const int kMaxChannelValue = 262143;
+    static const int kMaxChannelValue = 262143;
     [[maybe_unused]] Queuer *queuer_{};
 
     // Managing cameras
@@ -93,7 +94,7 @@ private:
 
     void ImageCallback(AImageReader *reader) const;
 
-    //static inline uint32_t YUV2RGB(int nY, int nU, int nV);
+    static inline Pixel* YUV2RGB(int nY, int nU, int nV);
 
     static void Submit(AImage *image, int64_t time);
 

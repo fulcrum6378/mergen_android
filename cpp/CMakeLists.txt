@@ -14,6 +14,7 @@ add_library(main SHARED
 
         ${CMAKE_CURRENT_SOURCE_DIR}/mem/queuer.cpp
 
+        ${CMAKE_CURRENT_SOURCE_DIR}/vis/bitmap.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/vis/camera.cpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/vlk/hello_vk.cpp

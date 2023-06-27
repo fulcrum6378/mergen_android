@@ -233,17 +233,11 @@ void Camera::ImageCallback(AImageReader *reader) const {
  *
  * Refer to commit 2023.06.26 - 1 were the implementation was delete thereafter.
  */
-/*inline uint32_t Camera::YUV2RGB(int nY, int nU, int nV) {
+inline Pixel* Camera::YUV2RGB(int nY, int nU, int nV) {
     nY -= 16;
     nU -= 128;
     nV -= 128;
     if (nY < 0) nY = 0;
-
-    // This is the floating point equivalent. We do the conversion in integer
-    // because some Android devices do not have floating point in hardware.
-    // nR = (int)(1.164 * nY + 1.596 * nV);
-    // nG = (int)(1.164 * nY - 0.813 * nV - 0.391 * nU);
-    // nB = (int)(1.164 * nY + 2.018 * nU);
 
     int nR = (int) (1192 * nY + 1634 * nV);
     int nG = (int) (1192 * nY - 833 * nV - 400 * nU);
@@ -258,16 +252,60 @@ void Camera::ImageCallback(AImageReader *reader) const {
     nR = (nR >> 10) & 0xff;
     nG = (nG >> 10) & 0xff;
     nB = (nB >> 10) & 0xff;
-
-    return 0xff000000 | (nR << 16) | (nG << 8) | nB;
-}*/
+    return new Pixel(nR, nG, nB);
+}
 
 void Camera::Submit(AImage *image, int64_t time) {
-    uint8_t *data = nullptr;
+    AImageCropRect srcRect;
+    AImage_getCropRect(image, &srcRect);
+
+    int32_t yStride, uvStride;
+    uint8_t *yPixel, *uPixel, *vPixel;
+    int32_t yLen, uLen, vLen;
+    AImage_getPlaneRowStride(image, 0, &yStride);
+    AImage_getPlaneRowStride(image, 1, &uvStride);
+    AImage_getPlaneData(image, 0, &yPixel, &yLen);
+    AImage_getPlaneData(image, 1, &vPixel, &vLen);
+    AImage_getPlaneData(image, 2, &uPixel, &uLen);
+    int32_t uvPixelStride;
+    AImage_getPlanePixelStride(image, 1, &uvPixelStride);
+
+    int32_t width, height;
+    AImage_getWidth(image, &width);
+    AImage_getHeight(image, &height);
+    height = MIN(width, (srcRect.bottom - srcRect.top));
+    width = MIN(height, (srcRect.right - srcRect.left));
+
+    auto out = new PixelMatrix();
+    for (int32_t y = 0; y < height; y++) {
+        auto row = new std::vector<Pixel>();
+        const uint8_t *pY = yPixel + yStride * (y + srcRect.top) + srcRect.left;
+
+        int32_t uv_row_start = uvStride * ((y + srcRect.top) >> 1);
+        const uint8_t *pU = uPixel + uv_row_start + (srcRect.left >> 1);
+        const uint8_t *pV = vPixel + uv_row_start + (srcRect.left >> 1);
+
+        for (int32_t x = 0; x < width; x++) {
+            const int32_t uv_offset = (x >> 1) * uvPixelStride;
+            row->push_back(*YUV2RGB(pY[x], pU[uv_offset], pV[uv_offset]));
+        }
+        out->push_back(*row);
+        //out += buf->stride;
+    }
+    Bitmap bmp{};
+    bmp.fromPixelMatrix(*out);
+    bmp.save(path + std::to_string(time) + ".bmp");
+
+
+
+
+
+
+    /*uint8_t *data = nullptr;
     int len = 0;
     AImage_getPlaneData(image, 0, &data, &len);
 
-    std::string fileName = path + std::to_string(time) + ".yuv";
+    std::string fileName = path + std::to_string(time) + ".fuck"; // FIXME
     FILE *file = fopen(fileName.c_str(), "wb");
     if (file && data && len) {
         fwrite(data, 1, len, file);
@@ -275,7 +313,7 @@ void Camera::Submit(AImage *image, int64_t time) {
         fclose(file);
     } else {
         if (file) fclose(file);
-    }
+    }*/
     AImage_delete(image);
 }
 
