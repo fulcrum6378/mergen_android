@@ -1,16 +1,16 @@
 #include <android/native_window_jni.h>
 
-#include "aud/engine.h"
+#include "aud/microphone.h"
 #include "vis/camera.h"
 
-static AudioEngine *aud = nullptr;
+static Microphone *aud = nullptr;
 static Camera *vis = nullptr;
 // static Queuer *mem = nullptr; #include "mem/queuer.h"
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *, jobject) {
     //mem = new Queuer();
-    aud = new AudioEngine(/*mem*/nullptr);
+    aud = new Microphone(/*mem*/nullptr);
     vis = new Camera();
     // ComputeVK().run(state->activity->assetManager);
 
@@ -21,7 +21,7 @@ extern "C" JNIEXPORT jbyte JNICALL
 Java_ir_mahdiparastesh_mergen_Main_start(JNIEnv *, jobject) {
     int8_t ret = 0;
     if (aud) {
-        if (!aud->StartRecording()) ret = 1;
+        if (!aud->Start()) ret = 1;
     } else ret = 2;
     if (ret > 0) return ret;
     if (vis) {
@@ -34,7 +34,7 @@ extern "C" JNIEXPORT jbyte JNICALL
 Java_ir_mahdiparastesh_mergen_Main_stop(JNIEnv *, jobject) {
     int8_t ret = 0;
     if (aud) {
-        if (!aud->StopRecording()) ret = 1;
+        if (!aud->Stop()) ret = 1;
     } else ret = 2;
     if (ret > 0) return ret;
     if (vis) {
@@ -84,6 +84,22 @@ Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
     }
 }
 
+extern "C" JNIEXPORT void JNICALL
+Java_ir_mahdiparastesh_mergen_Main_onTouch(JNIEnv *env, jobject, jfloatArray properties) {
+    jfloat *arr = env->GetFloatArrayElements(properties, nullptr);
+    char buffer[200];
+    snprintf(buffer, sizeof buffer, "%f", arr[0]);
+    snprintf(buffer, sizeof buffer, "%s", ", ");
+    snprintf(buffer, sizeof buffer, "%f", arr[1]);
+    snprintf(buffer, sizeof buffer, "%s", ", ");
+    snprintf(buffer, sizeof buffer, "%f", arr[2]);
+    snprintf(buffer, sizeof buffer, "%s", ", ");
+    snprintf(buffer, sizeof buffer, "%f", arr[3]);
+    snprintf(buffer, sizeof buffer, "%s", ", ");
+    snprintf(buffer, sizeof buffer, "%f", arr[4]);
+    LOGW("%s", "buffer");
+}
+
 /* TODO:
   * Problems:
   * Use the latest image for mirroring while saving all frames, so that the preview won't backward.
@@ -92,5 +108,4 @@ Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
   * The idea of defining a JNI interface header sucks!
   * Beware that AImageReader_acquireLatestImage deletes the previous images.
   * Use AImage_getTimestamp().
-  * LET'S TEMPORARILY LEAVE "MEM" AND MERGE ITS JOB ALONG WITH "REW" INTO "TNK"!
   */

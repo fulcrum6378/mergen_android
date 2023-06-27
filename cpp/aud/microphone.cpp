@@ -1,7 +1,20 @@
-#include "recorder.h"
+#include "microphone.h"
 
-AudioRecorder::AudioRecorder(SLEngineItf slEngine, Queuer *)
-        : freeQueue_(nullptr), recQueue_(nullptr), devShadowQueue_(nullptr), queuer_() {
+Microphone::Microphone(Queuer *)
+        : queuer_(), freeQueue_(nullptr), recQueue_(nullptr), devShadowQueue_(nullptr) {
+    SLresult result;
+
+    // create OpenSL audio engine
+    result = slCreateEngine(
+            &slEngineObj_, 0, nullptr, 0,
+            nullptr, nullptr);
+    SLASSERT(result);
+    result = (*slEngineObj_)->Realize(slEngineObj_, SL_BOOLEAN_FALSE);
+    SLASSERT(result);
+    result = (*slEngineObj_)->GetInterface(slEngineObj_, SL_IID_ENGINE, &slEngineItf_);
+    SLASSERT(result);
+
+    // configure audio properties
     sampleInfo_ = {
             SAMPLE_RATE, FRAMES_PER_BUF,
             static_cast<uint16_t>(BITS_PER_SAMPLE), 0
@@ -22,11 +35,10 @@ AudioRecorder::AudioRecorder(SLEngineItf slEngine, Queuer *)
     SLDataSink audioSnk = {&loc_bq, &format_pcm};
 
     // create audio recorder (requires the RECORD_AUDIO permission)
-    SLresult result;
     const SLInterfaceID id[2] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE, SL_IID_ANDROIDCONFIGURATION};
     const SLboolean req[2] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
-    result = (*slEngine)->CreateAudioRecorder(
-            slEngine, &recObjectItf_, &audioSrc, &audioSnk, 1, id, req);
+    result = (*slEngineItf_)->CreateAudioRecorder(
+            slEngineItf_, &recObjectItf_, &audioSrc, &audioSnk, 1, id, req);
     SLASSERT(result);
 
     // Configure the voice recognition preset which has no signal processing for lower latency.
@@ -51,7 +63,7 @@ AudioRecorder::AudioRecorder(SLEngineItf slEngine, Queuer *)
             recBufQueueItf_,
             [](SLAndroidSimpleBufferQueueItf bq, void *recorder) {
                 // Called for every buffer is full; pass directly to handler.
-                (static_cast<AudioRecorder *>(recorder))->ProcessSLCallback(bq, Queuer::Now());
+                (static_cast<Microphone *>(recorder))->ProcessSLCallback(bq, Queuer::Now());
             }, this);
     SLASSERT(result);
 
@@ -74,7 +86,7 @@ AudioRecorder::AudioRecorder(SLEngineItf slEngine, Queuer *)
  *   *) the less buffering should be before starting player AFTER receiving the recorder buffer
  * Adjust the bufSize here to fit your bill [before it busts]
  */
-void AudioRecorder::SetBufQueues() {
+void Microphone::SetBufQueues() {
     uint32_t bufSize = FRAMES_PER_BUF * AUDIO_SAMPLE_CHANNELS * BITS_PER_SAMPLE;
     bufSize = (bufSize + 7) >> 3;  // bits --> byte
     bufCount_ = BUF_COUNT;
@@ -86,7 +98,7 @@ void AudioRecorder::SetBufQueues() {
         freeQueue_->push(&bufs_[i]);
 }
 
-bool AudioRecorder::Start() {
+bool Microphone::Start() {
     ASSERT(freeQueue_ && recQueue_ && devShadowQueue_, "Some of the queues are NULL: (%p, %p, %p)",
            freeQueue_, recQueue_, devShadowQueue_)
     audioBufCount = 0;
@@ -114,14 +126,16 @@ bool AudioRecorder::Start() {
 
     result = (*recItf_)->SetRecordState(recItf_, SL_RECORDSTATE_RECORDING);
 
-    char path[] = "/data/data/ir.mahdiparastesh.mergen/files/aud.pcm";
-    remove(path);
-    test = std::ofstream(path, std::ios::binary | std::ios::out);
+    if (AUD_SAVE) {
+        char path[] = "/data/data/ir.mahdiparastesh.mergen/files/aud.pcm";
+        remove(path);
+        test = std::ofstream(path, std::ios::binary | std::ios::out);
+    }
 
     return result == SL_RESULT_SUCCESS;
 }
 
-void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq, int64_t) {
+void Microphone::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq, int64_t) {
     assert(bq == recBufQueueItf_);
     sample_buf *buf = nullptr;
     devShadowQueue_->front(&buf);
@@ -177,8 +191,8 @@ void AudioRecorder::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq, int64_t)
     }
 }
 
-bool AudioRecorder::Stop() {
-    test.close();
+bool Microphone::Stop() {
+    if (AUD_SAVE) test.close();
 
     // In case already recording, stop recording and clear buffer queue.
     SLuint32 curState;
@@ -194,7 +208,7 @@ bool AudioRecorder::Stop() {
     return true;
 }
 
-AudioRecorder::~AudioRecorder() {
+Microphone::~Microphone() {
     // destroy audio recorder object, and invalidate all associated interfaces
     if (recObjectItf_ != nullptr)
         (*recObjectItf_)->Destroy(recObjectItf_);
@@ -217,4 +231,11 @@ AudioRecorder::~AudioRecorder() {
     delete recQueue_;
     delete freeQueue_;
     releaseSampleBufs(bufs_, bufCount_);
+
+    // destroy OpenSL audio engine
+    if (slEngineObj_ != nullptr) {
+        (*slEngineObj_)->Destroy(slEngineObj_);
+        slEngineObj_ = nullptr;
+        slEngineItf_ = nullptr;
+    }
 }

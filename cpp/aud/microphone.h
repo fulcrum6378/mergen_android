@@ -7,8 +7,15 @@
 #include "../mem/queuer.h"
 
 //#define SENSE_ID_MICROPHONE 2
+static bool AUD_SAVE = true;
 
-class AudioRecorder {
+class Microphone {
+private:
+    SLObjectItf slEngineObj_{};
+    SLEngineItf slEngineItf_{};
+    std::ofstream test;
+    [[maybe_unused]] Queuer *queuer_;
+
     SLObjectItf recObjectItf_{};
     SLRecordItf recItf_{};
     SLAndroidSimpleBufferQueueItf recBufQueueItf_{};
@@ -23,21 +30,18 @@ class AudioRecorder {
     uint32_t audioBufCount{};
     sample_buf silentBuf_{};
 
-    std::ofstream test;
-    [[maybe_unused]] Queuer *queuer_;
-
     void SetBufQueues();
 
     void ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq, int64_t time);
 
 public:
-    AudioRecorder(SLEngineItf slEngine, Queuer *queuer);
+    Microphone(Queuer *queuer);
 
     bool Start(void);
 
     bool Stop(void);
 
-    ~AudioRecorder();
+    ~Microphone();
 };
 
 #endif //AUD_RECORDER_H

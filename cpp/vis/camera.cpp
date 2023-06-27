@@ -6,8 +6,6 @@
 #include "camera.h"
 #include "../global.h"
 
-static const char *path = "/data/data/ir.mahdiparastesh.mergen/files/vis/";
-
 Camera::Camera() : captureSessionState_(CaptureSessionState::MAX_STATE) {
     cameraMgr_ = ACameraManager_create();
     ASSERT(cameraMgr_, "Failed to create cameraManager")
@@ -220,7 +218,7 @@ void Camera::ImageCallback(AImageReader *reader) const {
     AImage *image = nullptr;
     if (AImageReader_acquireNextImage(reader, &image) != AMEDIA_OK || !image) return;
 
-    if (!recording_) AImage_delete(image);
+    if (!recording_ || !VIS_SAVE) AImage_delete(image);
     else std::thread(&Camera::Submit/*, this*/, image, Queuer::Now()).detach();
 }
 

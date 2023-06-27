@@ -9,8 +9,7 @@ add_library(main SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/aud/commons.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/aud/engine.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/aud/recorder.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/aud/microphone.cpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/mem/queuer.cpp
 
@@ -20,7 +19,6 @@ add_library(main SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/vlk/compute_vk.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/vlk/lodepng.cpp
         )
-target_include_directories(main PRIVATE ${ANDROID_NDK}/sources/android/native_app_glue)
 
 target_link_libraries(main
         android

@@ -16,12 +16,15 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import java.util.Arrays;
 
+@SuppressLint("ClickableViewAccessibility")
 public class Main extends Activity implements TextureView.SurfaceTextureListener {
     private long ndkCamera;
+    private RelativeLayout root;
     private TextureView preview;
     private Surface surface = null;
     private boolean isRecording = false;
@@ -31,6 +34,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        root = findViewById(R.id.root);
         preview = findViewById(R.id.preview);
 
         // ask for camera and microphone permissions
@@ -54,14 +58,6 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
 
 
     private void permitted() {
-        /*TODO README
-         * AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER
-         * Used as a key for {@link #getProperty} to request the native or optimal output buffer size
-         * for this device's low latency output stream, in decimal PCM frames.  Latency-sensitive apps
-         * should use this value as a minimum, and offer the user the option to override it.
-         * The low latency output stream is typically either the device's primary output stream,
-         * or another output stream with smaller buffers.
-         */
         ndkCamera = create();
         Size size = getCameraDimensions(ndkCamera);
         /*Toast.makeText(this, size.getWidth() + " : " + size.getHeight(),
@@ -96,7 +92,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         surfaceTexture.setDefaultBufferSize(width, height);
         surface = new Surface(surfaceTexture);
         onSurfaceStatusChanged(ndkCamera, surface, true);
-        preview.setClickable(true);
+        root.setClickable(true);
     }
 
     @Override
@@ -109,7 +105,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
-        preview.setClickable(false);
+        root.setClickable(false);
         recording(false);
         onSurfaceStatusChanged(ndkCamera, surface, false);
         ndkCamera = 0;
@@ -134,19 +130,17 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     }
 
     private void onRecordingStarted() {
-        preview.setOnClickListener(null);
-        /*preview.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return false;
-            }
-        });*/
+        root.setOnClickListener(null);
+        root.setOnTouchListener((v, ev) -> {
+            Main.this.onTouch(new float[]{
+                    ev.getAction(), ev.getRawX(), ev.getRawY(), ev.getSize(), ev.getPressure()});
+            return true;
+        });
     }
 
-    @SuppressLint("ClickableViewAccessibility")
     private void onRecordingStopped() {
-        preview.setOnTouchListener(null);
-        preview.setOnClickListener(new DoubleClickListener() {
+        root.setOnTouchListener(null);
+        root.setOnClickListener(new DoubleClickListener() {
             @Override
             public void onDoubleClick() {
                 recording(true);
@@ -211,6 +205,8 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     private native Size getCameraDimensions(long cameraObj);
 
     private native void onSurfaceStatusChanged(long cameraObj, Surface surface, boolean available);
+
+    private native void onTouch(float[] properties);
 
     static {
         System.loadLibrary("main");
