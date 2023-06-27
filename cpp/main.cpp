@@ -84,25 +84,33 @@ Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
     }
 }
 
+#include <sstream>
+
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onTouch(JNIEnv *env, jobject, jfloatArray properties) {
     jfloat *arr = env->GetFloatArrayElements(properties, nullptr);
-    char buffer[200];
-    snprintf(buffer, sizeof buffer, "%f", arr[0]);
-    snprintf(buffer, sizeof buffer, "%s", ", ");
-    snprintf(buffer, sizeof buffer, "%f", arr[1]);
-    snprintf(buffer, sizeof buffer, "%s", ", ");
-    snprintf(buffer, sizeof buffer, "%f", arr[2]);
-    snprintf(buffer, sizeof buffer, "%s", ", ");
-    snprintf(buffer, sizeof buffer, "%f", arr[3]);
-    snprintf(buffer, sizeof buffer, "%s", ", ");
-    snprintf(buffer, sizeof buffer, "%f", arr[4]);
-    LOGW("%s", "buffer");
+    std::stringstream ss;
+    switch (static_cast<int>(arr[0])) {
+        case 0:
+            ss << "ACTION_DOWN";
+            break;
+        case 1:
+            ss << "ACTION_UP";
+            break;
+        case 2:
+            ss << "ACTION_MOVE";
+            break;
+        case 3:
+            ss << "ACTION_CANCEL";
+            break;
+        default:
+            ss << "UNKNOWN{" << arr[0] << "}";
+    }
+    ss << ", " << arr[1] << ", " << arr[2] << ", " << arr[3];
+    LOGW("%s", ss.str().c_str());
 }
 
-/* TODO:
-  * Problems:
-  * Use the latest image for mirroring while saving all frames, so that the preview won't backward.
+/* TO-DO:
   *
   * Notes:
   * The idea of defining a JNI interface header sucks!

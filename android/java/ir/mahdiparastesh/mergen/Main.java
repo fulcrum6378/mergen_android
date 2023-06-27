@@ -12,6 +12,7 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
 import android.util.Size;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -132,8 +133,12 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     private void onRecordingStarted() {
         root.setOnClickListener(null);
         root.setOnTouchListener((v, ev) -> {
+            if (ev.getAction() != MotionEvent.ACTION_DOWN &&
+                    ev.getAction() != MotionEvent.ACTION_UP &&
+                    ev.getAction() != MotionEvent.ACTION_MOVE &&
+                    ev.getAction() != MotionEvent.ACTION_CANCEL) return false;
             Main.this.onTouch(new float[]{
-                    ev.getAction(), ev.getRawX(), ev.getRawY(), ev.getSize(), ev.getPressure()});
+                    ev.getAction(), ev.getRawX(), ev.getRawY(), ev.getSize()});
             return true;
         });
     }
