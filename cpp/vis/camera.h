@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "../mem/queuer.h"
-#include "bitmap.h"
 
 // together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone!
 #define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
@@ -23,18 +22,34 @@
 #define VIS_IMAGE_NEAREST_HEIGHT 1088
 
 #define MAX_BUF_COUNT 4 // max image buffers
-#define MIN(a, b)           \
-  ({                        \
-    __typeof__(a) _a = (a); \
-    __typeof__(b) _b = (b); \
-    _a < _b ? _a : _b;      \
-  })
-#define MAX(a, b)           \
-  ({                        \
-    __typeof__(a) _a = (a); \
-    __typeof__(b) _b = (b); \
-    _a > _b ? _a : _b;      \
-  })
+#define MAX(a, b) ({__typeof__(a) _a = (a); __typeof__(b) _b = (b); _a > _b ? _a : _b; })
+#define MIN(a, b) ({__typeof__(a) _a = (a); __typeof__(b) _b = (b); _a < _b ? _a : _b; })
+
+// related to Windows
+struct bmpfile_magic {
+    [[maybe_unused]] unsigned char magic[2];
+};
+
+struct bmpfile_header {
+    [[maybe_unused]] uint32_t file_size;
+    [[maybe_unused]] uint16_t creator1;
+    [[maybe_unused]] uint16_t creator2;
+    uint32_t bmp_offset;
+};
+
+struct bmpfile_dib_info {
+    [[maybe_unused]] uint32_t header_size;
+    [[maybe_unused]] int32_t width;
+    [[maybe_unused]] int32_t height;
+    [[maybe_unused]] uint16_t num_planes;
+    [[maybe_unused]] uint16_t bits_per_pixel;
+    [[maybe_unused]] uint32_t compression;
+    [[maybe_unused]] uint32_t bmp_byte_size;
+    [[maybe_unused]] int32_t hres;
+    [[maybe_unused]] int32_t vres;
+    [[maybe_unused]] uint32_t num_colors;
+    [[maybe_unused]] uint32_t num_important_colors;
+};
 
 enum class CaptureSessionState : int32_t {
     READY,      // session is ready
@@ -93,8 +108,6 @@ private:
     void Preview(bool start);
 
     void ImageCallback(AImageReader *reader) const;
-
-    static inline Pixel* YUV2RGB(int nY, int nU, int nV);
 
     static void Submit(AImage *image, int64_t time);
 

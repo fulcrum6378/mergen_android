@@ -6,7 +6,7 @@
 #include "commons.h"
 #include "../mem/queuer.h"
 
-#define SENSE_ID_MICROPHONE 2
+//#define SENSE_ID_MICROPHONE 2
 
 class AudioRecorder {
     SLObjectItf recObjectItf_{};
@@ -24,7 +24,7 @@ class AudioRecorder {
     sample_buf silentBuf_{};
 
     std::ofstream test;
-    Queuer *queuer_;
+    [[maybe_unused]] Queuer *queuer_;
 
     void SetBufQueues();
 

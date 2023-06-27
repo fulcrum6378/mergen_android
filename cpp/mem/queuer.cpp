@@ -26,15 +26,15 @@ void Queuer::LoadManifest() {
     manifest = std::map<uint8_t, Sense>();
     manifest[0] = Sense{
             0, SenseType::REW, 1, 0, 1,
-            0, 0, 0, 0, 0, 0
+            0, 0, 0, {0, 0, 0}
     };
     manifest[1] = Sense{
             1, SenseType::VIS, 518400, 1, 518401,
-            .75, .5, .8, 9, 26, 5
+            .75, .5, .8, {9, 26, 5}
     };
     manifest[2] = Sense{
             2, SenseType::AUD, 96000, 518401, 614401,
-            .5, .95, -1, 9, 3, 3
+            .5, .95, -1, {9, 3, 3}
     };
     /*manifest[3] = Sense{
             3, SenseType::HPT,

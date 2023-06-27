@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <dirent.h>
+#include <fstream>
 #include <thread>
 
 #include "camera.h"
@@ -224,41 +225,13 @@ void Camera::ImageCallback(AImageReader *reader) const {
 }
 
 /**
- * Helper function for YUV_420 to RGB conversion. Courtesy of Tensorflow ImageClassifier Sample:
- * https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/android/jni/yuv2rgb.cc
- * The difference is that here we have to swap UV plane when calling it.
- *
- * This value is 2 ^ 18 - 1, and is used to clamp the RGB values before their ranges are normalized
- * to eight bits.
- *
- * Refer to commit 2023.06.26 - 1 were the implementation was delete thereafter.
+ * Yuv2Rgb algorithm is from:
+ * https://github.com/tensorflow/tensorflow/blob/5dcfc51118817f27fad5246812d83e5dccdc5f72/
+ * tensorflow/tools/android/test/jni/yuv2rgb.cc
  */
-inline Pixel* Camera::YUV2RGB(int nY, int nU, int nV) {
-    nY -= 16;
-    nU -= 128;
-    nV -= 128;
-    if (nY < 0) nY = 0;
-
-    int nR = (int) (1192 * nY + 1634 * nV);
-    int nG = (int) (1192 * nY - 833 * nV - 400 * nU);
-    int nB = (int) (1192 * nY + 2066 * nU);
-
-    int maxR = MAX(0, nR), maxG = MAX(0, nG), maxB = MAX(0, nB);
-    // inlining these will cause mere-IDE error
-    nR = MIN(kMaxChannelValue, maxR);
-    nG = MIN(kMaxChannelValue, maxG);
-    nB = MIN(kMaxChannelValue, maxB);
-
-    nR = (nR >> 10) & 0xff;
-    nG = (nG >> 10) & 0xff;
-    nB = (nB >> 10) & 0xff;
-    return new Pixel(nR, nG, nB);
-}
-
 void Camera::Submit(AImage *image, int64_t time) {
     AImageCropRect srcRect;
     AImage_getCropRect(image, &srcRect);
-
     int32_t yStride, uvStride;
     uint8_t *yPixel, *uPixel, *vPixel;
     int32_t yLen, uLen, vLen;
@@ -269,16 +242,36 @@ void Camera::Submit(AImage *image, int64_t time) {
     AImage_getPlaneData(image, 2, &uPixel, &uLen);
     int32_t uvPixelStride;
     AImage_getPlanePixelStride(image, 1, &uvPixelStride);
-
     int32_t width, height;
     AImage_getWidth(image, &width);
     AImage_getHeight(image, &height);
     height = MIN(width, (srcRect.bottom - srcRect.top));
     width = MIN(height, (srcRect.right - srcRect.left));
 
-    auto out = new PixelMatrix();
-    for (int32_t y = 0; y < height; y++) {
-        auto row = new std::vector<Pixel>();
+    std::ofstream file((path + std::to_string(time) + ".bmp").c_str(),
+                       std::ios::out | std::ios::binary);
+
+    bmpfile_magic magic{'B', 'M'};
+    file.write((char *) (&magic), sizeof(magic));
+    bmpfile_header header = {0};
+    header.bmp_offset = sizeof(bmpfile_magic) + sizeof(bmpfile_header) + sizeof(bmpfile_dib_info);
+    header.file_size = header.bmp_offset + (height * 3 + width % 4) * height;
+    file.write((char *) (&header), sizeof(header));
+    bmpfile_dib_info dib_info = {0};
+    dib_info.header_size = sizeof(bmpfile_dib_info);
+    dib_info.width = width;
+    dib_info.height = height;
+    dib_info.num_planes = 1;
+    dib_info.bits_per_pixel = 24;
+    dib_info.compression = 0;
+    dib_info.bmp_byte_size = 0;
+    dib_info.hres = 2835;
+    dib_info.vres = 2835;
+    dib_info.num_colors = 0;
+    dib_info.num_important_colors = 0;
+    file.write((char *) (&dib_info), sizeof(dib_info));
+
+    for (int32_t y = height - 1; y >= 0; y--) {
         const uint8_t *pY = yPixel + yStride * (y + srcRect.top) + srcRect.left;
 
         int32_t uv_row_start = uvStride * ((y + srcRect.top) >> 1);
@@ -287,33 +280,34 @@ void Camera::Submit(AImage *image, int64_t time) {
 
         for (int32_t x = 0; x < width; x++) {
             const int32_t uv_offset = (x >> 1) * uvPixelStride;
-            row->push_back(*YUV2RGB(pY[x], pU[uv_offset], pV[uv_offset]));
+
+            int nY = pY[x] - 16;
+            int nU = pU[uv_offset] - 128;
+            int nV = pV[uv_offset] - 128;
+            if (nY < 0) nY = 0;
+
+            int nR = (int) (1192 * nY + 1634 * nV);
+            int nG = (int) (1192 * nY - 833 * nV - 400 * nU);
+            int nB = (int) (1192 * nY + 2066 * nU);
+
+            int maxR = MAX(0, nR), maxG = MAX(0, nG), maxB = MAX(0, nB);
+            nR = MIN(kMaxChannelValue, maxR);
+            nG = MIN(kMaxChannelValue, maxG);
+            nB = MIN(kMaxChannelValue, maxB);
+
+            nR = (nR >> 10) & 0xff;
+            nG = (nG >> 10) & 0xff;
+            nB = (nB >> 10) & 0xff;
+
+            file.put((char) nR);
+            file.put((char) nG);
+            file.put((char) nB);
         }
-        out->push_back(*row);
-        //out += buf->stride;
+        for (int i = 0; i < width % 4; i++) file.put(0);
     }
-    Bitmap bmp{};
-    bmp.fromPixelMatrix(*out);
-    bmp.save(path + std::to_string(time) + ".bmp");
+    file.close();
 
-
-
-
-
-
-    /*uint8_t *data = nullptr;
-    int len = 0;
-    AImage_getPlaneData(image, 0, &data, &len);
-
-    std::string fileName = path + std::to_string(time) + ".fuck"; // FIXME
-    FILE *file = fopen(fileName.c_str(), "wb");
-    if (file && data && len) {
-        fwrite(data, 1, len, file);
-        //queuer_->Input(SENSE_ID_BACK_LENS, data, time);
-        fclose(file);
-    } else {
-        if (file) fclose(file);
-    }*/
+    //queuer_->Input(SENSE_ID_BACK_LENS, data, time);
     AImage_delete(image);
 }
 
