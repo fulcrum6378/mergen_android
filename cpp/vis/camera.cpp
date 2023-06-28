@@ -11,16 +11,18 @@
  * its return value will be needed for Main::getCameraDimensions, then we should have some
  * configurations done and then we'll create a camera session.
  */
-Camera::Camera() : captureSessionState_(CaptureSessionState::MAX_STATE) {
+Camera::Camera(Rewarder *rew) :
+        rew_(rew), que_(), captureSessionState_(CaptureSessionState::MAX_STATE) {
+
+    // Initialise ACameraManager
     cameraMgr_ = ACameraManager_create();
     ASSERT(cameraMgr_, "Failed to create cameraManager")
     cameras_.clear();
     EnumerateCamera();
     ASSERT(!activeCameraId_.empty(), "Unknown ActiveCameraIdx")
 
+    // Prepare for reading image frames
     DetermineCaptureDimensions(&dimensions_);
-
-    // Initialise AImageReader (reader_)
     media_status_t status = AImageReader_newWithUsage(
             dimensions_.first, dimensions_.second, VIS_IMAGE_FORMAT,
             AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN, MAX_BUF_COUNT, &reader_);
@@ -315,7 +317,7 @@ void Camera::Submit(AImage *image, int64_t time) {
     }
     file.close();
 
-    //queuer_->Input(SENSE_ID_BACK_LENS, data, time);
+    //queuer_->Input(INPUT_ID_BACK_LENS, data, time);
     AImage_delete(image);
 }
 

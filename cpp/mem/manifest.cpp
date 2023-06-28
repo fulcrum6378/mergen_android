@@ -1,40 +1,43 @@
 #include "manifest.h"
 
-std::map<uint8_t, Interaction> *Manifest::senses;
+/** Sensors */
+std::map<int8_t, Interaction> *Manifest::input;
+/** Controls/Expressions */
+std::map<int8_t, Interaction> *Manifest::output;
 
 void Manifest::create() {
-    senses = new std::map<uint8_t, Interaction>{};
-    (*senses)[0] = Interaction{
+    input = new std::map<int8_t, Interaction>{};
+    (*input)[0] = Interaction{
             0, ActType::REW, 0, 0, 0, 0, 0, 0
     };
-    (*senses)[1] = Interaction{ // back camera
+    (*input)[1] = Interaction{ // back camera
             1, ActType::VIS, .7, .75, -1, 30, 80, 6
     };
-    (*senses)[2] = Interaction{ // selfie camera
+    (*input)[2] = Interaction{ // selfie camera
             2, ActType::VIS, 0, .9, 1, 6, 6, 3
     };
-    (*senses)[3] = Interaction{ // microphone
+    (*input)[3] = Interaction{ // microphone
             3, ActType::AUD, .4, 1, 0, 2, 4, 2
     };
-    (*senses)[4] = Interaction{ // touch sensor
+    (*input)[4] = Interaction{ // touch
             4, ActType::HPT, 0, 0, 1, 1080, 2131, 2
     };
 
-    controls = new std::map<uint8_t, Interaction>{};
-    (*senses)[0] = Interaction{ // screen
-            0, ActType::VIS, 0, 0, 1, 1080, 2131, 2
+    output = new std::map<int8_t, Interaction>{};
+    (*input)[-1] = Interaction{ // monitor screen
+            -1, ActType::VIS, 0, 0, 1, 1080, 2131, 2
     };
-    (*senses)[1] = Interaction{ // speaker
-            1, ActType::AUD, .55, 1, 0, 10, 4, 5
+    (*input)[-2] = Interaction{ // speaker
+            -2, ActType::AUD, .55, 1, 0, 10, 4, 5
     };
-    (*senses)[2] = Interaction{ // vibration motor (inaccurate)
-            2, ActType::MOV, -.5, -.75, 0, 15, 15, 5
+    (*input)[-3] = Interaction{ // vibration motor (inaccurate)
+            -3, ActType::MOV, -.5, -.75, 0, 15, 15, 5
     };
 }
 
 void Manifest::destroy() {
-    delete &senses;
-    senses = nullptr;
-    delete &controls;
-    controls = nullptr;
+    delete &input;
+    input = nullptr;
+    delete &output;
+    output = nullptr;
 }

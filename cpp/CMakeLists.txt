@@ -11,6 +11,8 @@ add_library(main SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/aud/commons.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/aud/microphone.cpp
 
+        ${CMAKE_CURRENT_SOURCE_DIR}/hpt/touch.cpp
+
         ${CMAKE_CURRENT_SOURCE_DIR}/mem/manifest.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/mem/queuer.cpp
 

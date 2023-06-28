@@ -2,6 +2,7 @@ package ir.mahdiparastesh.mergen;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
@@ -11,7 +12,6 @@ import android.os.SystemClock;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
-import android.util.DisplayMetrics;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
@@ -37,10 +37,6 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         setContentView(R.layout.main);
         root = findViewById(R.id.root);
         preview = findViewById(R.id.preview);
-
-        DisplayMetrics dm = getResources().getDisplayMetrics();
-        Toast.makeText(this, dm.widthPixels + " : " + dm.heightPixels,
-                Toast.LENGTH_SHORT).show();
 
         // ask for camera and microphone permissions
         String[] requiredPerms =
@@ -119,12 +115,22 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         else onRecordingStopped();
     }
 
-    /** MotionEvent::getPressure() is always 1.0! */
+    /**
+     * In my phonem pressure is always 1.0 and orientation is always 0!
+     * <p>
+     * As long as the previous pointers (pointers with smaller indices) haven't got UP,
+     * ANY ACTION_MOVE WILL BE COUNTED ON THE SMALLEST INDEX!
+     */
+    @SuppressLint("ObsoleteSdkInt")
+    @TargetApi(Build.VERSION_CODES.Q)
     private void onRecordingStarted() {
         root.setOnClickListener(null);
         root.setOnTouchListener((v, ev) -> {
-            if (ev.getAction() < 0 || ev.getAction() > 3) return false;
-            Main.this.onTouch(ev.getAction(), ev.getRawX(), ev.getRawY(), ev.getSize());
+            int mAct = ev.getActionMasked();
+            if (mAct < 0 || mAct > 6) return false;
+            int index = ev.getActionIndex();
+            Main.this.onTouch(ev.getDeviceId(), mAct, ev.getPointerId(index),
+                    ev.getRawX(index), ev.getRawY(index), ev.getSize(index));
             return true;
         });
     }
@@ -199,7 +205,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     private native void onSurfaceStatusChanged(long cameraObj, Surface surface, boolean available);
 
     /** Sends specific touch events. */
-    private native void onTouch(int action, float x, float y, float size);
+    private native void onTouch(int dev, int act, int id, float x, float y, float size);
 
     static {
         System.loadLibrary("main");

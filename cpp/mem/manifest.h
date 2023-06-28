@@ -4,21 +4,24 @@
 #include <cstdint>
 #include <map>
 
-enum class ActType : int8_t {
-    AUD, HPT, MOV, REW, VIS
+enum class ActType : uint8_t {
+    AUD, HPT, MOV, REW, TNK [[maybe_unused]], VIS
 };
 
 struct Interaction {
-    uint8_t id;
+    /** Input/sense IDs must be positive and Output/{control/expression} IDs must be negative. */
+    int8_t id;
     ActType type;
-    float x, y, z; // -1..1
-    uint16_t width, height, depth; // in pixels
+    /** Range -1..1 ; 0 means centre */
+    float x, y, z;
+    /** In pixels */
+    uint16_t width, height, depth;
 };
 
 class Manifest {
 public:
-    static std::map<uint8_t, Interaction> *senses;
-    static std::map<uint8_t, Interaction> *controls;
+    static std::map<int8_t, Interaction> *input;
+    static std::map<int8_t, Interaction> *output;
 
     static void create();
 

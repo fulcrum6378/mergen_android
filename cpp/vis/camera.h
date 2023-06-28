@@ -11,11 +11,12 @@
 #include <utility>
 
 #include "../mem/queuer.h"
+#include "../rew/rewarder.h"
 
 // together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone!
 #define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
-#define SENSE_ID_BACK_LENS 1
-#define SENSE_ID_FRONT_LENS 2
+#define INPUT_ID_BACK_LENS 1
+#define INPUT_ID_FRONT_LENS 2
 /**
  * Let's make it a sqaure for less trouble, at least for now!
  * it would result in 2336x1080 in Galaxy A50.
@@ -66,6 +67,9 @@ class CameraId;
 
 class Camera {
 private:
+    [[maybe_unused]] Rewarder *rew_;
+    [[maybe_unused]] Queuer *que_;
+
     /**
      * AImageReader creates an IGraphicBufferProducer (input) and an IGraphicBufferConsumer (output),
      * then it creates a BufferQueue from them, then it listens data from that IGraphicBufferConsumer,
@@ -76,7 +80,6 @@ private:
     std::pair<int32_t, int32_t> dimensions_;
     bool recording_{false};
     static const int kMaxChannelValue = 262143;
-    [[maybe_unused]] Queuer *queuer_{};
 
     // Managing cameras
     ACameraManager *cameraMgr_;
@@ -116,7 +119,7 @@ private:
     static void Submit(AImage *image, int64_t time);
 
 public:
-    Camera();
+    Camera(Rewarder *rew);
 
     const std::pair<int32_t, int32_t> &GetDimensions() const;
 

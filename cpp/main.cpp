@@ -5,21 +5,24 @@
 #include "rew/rewarder.h"
 #include "vis/camera.h"
 
-// static Queuer *mem = nullptr; #include "mem/queuer.h"
+// static Queuer *que = nullptr; #include "mem/queuer.h"
 static Rewarder *rew = nullptr;
 
-static Microphone *aud = nullptr;
 static Camera *vis = nullptr;
+static Touch *hpt = nullptr;
+static Microphone *aud = nullptr;
+// static Vibrator *vib = nullptr;
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *, jobject) {
     Manifest::create();
     rew = new Rewarder();
-    // mem = new Queuer();
+    // que = new Queuer();
     // ComputeVK().run(state->activity->assetManager);
 
-    aud = new Microphone(/*mem*/nullptr);
-    vis = new Camera();
+    vis = new Camera(rew);
+    hpt = new Touch(rew);
+    aud = new Microphone(/*que*/nullptr);
 
     return reinterpret_cast<jlong>(vis);
 }
@@ -52,10 +55,12 @@ Java_ir_mahdiparastesh_mergen_Main_stop(JNIEnv *, jobject) {
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
+    delete aud;
     aud = nullptr;
-    /*delete &mem;
-    mem = nullptr;*/
+
     delete &rew;
+    /*delete &que;
+    que = nullptr;*/
     rew = nullptr;
     Manifest::destroy();
 }
@@ -63,10 +68,6 @@ Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
 
 extern "C" JNIEXPORT jstring JNICALL
 Java_ir_mahdiparastesh_mergen_Main_test(JNIEnv */*env*/, jobject) {
-    /*jlong testShake = 200;
-    jmethodID shakeMethod = env->GetMethodID(
-            env->FindClass("ir/mahdiparastesh/mergen/Main"), "shake", "(J)V");
-    env->CallVoidMethod(main, shakeMethod, testShake);*/
     return nullptr;
 }
 
@@ -94,28 +95,9 @@ Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
     }
 }
 
-#include <sstream>
-
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onTouch(
-        JNIEnv *, jobject, jint action, jfloat x, jfloat y, jfloat size) {
-    std::stringstream ss;
-    switch (action) {
-        case 0:
-            ss << "ACTION_DOWN";
-            break;
-        case 1:
-            ss << "ACTION_UP";
-            break;
-        case 2:
-            ss << "ACTION_MOVE";
-            break;
-        case 3:
-            ss << "ACTION_CANCEL";
-            break;
-        default:
-            ss << "UNKNOWN{" << action << "}";
-    }
-    ss << ", " << x << ", " << y << ", " << size;
-    LOGW("%s", ss.str().c_str());
+        JNIEnv *, jobject, jint dev, jint act, jint id, jfloat x, jfloat y, jfloat size) {
+    if (!hpt) return;
+    hpt->OnTouchEvent(dev, act, id, x, y, size); // NOLINT(cppcoreguidelines-narrowing-conversions)
 }
