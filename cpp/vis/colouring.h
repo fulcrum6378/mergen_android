@@ -1,0 +1,4 @@
+#ifndef VIS_COLOURING_H
+#define VIS_COLOURING_H
+
+#endif //VIS_COLOURING_H

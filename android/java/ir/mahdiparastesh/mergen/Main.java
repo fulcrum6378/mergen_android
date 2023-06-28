@@ -12,6 +12,7 @@ import android.os.SystemClock;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
+import android.util.DisplayMetrics;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
@@ -37,6 +38,10 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         setContentView(R.layout.main);
         root = findViewById(R.id.root);
         preview = findViewById(R.id.preview);
+
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getRealMetrics(dm);
+        Toast.makeText(this, dm.widthPixels + "x" + dm.heightPixels, Toast.LENGTH_LONG).show();
 
         // ask for camera and microphone permissions
         String[] requiredPerms =
@@ -120,6 +125,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
      * <p>
      * As long as the previous pointers (pointers with smaller indices) haven't got UP,
      * ANY ACTION_MOVE WILL BE COUNTED ON THE SMALLEST INDEX!
+     *
      * @see <a href="https://stackoverflow.com/questions/28417492/android-multi-touch-pointers-with-
      * index-0-not-triggering-event-action-move">the problem</a>
      */
@@ -147,12 +153,13 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         });
     }
 
+    /** @param amplitude must be in range 1..255 */
     @SuppressWarnings("unused")
-    void shake(long dur) {
+    void vibrate(long milliseconds, int amplitude) {
         Vibrator vib = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) ?
                 ((VibratorManager) getSystemService(Context.VIBRATOR_MANAGER_SERVICE))
                         .getDefaultVibrator() : (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        vib.vibrate(VibrationEffect.createOneShot(dur, VibrationEffect.DEFAULT_AMPLITUDE));
+        vib.vibrate(VibrationEffect.createOneShot(milliseconds, amplitude));
     }
 
     @Override

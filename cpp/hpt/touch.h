@@ -8,18 +8,19 @@
 class Touch {
 private:
     Rewarder *rew_;
-    float *x_;
-    float *y_;
+    std::map<int16_t, bool> *on;
+    float x_{0.0};
+    float y_{0.0};
 
     void CheckForRewards();
 
 public:
-    Touch(Rewarder *rew) : rew_(rew) {}
+    Touch(Rewarder *rew);
 
     /** "int8_t dev" will corrupt the value! */
     void OnTouchEvent(int16_t dev, int8_t act, int16_t id, float x, float y, float size);
 
-    ~Touch() {}
+    ~Touch();
 };
 
 #endif //HPT_TOUCH_H

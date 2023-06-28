@@ -1,20 +1,17 @@
 #ifndef MOV_VIBRATOR_H
 #define MOV_VIBRATOR_H
 
+#include "../rew/expression.h"
+
 #define OUTPUT_ID_VIBRATOR -3
 
-class Vibrator {
+class Vibrator : public Expression {
 public:
-    Vibrator();
+    Vibrator(JNIEnv *env, jobject main) : Expression(env, main) {}
 
-    static void OnReward(double fortuna);
+    void OnReward(double fortuna);
 
-    /*jlong testShake = 200;
-    jmethodID shakeMethod = env->GetMethodID(
-            env->FindClass("ir/mahdiparastesh/mergen/Main"), "shake", "(J)V");
-    env->CallVoidMethod(main, shakeMethod, testShake);*/
-
-    ~Vibrator();
+    ~Vibrator() {}
 };
 
 #endif //MOV_VIBRATOR_H

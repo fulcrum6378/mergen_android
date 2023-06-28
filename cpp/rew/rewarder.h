@@ -1,6 +1,8 @@
 #ifndef REW_REWARDER_H
 #define REW_REWARDER_H
 
+#include <vector>
+
 #include "../mem/manifest.h"
 #include "../mov/vibrator.h"
 
@@ -9,12 +11,6 @@ struct Criterion {
     int8_t interaction_id;
     float weight;
     char const *desc;
-};
-
-typedef void (*Rewarder_OnReward)(double fortuna);
-
-struct Rewarder_OnRewardListener {
-    Rewarder_OnReward onReward;
 };
 
 /**
@@ -28,19 +24,14 @@ private:
 
     std::map<uint8_t, Criterion> *criteria;
     std::map<uint8_t, double> *scores;
-    Rewarder_OnRewardListener *rewardListeners[3];
-
-    // expressions
-    Vibrator vibrator;
+    std::map<uint8_t, Expression *> *expressions;
 
     void AddCriterion(Criterion criterion);
 
     void Compute();
 
 public:
-    Rewarder();
-
-    void AddOnRewardListener(Rewarder_OnRewardListener *listener);
+    Rewarder(JNIEnv *env, jobject main);
 
     void SetScore(uint8_t criterionId, double score);
 

@@ -20,7 +20,7 @@ void Manifest::create() {
             3, ActType::AUD, .4, 1, 0, 2, 4, 2
     };
     (*input)[4] = Interaction{ // touch
-            4, ActType::HPT, 0, 0, 1, 1080, 2131, 2
+            4, ActType::HPT, 0, 0, 1, 1080, 2340, 2
     };
 
     output = new std::map<int8_t, Interaction>{};
