@@ -5,18 +5,21 @@ logical real-time artificial-intelligence robot, in other words an "**Artificial
 written in C++ language, which is temporarily mounted on Android.
 
 The C++ libraries located in the [/cpp/](cpp) are intended to be mounted on real robots with the
-[**FreeBSD** operating system](https://www.freebsd.org/).
+[*FreeBSD* operating system](https://www.freebsd.org/).
 
 ## Philosophy
 
 Mergen is intended to become a robot that can think more logically and wisely than human beings,
 and help them have a better life!
 
+Mergen shall differ human beings in the way of thinking, so that it won't trust anybody's words;
+it just seeks truths and to improve conditions for all living beings!
+
 It is intended to serve as something like an operating system for AI robots, its job is to
 process vision, audio and touch and act logically based on them and according to its purpose,
 define by its Reward System (REW)!
 
-Mergen is intended to have 2 aspect:
+Mergen is intended to have 2 aspects:
 
 1. **Animal** aspect : similar to the [**Unconscious mind**](https://en.wikipedia.org/wiki/Unconscious_mind)
    this section of Mergen is intended to be programmed using [**Machine Learning** (ML)](
@@ -25,10 +28,13 @@ Mergen is intended to have 2 aspect:
    using *Machine Learning*, so it won't learn things from anybody, **unlike human beings**!
    Instead, it'll compute probabilities of any [Theorem](https://en.wikipedia.org/wiki/Theorem) and act
    in accordance with the [**Probabilist**](https://en.wikipedia.org/wiki/Probabilism) philosophy.
-   So this robot CANNOT be brainwashed for dirty purposes (unless you hack it)!
+   So this robot CANNOT be brainwashed for dirty purposes (unless you hack or reprogramme it)!
 
-> Mergen shall differ human beings in the way of thinking, so that it won't trust anybody's words;
-> it just seeks truths and to improve conditions for all living beings!
+> “To live alone one must be either a beast or a god, says Aristotle.
+> Leaving out the third case: one must be both - a philosopher.”
+> ― Nietzsche Friedrich Wilhelm
+
+> Mergen was named after a [*Turkic* god](https://en.wikipedia.org/wiki/Mergen) of abundance and **wisdom**!
 
 ## Parts
 
@@ -40,13 +46,13 @@ Each part has its own README in its own directory.
 - [**MOV**](cpp/mov) : everything related to **Movements**.
 - [**REW**](cpp/rew) : everything related to **Reward System** (reinforcement learning).
 - [**VIS**](cpp/vis) : everything related to **Visual** inputs and outputs.
-- [**VLK**](cpp/vis) : everything related to **Vulkan** API.
+- [**VLK**](cpp/vlk) : everything related to **Vulkan** API.
 
 ## Previous versions of Mergen
 
 #### Mergen I
 
-The first version of Mergen, started at **December 2020**, was intended to be a [natural language processing (NLP)](
+The first version of Mergen, started at **13 December 2020**, was intended to be a [natural language processing (NLP)](
 https://en.wikipedia.org/wiki/Natural_language_processing) bot, something like ChatGPT today.
 
 It was intended to process **only digital texts**, and the program itself was in pure Python,
@@ -74,9 +80,9 @@ I decided to do the heavy job of training/learning in a [**local PC server in Py
 https://github.com/fulcrum6378/mergen_server) and alongside an [**Android client in Kotlin**](
 https://github.com/fulcrum6378/mergen_client) whose...
 
-1. Camera served as an eye.
-2. Microphone served as ears.
-3. Speaker served as a mouth.
+1. Camera served as an **eye**.
+2. Microphone served as **ears**.
+3. Speaker served as a **mouth**.
 
 Gradually I concluded that this server-client model and these radio waves takes such a huge amount of time
 to communicate, and since I couldn't afford *robotic* resources, I was disappointed,
