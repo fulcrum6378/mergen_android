@@ -2,10 +2,21 @@
 
 Rewarder::Rewarder() {
     criteria = new std::map<uint8_t, Criterion>{};
-    (*criteria)[0] = Criterion{0, 4, 1, "Gradient of pleasure and pain"};
+    AddCriterion(Criterion{
+            0, 4, 1, "Gradient of pleasure and pain"});
+    AddCriterion(Criterion{
+            1, 0, 5, "Normality"});
 
     scores = new std::map<uint8_t, double>();
     for (auto cri: *criteria) (*scores)[cri.second.id] = 0.0;
+}
+
+void Rewarder::AddCriterion(Criterion criterion) {
+    (*criteria)[(*criteria).size()] = criterion;
+}
+
+void Rewarder::AddOnRewardListener(Rewarder_OnRewardListener *listener) {
+    rewardListeners[0] = listener;
 }
 
 /** An interface for any sense to declare its score. */
@@ -23,6 +34,7 @@ void Rewarder::Compute() {
         totalWeights += (*criteria)[score.first].weight;
     }
     fortuna = sum / totalWeights;
+    for (auto l : rewardListeners) if (l) l->onReward(fortuna);
 }
 
 Rewarder::~Rewarder() {

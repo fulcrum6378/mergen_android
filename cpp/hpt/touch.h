@@ -8,6 +8,10 @@
 class Touch {
 private:
     Rewarder *rew_;
+    float *x_;
+    float *y_;
+
+    void CheckForRewards();
 
 public:
     Touch(Rewarder *rew) : rew_(rew) {}

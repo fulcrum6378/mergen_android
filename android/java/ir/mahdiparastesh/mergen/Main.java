@@ -120,6 +120,8 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
      * <p>
      * As long as the previous pointers (pointers with smaller indices) haven't got UP,
      * ANY ACTION_MOVE WILL BE COUNTED ON THE SMALLEST INDEX!
+     * @see <a href="https://stackoverflow.com/questions/28417492/android-multi-touch-pointers-with-
+     * index-0-not-triggering-event-action-move">the problem</a>
      */
     @SuppressLint("ObsoleteSdkInt")
     @TargetApi(Build.VERSION_CODES.Q)

@@ -14,7 +14,7 @@ static Microphone *aud = nullptr;
 // static Vibrator *vib = nullptr;
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *, jobject) {
+Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject) {
     Manifest::create();
     rew = new Rewarder();
     // que = new Queuer();
@@ -23,6 +23,13 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *, jobject) {
     vis = new Camera(rew);
     hpt = new Touch(rew);
     aud = new Microphone(/*que*/nullptr);
+
+    // Listeners
+    rew->AddOnRewardListener(new Rewarder_OnRewardListener{
+        .onReward = [&env](double fortuna) {
+            env->CallVoidMethod();
+        }
+    });
 
     return reinterpret_cast<jlong>(vis);
 }

@@ -24,8 +24,19 @@ void Touch::OnTouchEvent(int16_t dev, int8_t act, int16_t id, float x, float y, 
     ss << ", ID:" << id << ", X:" << x << ", Y:" << y << ", SIZE:" << size;
     LOGW("%s", ss.str().c_str());
 
+    if (act == 0 || act == 2 || act == 5) {
+        (*x_) = x;
+        (*y_) = y;
+    } else {
+        x_ = nullptr;
+        y_ = nullptr;
+    }
+    CheckForRewards();
+}
+
+void Touch::CheckForRewards() {
     auto screen = (*Manifest::input)[INPUT_ID_TOUCH];
-    screen.width;
-    screen.height;
-    rew_;
+    double final = 0.0;
+    if (y_) final = (*y_) / ((double) screen.height / 100.0);
+    rew_->SetScore(0, final);
 }
