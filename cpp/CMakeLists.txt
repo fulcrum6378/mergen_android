@@ -21,6 +21,7 @@ add_library(main SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/rew/rewarder.cpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/vis/camera.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/vis/colouring.cpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/vlk/hello_vk.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/vlk/compute_vk.cpp

@@ -15,6 +15,7 @@
         android:label="Mergen IV"
         android:largeHeap="true"
         android:roundIcon="@mipmap/launcher_round"
+        android:supportsRtl="false"
         android:theme="@style/Theme.Mergen"
         tools:ignore="DataExtractionRules,UnusedAttribute">
 

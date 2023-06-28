@@ -12,7 +12,6 @@ import android.os.SystemClock;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
-import android.util.DisplayMetrics;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
@@ -26,22 +25,21 @@ import java.util.Arrays;
 @SuppressLint("ClickableViewAccessibility")
 public class Main extends Activity implements TextureView.SurfaceTextureListener {
     private long ndkCamera;
-    private RelativeLayout root;
-    private TextureView preview;
     private Surface surface = null;
     private boolean isRecording = false;
     private Toast toast;
+
+    private RelativeLayout root;
+    private View colouring;
+    private TextureView preview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         root = findViewById(R.id.root);
+        colouring = findViewById(R.id.colouring);
         preview = findViewById(R.id.preview);
-
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getRealMetrics(dm);
-        Toast.makeText(this, dm.widthPixels + "x" + dm.heightPixels, Toast.LENGTH_LONG).show();
 
         // ask for camera and microphone permissions
         String[] requiredPerms =
@@ -160,6 +158,11 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
                 ((VibratorManager) getSystemService(Context.VIBRATOR_MANAGER_SERVICE))
                         .getDefaultVibrator() : (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         vib.vibrate(VibrationEffect.createOneShot(milliseconds, amplitude));
+    }
+
+    @SuppressWarnings("unused")
+    void colouring(int colour) {
+        colouring.setBackgroundColor(colour);
     }
 
     @Override

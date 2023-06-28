@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "../mem/manifest.h"
-#include "../mov/vibrator.h"
+#include "../rew/expression.h"
 
 struct Criterion {
     uint16_t id;
@@ -19,14 +19,16 @@ struct Criterion {
  */
 class Rewarder {
 private:
-    /** Range -128..127 */
+    /** Range -1..+1 */
     double fortuna{0.0};
 
     std::map<uint8_t, Criterion> *criteria;
     std::map<uint8_t, double> *scores;
-    std::map<uint8_t, Expression *> *expressions;
+    std::map<uint16_t, Expression *> *expressions;
 
     void AddCriterion(Criterion criterion);
+
+    void AddExpression(Expression *expression);
 
     void Compute();
 

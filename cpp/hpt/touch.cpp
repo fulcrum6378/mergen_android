@@ -44,7 +44,7 @@ void Touch::CheckForRewards() {
 
     auto screen = (*Manifest::input)[INPUT_ID_TOUCH];
     double final = 0.0;
-    if (anyOn) final = y_ / (double) screen.height;
+    if (anyOn) final = (((y_ / (double) screen.height) * 2.0) - 1.0) * -1;
     rew_->SetScore(0, final);
 }
 

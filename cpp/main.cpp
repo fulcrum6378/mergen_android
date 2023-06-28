@@ -2,16 +2,16 @@
 
 #include "aud/microphone.h"
 #include "hpt/touch.h"
+#include "mem/queuer.h"
 #include "rew/rewarder.h"
 #include "vis/camera.h"
 
-// static Queuer *que = nullptr; #include "mem/queuer.h"
+[[maybe_unused]] static Queuer *que = nullptr;
 static Rewarder *rew = nullptr;
 
 static Camera *vis = nullptr;
 static Touch *hpt = nullptr;
 static Microphone *aud = nullptr;
-// static Vibrator *vib = nullptr;
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {

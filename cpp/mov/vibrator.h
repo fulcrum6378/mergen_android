@@ -7,7 +7,8 @@
 
 class Vibrator : public Expression {
 public:
-    Vibrator(JNIEnv *env, jobject main) : Expression(env, main) {}
+    Vibrator(JNIEnv *env, jobject main) :
+            Expression(EXPRESSION_ID_VIBRATOR_1, OUTPUT_ID_VIBRATOR, env, main) {}
 
     void OnReward(double fortuna);
 

@@ -1,6 +1,8 @@
 #include <sstream>
 
 #include "../global.h"
+#include "../mov/vibrator.h"
+#include "../vis/colouring.h"
 #include "rewarder.h"
 
 Rewarder::Rewarder(JNIEnv *env, jobject main) {
@@ -13,16 +15,22 @@ Rewarder::Rewarder(JNIEnv *env, jobject main) {
     scores = new std::map<uint8_t, double>();
     for (auto cri: *criteria) (*scores)[cri.second.id] = 0.0;
 
-    expressions = new std::map<uint8_t, Expression *>{};
-    (*expressions)[OUTPUT_ID_VIBRATOR] = new Vibrator(env, main);
+    expressions = new std::map<uint16_t, Expression *>{};
+    AddExpression(new Vibrator(env, main));
+    AddExpression(new Colouring(env, main));
 }
 
 void Rewarder::AddCriterion(Criterion criterion) {
     (*criteria)[(*criteria).size()] = criterion;
 }
 
+void Rewarder::AddExpression(Expression *expression) {
+    (*expressions)[expression->id] = expression;
+}
+
 /** An interface for any sense to declare its score. */
 void Rewarder::SetScore(uint8_t criterionId, double score) {
+    ASSERT(score >= -1.0 && score <= 1.0, "Invalid reward score!");
     (*scores)[criterionId] = score;
     Compute();
 }
@@ -37,7 +45,7 @@ void Rewarder::Compute() {
     }
     fortuna = sum / totalWeights;
     std::stringstream ss;
-    ss  << "Fortuna is " << fortuna;
+    ss << "Fortuna is " << fortuna;
     LOGW("%s", ss.str().c_str());
     for (auto exp: *expressions) exp.second->OnReward(fortuna);
 }
