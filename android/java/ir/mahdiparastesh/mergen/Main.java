@@ -11,6 +11,7 @@ import android.os.SystemClock;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
+import android.util.DisplayMetrics;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
@@ -36,6 +37,10 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         setContentView(R.layout.main);
         root = findViewById(R.id.root);
         preview = findViewById(R.id.preview);
+
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+        Toast.makeText(this, dm.widthPixels + " : " + dm.heightPixels,
+                Toast.LENGTH_SHORT).show();
 
         // ask for camera and microphone permissions
         String[] requiredPerms =

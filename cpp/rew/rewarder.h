@@ -1,10 +1,9 @@
 #ifndef REW_REWARDER_H
 #define REW_REWARDER_H
 
-#include "../manifest.h"
+#include "../mem/manifest.h"
 
 class Rewarder {
-private:
 public:
     int8_t score; // -128..127
 

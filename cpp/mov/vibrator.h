@@ -1,0 +1,4 @@
+#ifndef MERGEN_VIBRATOR_H
+#define MERGEN_VIBRATOR_H
+
+#endif //MERGEN_VIBRATOR_H

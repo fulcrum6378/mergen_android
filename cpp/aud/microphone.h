@@ -6,7 +6,8 @@
 #include "commons.h"
 #include "../mem/queuer.h"
 
-//#define SENSE_ID_MICROPHONE 2
+#define SENSE_ID_MICROPHONE 3
+
 static bool AUD_SAVE = true;
 
 class Microphone {

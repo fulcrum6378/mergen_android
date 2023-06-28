@@ -5,7 +5,7 @@
 #include <mutex>
 #include <thread>
 
-#include "../manifest.h"
+#include "manifest.h"
 
 class Queuer : std::thread {
 public:

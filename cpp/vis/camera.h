@@ -14,7 +14,8 @@
 
 // together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone!
 #define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
-//#define SENSE_ID_BACK_LENS 1
+#define SENSE_ID_BACK_LENS 1
+#define SENSE_ID_FRONT_LENS 2
 /**
  * Let's make it a sqaure for less trouble, at least for now!
  * it would result in 2336x1080 in Galaxy A50.

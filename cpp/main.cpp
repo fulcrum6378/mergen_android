@@ -1,6 +1,7 @@
 #include <android/native_window_jni.h>
 
 #include "aud/microphone.h"
+#include "hpt/touch.h"
 #include "rew/rewarder.h"
 #include "vis/camera.h"
 
@@ -12,6 +13,7 @@ static Camera *vis = nullptr;
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *, jobject) {
+    Manifest::create();
     rew = new Rewarder();
     // mem = new Queuer();
     // ComputeVK().run(state->activity->assetManager);
@@ -55,6 +57,7 @@ Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
     mem = nullptr;*/
     delete &rew;
     rew = nullptr;
+    Manifest::destroy();
 }
 
 
