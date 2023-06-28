@@ -11,7 +11,6 @@ Queuer::Queuer() : std::thread(&Queuer::Run, this) {
 } // all executed in the main thread.
 
 void Queuer::Run() {
-    LoadManifest();
     while (active_) {
         //LOGW("QUEUER: I AM ACTIVE!!!");
         lock.lock();
@@ -19,26 +18,6 @@ void Queuer::Run() {
         lock.unlock();
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
-}
-
-void Queuer::LoadManifest() {
-    // C++ has no split function; instead do "s.substr(0, s.find(delimiter));" on std::string
-    manifest = std::map<uint8_t, Sense>();
-    manifest[0] = Sense{
-            0, SenseType::REW, 1, 0, 1,
-            0, 0, 0, {0, 0, 0}
-    };
-    manifest[1] = Sense{
-            1, SenseType::VIS, 518400, 1, 518401,
-            .75, .5, .8, {9, 26, 5}
-    };
-    manifest[2] = Sense{
-            2, SenseType::AUD, 96000, 518401, 614401,
-            .5, .95, -1, {9, 3, 3}
-    };
-    /*manifest[3] = Sense{
-            3, SenseType::HPT,
-    };*/
 }
 
 // Current time in microseconds

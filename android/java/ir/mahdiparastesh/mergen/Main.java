@@ -70,21 +70,6 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         preview.setSurfaceTextureListener(this);
         if (preview.isAvailable()) onSurfaceTextureAvailable(
                 preview.getSurfaceTexture(), size.getWidth(), size.getHeight());
-
-        /*import java.io.File;
-        import java.io.FileOutputStream;
-        import java.io.IOException;
-        import java.io.InputStream;
-        File senses = new File(getFilesDir(), "senses.xml");
-        if (!senses.exists()) try {
-            InputStream src = getResources().openRawResource(R.raw.senses);
-            FileOutputStream fos = new FileOutputStream(senses);
-            int byt;
-            while ((byt = src.read()) > -1) fos.write(byt);
-            src.close();
-            fos.close();
-        } catch (IOException ignored) {
-        }*/
     }
 
     @Override

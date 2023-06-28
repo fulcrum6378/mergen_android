@@ -227,7 +227,7 @@ void Camera::ImageCallback(AImageReader *reader) const {
     if (AImageReader_acquireNextImage(reader, &image) != AMEDIA_OK || !image) return;
 
     if (!recording_ || !VIS_SAVE) AImage_delete(image);
-    else std::thread(&Camera::Submit/*, this*/, image/*, Queuer::Now()*/).detach();
+    else std::thread(&Camera::Submit/*, this*/, image, Queuer::Now()).detach();
 }
 
 /**
@@ -237,7 +237,7 @@ void Camera::ImageCallback(AImageReader *reader) const {
  *
  * AImage_getTimestamp sucks! e.g. gives "1968167967185224" for 2023.06.28!
  */
-void Camera::Submit(AImage *image/*, int64_t time*/) {
+void Camera::Submit(AImage *image, int64_t time) {
     AImageCropRect srcRect;
     AImage_getCropRect(image, &srcRect);
     int32_t yStride, uvStride;
@@ -256,8 +256,6 @@ void Camera::Submit(AImage *image/*, int64_t time*/) {
     height = MIN(width, (srcRect.bottom - srcRect.top));
     width = MIN(height, (srcRect.right - srcRect.left));
 
-    int64_t time;
-    AImage_getTimestamp(image, &time);
     std::ofstream file((path + std::to_string(time) + ".bmp").c_str(),
                        std::ios::out | std::ios::binary);
 

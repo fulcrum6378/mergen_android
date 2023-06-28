@@ -1,7 +1,7 @@
 #ifndef REW_REWARDER_H
 #define REW_REWARDER_H
 
-#include <cstdint>
+#include "../manifest.h"
 
 class Rewarder {
 private:

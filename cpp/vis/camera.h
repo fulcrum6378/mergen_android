@@ -25,7 +25,7 @@
 #define MAX(a, b) ({__typeof__(a) _a = (a); __typeof__(b) _b = (b); _a > _b ? _a : _b; })
 #define MIN(a, b) ({__typeof__(a) _a = (a); __typeof__(b) _b = (b); _a < _b ? _a : _b; })
 
-static bool VIS_SAVE = true;
+static bool VIS_SAVE = false;
 static const char *path = "/data/data/ir.mahdiparastesh.mergen/files/vis/";
 
 // related to Windows
@@ -112,7 +112,7 @@ private:
 
     void ImageCallback(AImageReader *reader) const;
 
-    static void Submit(AImage *image/*, int64_t time*/);
+    static void Submit(AImage *image, int64_t time);
 
 public:
     Camera();
