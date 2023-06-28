@@ -6,6 +6,11 @@
 #include "camera.h"
 #include "../global.h"
 
+/**
+ * This should be invoked before the first Main::onSurfaceTextureAvailable;
+ * its return value will be needed for Main::getCameraDimensions, then we should have some
+ * configurations done and then we'll create a camera session.
+ */
 Camera::Camera() : captureSessionState_(CaptureSessionState::MAX_STATE) {
     cameraMgr_ = ACameraManager_create();
     ASSERT(cameraMgr_, "Failed to create cameraManager")
@@ -213,21 +218,26 @@ bool Camera::SetRecording(bool b) {
     return true;
 }
 
-// called when a frame is captured
+/**
+ * Called when a frame is captured
+ * Beware that AImageReader_acquireLatestImage deletes the previous images.
+ */
 void Camera::ImageCallback(AImageReader *reader) const {
     AImage *image = nullptr;
     if (AImageReader_acquireNextImage(reader, &image) != AMEDIA_OK || !image) return;
 
     if (!recording_ || !VIS_SAVE) AImage_delete(image);
-    else std::thread(&Camera::Submit/*, this*/, image, Queuer::Now()).detach();
+    else std::thread(&Camera::Submit/*, this*/, image/*, Queuer::Now()*/).detach();
 }
 
 /**
  * Yuv2Rgb algorithm is from:
  * https://github.com/tensorflow/tensorflow/blob/5dcfc51118817f27fad5246812d83e5dccdc5f72/
  * tensorflow/tools/android/test/jni/yuv2rgb.cc
+ *
+ * AImage_getTimestamp sucks! e.g. gives "1968167967185224" for 2023.06.28!
  */
-void Camera::Submit(AImage *image, int64_t time) {
+void Camera::Submit(AImage *image/*, int64_t time*/) {
     AImageCropRect srcRect;
     AImage_getCropRect(image, &srcRect);
     int32_t yStride, uvStride;
@@ -246,6 +256,8 @@ void Camera::Submit(AImage *image, int64_t time) {
     height = MIN(width, (srcRect.bottom - srcRect.top));
     width = MIN(height, (srcRect.right - srcRect.left));
 
+    int64_t time;
+    AImage_getTimestamp(image, &time);
     std::ofstream file((path + std::to_string(time) + ".bmp").c_str(),
                        std::ios::out | std::ios::binary);
 

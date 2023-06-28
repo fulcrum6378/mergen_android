@@ -1,18 +1,23 @@
 #include <android/native_window_jni.h>
 
 #include "aud/microphone.h"
+#include "rew/rewarder.h"
 #include "vis/camera.h"
+
+// static Queuer *mem = nullptr; #include "mem/queuer.h"
+static Rewarder *rew = nullptr;
 
 static Microphone *aud = nullptr;
 static Camera *vis = nullptr;
-// static Queuer *mem = nullptr; #include "mem/queuer.h"
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *, jobject) {
-    //mem = new Queuer();
+    rew = new Rewarder();
+    // mem = new Queuer();
+    // ComputeVK().run(state->activity->assetManager);
+
     aud = new Microphone(/*mem*/nullptr);
     vis = new Camera();
-    // ComputeVK().run(state->activity->assetManager);
 
     return reinterpret_cast<jlong>(vis);
 }
@@ -48,6 +53,8 @@ Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
     aud = nullptr;
     /*delete &mem;
     mem = nullptr;*/
+    delete &rew;
+    rew = nullptr;
 }
 
 
@@ -109,11 +116,3 @@ Java_ir_mahdiparastesh_mergen_Main_onTouch(
     ss << ", " << x << ", " << y << ", " << size;
     LOGW("%s", ss.str().c_str());
 }
-
-/* TO-DO:
-  *
-  * Notes:
-  * The idea of defining a JNI interface header sucks!
-  * Beware that AImageReader_acquireLatestImage deletes the previous images.
-  * Use AImage_getTimestamp().
-  */

@@ -1,5 +1,5 @@
-#ifndef AUD_RECORDER_H
-#define AUD_RECORDER_H
+#ifndef AUD_MICROPHONE_H
+#define AUD_MICROPHONE_H
 
 #include <fstream>
 
@@ -44,4 +44,4 @@ public:
     ~Microphone();
 };
 
-#endif //AUD_RECORDER_H
+#endif //AUD_MICROPHONE_H
