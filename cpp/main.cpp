@@ -8,17 +8,23 @@
 
 [[maybe_unused]] static Queuer *que = nullptr;
 static Rewarder *rew = nullptr;
+static JavaVM *jvm = nullptr;
 
 static Camera *vis = nullptr;
 static Touch *hpt = nullptr;
 static Microphone *aud = nullptr;
+
+JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *) {
+    jvm = vm;
+    return JNI_VERSION_1_6;
+}
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     jobject gMain = env->NewGlobalRef(main);
 
     Manifest::create();
-    rew = new Rewarder(env, gMain);
+    rew = new Rewarder(jvm, env, gMain);
     // que = new Queuer();
     // ComputeVK().run(state->activity->assetManager);
 

@@ -3,12 +3,8 @@
 
 Queuer::Queuer() : std::thread(&Queuer::Run, this) {
     active_ = true;
-    detach(); // don't use "join()"
-    /*#include <sstream>
-    std::stringstream ss;
-    ss << std::this_thread::get_id();
-    LOGE("%s", ss.str().c_str());*/
-} // all executed in the main thread.
+    detach();
+}
 
 void Queuer::Run() {
     while (active_) {

@@ -5,7 +5,7 @@
 #include "../vis/colouring.h"
 #include "rewarder.h"
 
-Rewarder::Rewarder(JNIEnv *env, jobject main) {
+Rewarder::Rewarder(JavaVM *jvm, JNIEnv *env, jobject main) {
     criteria = new std::map<uint8_t, Criterion>{};
     AddCriterion(Criterion{
             0, 4, 1, "Gradient of pleasure and pain"});
@@ -16,7 +16,7 @@ Rewarder::Rewarder(JNIEnv *env, jobject main) {
     for (auto cri: *criteria) (*scores)[cri.second.id] = 0.0;
 
     expressions = new std::map<uint16_t, Expression *>{};
-    AddExpression(new Vibrator(env, main));
+    AddExpression(new Vibrator(jvm, env, main));
     AddExpression(new Colouring(env, main));
 }
 
@@ -51,6 +51,7 @@ void Rewarder::Compute() {
 }
 
 Rewarder::~Rewarder() {
+    for (auto exp : *expressions) delete exp.second;
     delete &expressions;
     expressions = nullptr;
     delete &scores;

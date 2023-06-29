@@ -38,15 +38,38 @@ void Touch::OnTouchEvent(int16_t dev, int8_t act, int16_t id, float x, float y, 
     CheckForRewards();
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma ide diagnostic ignored "UnreachableCode"
+#pragma ide diagnostic ignored "ConstantConditionsOC"
+
 void Touch::CheckForRewards() {
     bool anyOn = false;
     for (auto o: *on) if (o.second) anyOn = true;
-
     auto screen = (*Manifest::input)[INPUT_ID_TOUCH];
-    double final = 0.0;
+
+    /*double final = 0.0;
     if (anyOn) final = (((y_ / (double) screen.height) * 2.0) - 1.0) * -1;
-    rew_->SetScore(0, final);
+    rew_->SetScore(0, final);*/
+
+    bool inRange = false;
+    if (anyOn) {
+        double hCent = (double) screen.height / 100.0, yFactor = y_ / hCent,
+                minYPercent = 80.0, maxYPercent = 90.0;
+        if (yFactor >= minYPercent && yFactor < maxYPercent) {
+            double circleSize = (maxYPercent * hCent) - (minYPercent * hCent);
+            double minX = (screen.width - circleSize) / 2.0, maxX = minX + circleSize;
+            if (x_ >= minX && x_ < maxX) {
+                inRange = true;
+            }
+        }
+    }
+
+    if (inRange) rew_->SetScore(0, -1.0);
+    else rew_->SetScore(0, 0.0);
 }
+
+#pragma clang diagnostic pop
 
 Touch::~Touch() {
     delete on;
