@@ -12,10 +12,9 @@ static bool AUD_SAVE = true;
 
 class Microphone {
 private:
-    SLObjectItf slEngineObj_{};
-    SLEngineItf slEngineItf_{};
-    std::ofstream test;
     [[maybe_unused]] Queuer *queuer_;
+    std::ofstream test;
+    Engine *slEngine_;
 
     SLObjectItf recObjectItf_{};
     SLRecordItf recItf_{};

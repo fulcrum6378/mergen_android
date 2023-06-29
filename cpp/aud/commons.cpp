@@ -3,6 +3,30 @@
 
 #include "commons.h"
 
+Engine::Engine() {
+    SLresult result;
+    result = slCreateEngine(
+            &slEngineObj_, 0, nullptr, 0,
+            nullptr, nullptr);
+    SLASSERT(result);
+    result = (*slEngineObj_)->Realize(slEngineObj_, SL_BOOLEAN_FALSE);
+    SLASSERT(result);
+    result = (*slEngineObj_)->GetInterface(slEngineObj_, SL_IID_ENGINE, &slEngineItf_);
+    SLASSERT(result);
+}
+
+SLEngineItf Engine::GetSlEngineItf() {
+    return slEngineItf_;
+}
+
+Engine::~Engine() {
+    if (slEngineObj_ != nullptr) {
+        (*slEngineObj_)->Destroy(slEngineObj_);
+        slEngineObj_ = nullptr;
+        slEngineItf_ = nullptr;
+    }
+}
+
 void ConvertToSLSampleFormat(SLAndroidDataFormat_PCM_EX *pFormat, SampleFormat *pSampleInfo_) {
     assert(pFormat);
     memset(pFormat, 0, sizeof(*pFormat));

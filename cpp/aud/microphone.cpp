@@ -3,16 +3,7 @@
 Microphone::Microphone(Queuer *)
         : queuer_(), freeQueue_(nullptr), recQueue_(nullptr), devShadowQueue_(nullptr) {
     SLresult result;
-
-    // create OpenSL audio engine
-    result = slCreateEngine(
-            &slEngineObj_, 0, nullptr, 0,
-            nullptr, nullptr);
-    SLASSERT(result);
-    result = (*slEngineObj_)->Realize(slEngineObj_, SL_BOOLEAN_FALSE);
-    SLASSERT(result);
-    result = (*slEngineObj_)->GetInterface(slEngineObj_, SL_IID_ENGINE, &slEngineItf_);
-    SLASSERT(result);
+    slEngine_ = new Engine();
 
     // configure audio properties
     sampleInfo_ = {
@@ -37,8 +28,8 @@ Microphone::Microphone(Queuer *)
     // create audio recorder (requires the RECORD_AUDIO permission)
     const SLInterfaceID id[2] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE, SL_IID_ANDROIDCONFIGURATION};
     const SLboolean req[2] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
-    result = (*slEngineItf_)->CreateAudioRecorder(
-            slEngineItf_, &recObjectItf_, &audioSrc, &audioSnk, 1, id, req);
+    result = (*slEngine_->GetSlEngineItf())->CreateAudioRecorder(
+            slEngine_->GetSlEngineItf(), &recObjectItf_, &audioSrc, &audioSnk, 1, id, req);
     SLASSERT(result);
 
     // Configure the voice recognition preset which has no signal processing for lower latency.
@@ -232,10 +223,6 @@ Microphone::~Microphone() {
     delete freeQueue_;
     releaseSampleBufs(bufs_, bufCount_);
 
-    // destroy OpenSL audio engine
-    if (slEngineObj_ != nullptr) {
-        (*slEngineObj_)->Destroy(slEngineObj_);
-        slEngineObj_ = nullptr;
-        slEngineItf_ = nullptr;
-    }
+    delete slEngine_;
+    slEngine_ = nullptr;
 }

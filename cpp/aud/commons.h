@@ -26,6 +26,19 @@ struct SampleFormat {
     uint32_t representation_;  // android extensions
 };
 
+class Engine {
+private:
+    SLObjectItf slEngineObj_{};
+    SLEngineItf slEngineItf_{};
+
+public:
+    Engine();
+
+    SLEngineItf GetSlEngineItf();
+
+    ~Engine();
+};
+
 void ConvertToSLSampleFormat(SLAndroidDataFormat_PCM_EX *pFormat, SampleFormat *format);
 
 #define SLASSERT(x)                   \
