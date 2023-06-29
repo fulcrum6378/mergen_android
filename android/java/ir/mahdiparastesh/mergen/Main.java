@@ -17,9 +17,8 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
-
-import androidx.constraintlayout.widget.ConstraintLayout;
 
 import java.util.Arrays;
 
@@ -31,7 +30,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     private Toast toast;
     private Shaker shaker;
 
-    private ConstraintLayout root;
+    private RelativeLayout root;
     private View colouring;
     private TextureView preview;
 
