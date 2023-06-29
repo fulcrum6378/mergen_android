@@ -7,7 +7,7 @@ std::map<int8_t, Interaction> *Manifest::output;
 
 void Manifest::create() {
     input = new std::map<int8_t, Interaction>{};
-    (*input)[0] = Interaction{
+    (*input)[0] = Interaction{ // reward system
             0, ActType::REW, 0, 0, 0, 0, 0, 0
     };
     (*input)[1] = Interaction{ // back camera
@@ -19,7 +19,7 @@ void Manifest::create() {
     (*input)[3] = Interaction{ // microphone
             3, ActType::AUD, .4, 1, 0, 2, 4, 2
     };
-    (*input)[4] = Interaction{ // touch
+    (*input)[4] = Interaction{ // touchscreen
             4, ActType::HPT, 0, 0, 1, 1080, 2340, 2
     };
 

@@ -5,7 +5,7 @@
 
 #define INPUT_ID_TOUCH 4
 
-class Touch {
+class Touchscreen {
 private:
     Rewarder *rew_;
     std::map<int16_t, bool> *on;
@@ -15,12 +15,12 @@ private:
     void CheckForRewards();
 
 public:
-    Touch(Rewarder *rew);
+    Touchscreen(Rewarder *rew);
 
     /** "int8_t dev" will corrupt the value! */
     void OnTouchEvent(int16_t dev, int8_t act, int16_t id, float x, float y, float size);
 
-    ~Touch();
+    ~Touchscreen();
 };
 
 #endif //HPT_TOUCH_H

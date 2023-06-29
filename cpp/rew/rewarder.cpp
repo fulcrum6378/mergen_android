@@ -5,18 +5,18 @@
 #include "../vis/colouring.h"
 #include "rewarder.h"
 
-Rewarder::Rewarder(JavaVM *jvm, JNIEnv *env, jobject main) {
+Rewarder::Rewarder(JNIEnv *env, jobject main) {
     criteria = new std::map<uint8_t, Criterion>{};
     AddCriterion(Criterion{
-            0, 4, 1, "Gradient of pleasure and pain"});
-    /*AddCriterion(Criterion{
-            1, 0, 5, "Normality"});*/
+            0, 4, 4, "Painful point"});
+    AddCriterion(Criterion{
+            1, 0, 1, "Normality"});
 
     scores = new std::map<uint8_t, double>();
     for (auto cri: *criteria) (*scores)[cri.second.id] = 0.0;
 
     expressions = new std::map<uint16_t, Expression *>{};
-    AddExpression(new Vibrator(jvm, env, main));
+    AddExpression(new Vibrator(env, main));
     AddExpression(new Colouring(env, main));
 }
 
@@ -30,7 +30,7 @@ void Rewarder::AddExpression(Expression *expression) {
 
 /** An interface for any sense to declare its score. */
 void Rewarder::SetScore(uint8_t criterionId, double score) {
-    ASSERT(score >= -1.0 && score <= 1.0, "Invalid reward score!");
+    ASSERT(score >= -1.0 && score <= 1.0, "Invalid reward score!")
     (*scores)[criterionId] = score;
     Compute();
 }
@@ -51,7 +51,7 @@ void Rewarder::Compute() {
 }
 
 Rewarder::~Rewarder() {
-    for (auto exp : *expressions) delete exp.second;
+    for (auto exp: *expressions) delete exp.second;
     delete &expressions;
     expressions = nullptr;
     delete &scores;

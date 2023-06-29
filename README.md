@@ -41,7 +41,7 @@ Mergen is intended to have 2 aspects:
 Each part has its own README in its own directory.
 
 - [**AUD**](cpp/aud) : everything related to **Auditory** inputs and outputs.
-- [**HPT**](cpp/hpt) : everything related to **Touch** (haptic) inputs.
+- [**HPT**](cpp/hpt) : everything related to **Touchscreen** (haptic) inputs.
 - [**MEM**](cpp/mem) : everything related to **Memory**.
 - [**MOV**](cpp/mov) : everything related to **Movements**.
 - [**REW**](cpp/rew) : everything related to **Reward System** (reinforcement learning).

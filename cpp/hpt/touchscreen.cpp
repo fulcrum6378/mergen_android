@@ -1,13 +1,14 @@
+#include <cmath>
 #include <sstream>
 
 #include "../global.h"
-#include "touch.h"
+#include "touchscreen.h"
 
-Touch::Touch(Rewarder *rew) : rew_(rew) {
+Touchscreen::Touchscreen(Rewarder *rew) : rew_(rew) {
     on = new std::map<int16_t, bool>();
 }
 
-void Touch::OnTouchEvent(int16_t dev, int8_t act, int16_t id, float x, float y, float size) {
+void Touchscreen::OnTouchEvent(int16_t dev, int8_t act, int16_t id, float x, float y, float size) {
     std::stringstream ss;
     ss << "DEV:" << dev << ", ";
     switch (act) {
@@ -43,7 +44,7 @@ void Touch::OnTouchEvent(int16_t dev, int8_t act, int16_t id, float x, float y, 
 #pragma ide diagnostic ignored "UnreachableCode"
 #pragma ide diagnostic ignored "ConstantConditionsOC"
 
-void Touch::CheckForRewards() {
+void Touchscreen::CheckForRewards() {
     bool anyOn = false;
     for (auto o: *on) if (o.second) anyOn = true;
     auto screen = (*Manifest::input)[INPUT_ID_TOUCH];
@@ -52,7 +53,7 @@ void Touch::CheckForRewards() {
     if (anyOn) final = (((y_ / (double) screen.height) * 2.0) - 1.0) * -1;
     rew_->SetScore(0, final);*/
 
-    bool inRange = false;
+    /*bool inRange = false;
     if (anyOn) {
         double hCent = (double) screen.height / 100.0, yFactor = y_ / hCent,
                 minYPercent = 80.0, maxYPercent = 90.0;
@@ -61,17 +62,30 @@ void Touch::CheckForRewards() {
             double minX = (screen.width - circleSize) / 2.0, maxX = minX + circleSize;
             if (x_ >= minX && x_ < maxX) {
                 inRange = true;
+
             }
         }
     }
+    if (inRange) rew_->SetScore(0, -1.0);
+    else rew_->SetScore(0, 0.0);*/
 
+    // √[(x2 − x1)2 + (y2 − y1)2]
+    bool inRange = false;
+    if (anyOn) {
+        double xM = (double) screen.width / 2.0, yM = 0.0 * ((double) screen.height / 100.0);
+        double distance = sqrt(pow(x_ - xM, 2) + pow(y_ - yM, 2));
+        std::stringstream ss;
+        ss << "DISTANCE IS " << distance;
+        LOGW("%s", ss.str().c_str());
+        if (distance < 150.0) inRange = true;
+    }
     if (inRange) rew_->SetScore(0, -1.0);
     else rew_->SetScore(0, 0.0);
 }
 
 #pragma clang diagnostic pop
 
-Touch::~Touch() {
+Touchscreen::~Touchscreen() {
     delete on;
     on = nullptr;
 }

@@ -23,3 +23,5 @@ android {
     }
     externalNativeBuild { cmake { path file('../cpp/CMakeLists.txt'); version '3.22.1' } }
 }
+
+dependencies { implementation 'androidx.constraintlayout:constraintlayout:2.1.4' }

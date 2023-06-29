@@ -33,7 +33,7 @@ private:
     void Compute();
 
 public:
-    Rewarder(JavaVM *jvm, JNIEnv *env, jobject main);
+    Rewarder(JNIEnv *env, jobject main);
 
     void SetScore(uint8_t criterionId, double score);
 

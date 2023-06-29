@@ -17,8 +17,9 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
+
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import java.util.Arrays;
 
@@ -28,8 +29,9 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     private Surface surface = null;
     private boolean isRecording = false;
     private Toast toast;
+    private Shaker shaker;
 
-    private RelativeLayout root;
+    private ConstraintLayout root;
     private View colouring;
     private TextureView preview;
 
@@ -47,6 +49,9 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         if (Arrays.stream(requiredPerms).anyMatch(s -> checkSelfPermission(s) < 0))
             requestPermissions(requiredPerms, 1);
         else permitted();
+
+        // miscellaneus jobs
+        shaker = new Shaker();
 
         // toast any test string values
         String tested = test();
@@ -153,11 +158,8 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
 
     /** @param amplitude must be in range 1..255 */
     @SuppressWarnings("unused")
-    void vibrate(long milliseconds, int amplitude) {
-        Vibrator vib = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) ?
-                ((VibratorManager) getSystemService(Context.VIBRATOR_MANAGER_SERVICE))
-                        .getDefaultVibrator() : (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        vib.vibrate(VibrationEffect.createOneShot(milliseconds, amplitude));
+    void vibrate(int amplitude) {
+        shaker.amplitude = amplitude;
     }
 
     @SuppressWarnings("unused")
@@ -192,6 +194,38 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         }
 
         public abstract void onDoubleClick();
+    }
+
+    private class Shaker extends Thread {
+        public int amplitude = 0;
+        private boolean active = true;
+        private final Vibrator vib = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) ?
+                ((VibratorManager) getSystemService(Context.VIBRATOR_MANAGER_SERVICE))
+                        .getDefaultVibrator() : (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
+        public Shaker() {
+            start();
+        }
+
+        @Override
+        public void run() {
+            long dur = 200;
+            while (active) {
+                if (amplitude > 0) vib.vibrate(VibrationEffect.createOneShot(dur, amplitude));
+                try {
+                    //noinspection BusyWait
+                    Thread.sleep(dur);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        @Override
+        public void interrupt() {
+            active = false;
+            super.interrupt();
+        }
     }
 
 
