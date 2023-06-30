@@ -5,7 +5,7 @@
 #include <map>
 
 enum class ActType : uint8_t {
-    AUD, HPT, MOV, REW, TNK [[maybe_unused]], VIS
+    AUD, HPT, MOV, REW, VIS
 };
 
 struct Interaction {
