@@ -1,2 +1,7 @@
 plugins { id 'com.android.application' version '8.0.2' apply false }
-task clean(type: Delete) { delete rootProject.buildDir }
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+    delete "${rootDir}/android/.cxx/"
+    delete "${rootDir}/android/build/"
+}

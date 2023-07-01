@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.4.1)
-project("Mergen")
+project(Mergen VERSION 0.4.010)  # number of Git commits /= 10
 
 set(CMAKE_VERBOSE_MAKEFILE on)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -Wall")
 add_definitions(-DVK_USE_PLATFORM_ANDROID_KHR=1)
 
 add_library(main SHARED
@@ -29,12 +29,10 @@ add_library(main SHARED
         )
 
 target_link_libraries(main
-        android
+        android      # for ANativeWindow
         camera2ndk
-        dl
-        log
-        m
-        mediandk
+        log          # for <android/log.h>
+        mediandk     # for AImageReader
         OpenSLES
         vulkan
         )
