@@ -1,10 +1,10 @@
-# Mergen IV
+# Mergen
 
 Mergen is a [free and open-source](https://en.wikipedia.org/wiki/Free_and_open-source_software)
 logical real-time artificial-intelligence robot, in other words an "**Artificial Mind**",
 written in C++ language, which is temporarily mounted on Android.
 
-The C++ libraries located in the [/cpp/](cpp) are intended to be mounted on real robots with the
+The main C++ library located in the [/cpp/](cpp) is intended to be mounted on real robots with the
 [*FreeBSD* operating system](https://www.freebsd.org/).
 
 ## Philosophy
@@ -50,7 +50,7 @@ Each part has its own README in its own directory.
 
 ## Previous versions of Mergen
 
-#### Mergen I
+#### Mergen I (v0.1)
 
 The first version of Mergen, started at **13 December 2020**, was intended to be a [natural language processing (NLP)](
 https://en.wikipedia.org/wiki/Natural_language_processing) bot, something like ChatGPT today.
@@ -59,7 +59,7 @@ It was intended to process **only digital texts**, and the program itself was in
 temporarily communicating with an Android client.
 But I cancelled its development and pursued a better method (Mergen II).
 
-#### Mergen II
+#### Mergen II (v0.2)
 
 The second version of Mergen, was intended to primarily process audio, I also called it the [**Pronouncer**](
 https://github.com/fulcrum6378/pronouncer). It was a more advanced version of a [Text-To-Speech (TTS)](
@@ -70,7 +70,7 @@ It synthesised human voices and was intended to be programmed to learn from voic
 
 I started it in January 2021, soon after I cancelled it and pursued a better method (Mergen III).
 
-#### Mergen III
+#### Mergen III (v0.3)
 
 The third version of Mergen, after many researches, was more of a server-client approach,
 this time *temporarily* on LAN, instead of a server, thousands of kilometres away!
@@ -89,7 +89,7 @@ to communicate, and since I couldn't afford *robotic* resources, I was disappoin
 so I cancelled this one two (March 2022) :(
 
 > I decided to use C++ instead of Python and do all the job temporarily inside an Android smartphone,
-> so I began developing **Mergen IV** at 2 August 2022!
+> so I began developing **Mergen IV** (v0.4 - current) at 2 August 2022!
 
 ## License
 
