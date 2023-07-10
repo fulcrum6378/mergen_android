@@ -15,8 +15,8 @@
 
 // together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone!
 #define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
-#define INPUT_ID_BACK_LENS 1
-#define INPUT_ID_FRONT_LENS 2
+//#define INPUT_ID_BACK_LENS 1
+//#define INPUT_ID_FRONT_LENS 2
 /**
  * Let's make it a sqaure for less trouble, at least for now!
  * it would result in 2336x1080 in Galaxy A50.
@@ -27,7 +27,7 @@
 #define MAX(a, b) ({__typeof__(a) _a = (a); __typeof__(b) _b = (b); _a > _b ? _a : _b; })
 #define MIN(a, b) ({__typeof__(a) _a = (a); __typeof__(b) _b = (b); _a < _b ? _a : _b; })
 
-static bool VIS_SAVE = false;
+static bool VIS_SAVE = true;
 static const char *path = "/data/data/ir.mahdiparastesh.mergen/files/vis/";
 
 // related to Windows
@@ -80,6 +80,7 @@ private:
     std::pair<int32_t, int32_t> dimensions_;
     bool recording_{false};
     static const int kMaxChannelValue = 262143;
+    int skipped_count = 0;
 
     // Managing cameras
     ACameraManager *cameraMgr_;
@@ -114,7 +115,7 @@ private:
 
     void Preview(bool start);
 
-    void ImageCallback(AImageReader *reader) const;
+    void ImageCallback(AImageReader *reader);
 
     static void Submit(AImage *image, int64_t time);
 

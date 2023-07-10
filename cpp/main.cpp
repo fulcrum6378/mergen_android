@@ -79,9 +79,10 @@ Java_ir_mahdiparastesh_mergen_Main_getCameraDimensions(
     if (!cameraObj) return nullptr;
     auto *cam = reinterpret_cast<Camera *>(cameraObj);
     jclass cls = env->FindClass("android/util/Size");
+    auto dim = cam->GetDimensions();
     jobject previewSize = env->NewObject(
             cls, env->GetMethodID(cls, "<init>", "(II)V"),
-            cam->GetDimensions().first, cam->GetDimensions().second);
+            dim.first, dim.second);
     return previewSize;
 }
 

@@ -11,41 +11,17 @@
  * its return value will be needed for Main::getCameraDimensions, then we should have some
  * configurations done and then we'll create a camera session.
  */
-Camera::Camera(Rewarder *rew) :
-        rew_(rew), que_(), captureSessionState_(CaptureSessionState::MAX_STATE) {
+Camera::Camera(Rewarder *) :
+        rew_(), que_(), captureSessionState_(CaptureSessionState::MAX_STATE) {
 
-    // Initialise ACameraManager
+    // initialise ACameraManager
     cameraMgr_ = ACameraManager_create();
     ASSERT(cameraMgr_, "Failed to create cameraManager")
     cameras_.clear();
     EnumerateCamera();
     ASSERT(!activeCameraId_.empty(), "Unknown ActiveCameraIdx")
 
-    // Prepare for reading image frames
-    DetermineCaptureDimensions(&dimensions_);
-    media_status_t status = AImageReader_newWithUsage(
-            dimensions_.first, dimensions_.second, VIS_IMAGE_FORMAT,
-            AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN, MAX_BUF_COUNT, &reader_);
-    ASSERT(reader_ && status == AMEDIA_OK, "Failed to create AImageReader")
-    AImageReader_ImageListener listener{
-            .context = this,
-            .onImageAvailable = [](void *ctx, AImageReader *reader) {
-                reinterpret_cast<Camera *>(ctx)->ImageCallback(reader);
-            },
-    };
-    AImageReader_setImageListener(reader_, &listener);
-    status = AImageReader_getWindow(reader_, &readerWindow_);
-    ASSERT(status == AMEDIA_OK, "Could not get ANativeWindow")
-
-    // Create the destination directory
-    DIR *dir = opendir(path);
-    if (dir) closedir(dir);
-    else {
-        std::string cmd = "mkdir -p ";
-        cmd += path;
-        system(cmd.c_str());
-    }
-
+    // camera device management
     cameraDeviceListener_ = {
             .context = this,
             .onDisconnected = [](void *ctx, ACameraDevice *dev) {
@@ -62,6 +38,7 @@ Camera::Camera(Rewarder *rew) :
             cameraMgr_, activeCameraId_.c_str(), &cameraDeviceListener_,
             &cameras_[activeCameraId_].device_);
 
+    // camera state management
     sessionListener = {
             .context = this,
             .onClosed = [](void *ctx, ACameraCaptureSession *ses) {
@@ -74,6 +51,36 @@ Camera::Camera(Rewarder *rew) :
                 reinterpret_cast<Camera *>(ctx)->captureSessionState_ = CaptureSessionState::ACTIVE;
             },
     };
+
+    // prepare for reading image frames
+    DetermineCaptureDimensions(&dimensions_);
+    if (VIS_SAVE) {
+        // initialise AImageReader and retrieve its ANativeWindow (Surface in Java)
+        media_status_t status = AImageReader_newWithUsage(
+                dimensions_.first, dimensions_.second, VIS_IMAGE_FORMAT,
+                AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN, MAX_BUF_COUNT, &reader_);
+        ASSERT(reader_ && status == AMEDIA_OK, "Failed to create AImageReader")
+        status = AImageReader_getWindow(reader_, &readerWindow_);
+        ASSERT(status == AMEDIA_OK, "Could not get ANativeWindow")
+
+        // listen for incoming image frames
+        AImageReader_ImageListener listener{
+                .context = this,
+                .onImageAvailable = [](void *ctx, AImageReader *reader) {
+                    reinterpret_cast<Camera *>(ctx)->ImageCallback(reader);
+                },
+        };
+        AImageReader_setImageListener(reader_, &listener);
+
+        // prepare the output directory for saving
+        DIR *dir = opendir(path);
+        if (dir) closedir(dir);
+        else {
+            std::string cmd = "mkdir -p ";
+            cmd += path;
+            system(cmd.c_str());
+        }
+    }
 }
 
 const std::pair<int32_t, int32_t> &Camera::GetDimensions() const {
@@ -217,19 +224,28 @@ void Camera::Preview(bool start) {
 bool Camera::SetRecording(bool b) {
     if (captureSessionState_ != CaptureSessionState::ACTIVE || b == recording_) return false;
     recording_ = b;
+    if (!recording_) skipped_count = 0;
     return true;
 }
 
 /**
  * Called when a frame is captured
  * Beware that AImageReader_acquireLatestImage deletes the previous images.
+ * You should always call acquireNextImage() and delete() even if you don't wanna save it!
  */
-void Camera::ImageCallback(AImageReader *reader) const {
+void Camera::ImageCallback(AImageReader *reader) {
     AImage *image = nullptr;
     if (AImageReader_acquireNextImage(reader, &image) != AMEDIA_OK || !image) return;
-
-    if (!recording_ || !VIS_SAVE) AImage_delete(image);
-    else std::thread(&Camera::Submit/*, this*/, image, Queuer::Now()).detach();
+    bool submitted = false;
+    if (recording_) {
+        if (skipped_count == 0) {
+            std::thread(&Camera::Submit/*, this*/, image, Queuer::Now()).detach();
+            submitted = true;
+        }
+        skipped_count++;
+        if (skipped_count == 5) skipped_count = 0;
+    }
+    if (!submitted) AImage_delete(image);
 }
 
 /**
