@@ -10,51 +10,56 @@
 #include <string>
 #include <utility>
 
-#include "../mem/queuer.h"
 #include "../rew/rewarder.h"
+
+//#define INPUT_ID_BACK_LENS 1
+//#define INPUT_ID_FRONT_LENS 2
 
 // together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone!
 #define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
-//#define INPUT_ID_BACK_LENS 1
-//#define INPUT_ID_FRONT_LENS 2
-/**
- * Let's make it a sqaure for less trouble, at least for now!
- * it would result in 2336x1080 in Galaxy A50.
- */
+/** Let's make it a sqaure for less trouble, at least for now!
+ * it would result in 2336x1080 in Galaxy A50. */
 #define VIS_IMAGE_NEAREST_HEIGHT 1088
+// N frames are skipped and the next one is submitted.
+#define VIS_SKIP_N_FRAMES 5
 
 #define MAX_BUF_COUNT 4 // max image buffers
 #define MAX(a, b) ({__typeof__(a) _a = (a); __typeof__(b) _b = (b); _a > _b ? _a : _b; })
 #define MIN(a, b) ({__typeof__(a) _a = (a); __typeof__(b) _b = (b); _a < _b ? _a : _b; })
 
-static bool VIS_SAVE = true;
 static const char *filesDir = "/data/data/ir.mahdiparastesh.mergen/files/";
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 
 // related to Windows
 struct bmpfile_magic {
-    [[maybe_unused]] unsigned char magic[2];
+    unsigned char magic[2];
 };
 
 struct bmpfile_header {
-    [[maybe_unused]] uint32_t file_size;
-    [[maybe_unused]] uint16_t creator1;
-    [[maybe_unused]] uint16_t creator2;
+    uint32_t file_size;
+    uint16_t creator1;
+    uint16_t creator2;
     uint32_t bmp_offset;
 };
 
 struct bmpfile_dib_info {
-    [[maybe_unused]] uint32_t header_size;
-    [[maybe_unused]] int32_t width;
-    [[maybe_unused]] int32_t height;
-    [[maybe_unused]] uint16_t num_planes;
-    [[maybe_unused]] uint16_t bits_per_pixel;
-    [[maybe_unused]] uint32_t compression;
-    [[maybe_unused]] uint32_t bmp_byte_size;
-    [[maybe_unused]] int32_t hres;
-    [[maybe_unused]] int32_t vres;
-    [[maybe_unused]] uint32_t num_colors;
-    [[maybe_unused]] uint32_t num_important_colors;
+    uint32_t header_size;
+    int32_t width;
+    int32_t height;
+    uint16_t num_planes;
+    uint16_t bits_per_pixel;
+    uint32_t compression;
+    uint32_t bmp_byte_size;
+    int32_t hres;
+    int32_t vres;
+    uint32_t num_colors;
+    uint32_t num_important_colors;
 };
+
+#pragma clang diagnostic pop
 
 enum class CaptureSessionState : int32_t {
     READY,      // session is ready
@@ -67,9 +72,6 @@ class CameraId;
 
 class Camera {
 private:
-    [[maybe_unused]] Rewarder *rew_;
-    [[maybe_unused]] Queuer *que_;
-
     /**
      * AImageReader creates an IGraphicBufferProducer (input) and an IGraphicBufferConsumer (output),
      * then it creates a BufferQueue from them, then it listens data from that IGraphicBufferConsumer,
@@ -119,10 +121,10 @@ private:
 
     void ImageCallback(AImageReader *reader);
 
-    void Submit(AImage *image, int64_t time);
+    void Submit(AImage *image);
 
 public:
-    Camera(Rewarder *rew);
+    Camera();
 
     const std::pair<int32_t, int32_t> &GetDimensions() const;
 

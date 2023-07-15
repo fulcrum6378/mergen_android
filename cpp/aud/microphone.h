@@ -6,13 +6,12 @@
 #include "commons.h"
 #include "../mem/queuer.h"
 
-#define INPUT_ID_MICROPHONE 3
+//#define INPUT_ID_MICROPHONE 3
 
 static bool AUD_SAVE = true;
 
 class Microphone {
 private:
-    [[maybe_unused]] Queuer *queuer_;
     std::ofstream test;
     Engine *slEngine_;
 
@@ -35,7 +34,7 @@ private:
     void ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq, int64_t time);
 
 public:
-    Microphone(Queuer *queuer);
+    Microphone();
 
     bool Start(void);
 

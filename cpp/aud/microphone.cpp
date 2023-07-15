@@ -1,7 +1,6 @@
 #include "microphone.h"
 
-Microphone::Microphone(Queuer *)
-        : queuer_(), freeQueue_(nullptr), recQueue_(nullptr), devShadowQueue_(nullptr) {
+Microphone::Microphone() : freeQueue_(nullptr), recQueue_(nullptr), devShadowQueue_(nullptr) {
     SLresult result;
     slEngine_ = new Engine();
 

@@ -6,7 +6,6 @@
 #include "rew/rewarder.h"
 #include "vis/camera.h"
 
-[[maybe_unused]] static Queuer *que = nullptr;
 static Rewarder *rew = nullptr;
 
 static Camera *vis = nullptr;
@@ -19,10 +18,9 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
 
     Manifest::create();
     rew = new Rewarder(env, gMain);
-    // que = new Queuer();
 
-    vis = new Camera(rew);
-    aud = new Microphone(/*que*/nullptr);
+    vis = new Camera();
+    aud = new Microphone();
     hpt = new Touchscreen(rew);
 
     // ComputeVK().run(state->activity->assetManager);
@@ -63,8 +61,6 @@ Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
     aud = nullptr;
 
     delete &rew;
-    /*delete &que;
-    que = nullptr;*/
     rew = nullptr;
     Manifest::destroy();
 }
