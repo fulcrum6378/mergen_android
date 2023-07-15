@@ -78,7 +78,7 @@ private:
      */
     AImageReader *reader_{};
     std::pair<int32_t, int32_t> dimensions_;
-    std::ofstream *store{};
+    std::ofstream *store;
     std::mutex store_mutex;
     bool recording_{false};
     static const int kMaxChannelValue = 262143;
@@ -126,7 +126,7 @@ public:
 
     const std::pair<int32_t, int32_t> &GetDimensions() const;
 
-    void BakeMetadata() const;
+    [[maybe_unused]] void BakeMetadata() const;
 
     void CreateSession(ANativeWindow *displayWindow);
 

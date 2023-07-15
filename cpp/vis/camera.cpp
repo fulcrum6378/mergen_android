@@ -12,7 +12,7 @@
  * configurations done and then we'll create a camera session.
  */
 Camera::Camera(Rewarder *) :
-        rew_(), que_(), captureSessionState_(CaptureSessionState::MAX_STATE) {
+        rew_(), que_(), store(nullptr), captureSessionState_(CaptureSessionState::MAX_STATE) {
 
     // initialise ACameraManager
     cameraMgr_ = ACameraManager_create();
@@ -87,7 +87,7 @@ const std::pair<int32_t, int32_t> &Camera::GetDimensions() const {
     return dimensions_;
 }
 
-void Camera::BakeMetadata() const {
+[[maybe_unused]] void Camera::BakeMetadata() const {
     int32_t width = dimensions_.first;
     int32_t height = dimensions_.second;
     std::ofstream metadata(
@@ -288,7 +288,8 @@ void Camera::ImageCallback(AImageReader *reader) {
  *
  * AImage_getTimestamp sucks! e.g. gives "1968167967185224" for 2023.06.28!
  */
-void Camera::Submit(AImage *image, int64_t time) {
+void Camera::Submit(AImage *image, int64_t /*time*/) {
+    store_mutex.lock();
     if (!recording_ || !store) {
         if (store) {
             store->close();
@@ -319,7 +320,6 @@ void Camera::Submit(AImage *image, int64_t time) {
 
     //std::to_string(time) FIXME
 
-    store_mutex.lock();
     for (int32_t y = height - 1; y >= 0; y--) {
         const uint8_t *pY = yPixel + yStride * (y + srcRect.top) + srcRect.left;
 
@@ -354,8 +354,11 @@ void Camera::Submit(AImage *image, int64_t time) {
         }
         for (int i = 0; i < width % 4; i++) store->put(0);
     }
-    //LOGE("%s", (std::to_string(store->tellp())).c_str());
+    LOGE("%s", (std::to_string(store->tellp()) +
+                " bytes - dimensions: " + std::to_string(width) + "x" + std::to_string(height)
+    ).c_str());
     store_mutex.unlock();
+    //recording_ = false;
 
     //queuer_->Input(INPUT_ID_BACK_LENS, data, time);
     AImage_delete(image);
