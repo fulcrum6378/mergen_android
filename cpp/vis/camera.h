@@ -28,7 +28,7 @@
 #define MIN(a, b) ({__typeof__(a) _a = (a); __typeof__(b) _b = (b); _a < _b ? _a : _b; })
 
 static bool VIS_SAVE = true;
-static const char *path = "/data/data/ir.mahdiparastesh.mergen/files/vis/";
+static const char *filesDir = "/data/data/ir.mahdiparastesh.mergen/files/";
 
 // related to Windows
 struct bmpfile_magic {
@@ -78,6 +78,8 @@ private:
      */
     AImageReader *reader_{};
     std::pair<int32_t, int32_t> dimensions_;
+    std::ofstream *store{};
+    std::mutex store_mutex;
     bool recording_{false};
     static const int kMaxChannelValue = 262143;
     int skipped_count = 0;
@@ -117,12 +119,14 @@ private:
 
     void ImageCallback(AImageReader *reader);
 
-    static void Submit(AImage *image, int64_t time);
+    void Submit(AImage *image, int64_t time);
 
 public:
     Camera(Rewarder *rew);
 
     const std::pair<int32_t, int32_t> &GetDimensions() const;
+
+    void BakeMetadata() const;
 
     void CreateSession(ANativeWindow *displayWindow);
 

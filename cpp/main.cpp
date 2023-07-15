@@ -20,11 +20,13 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     Manifest::create();
     rew = new Rewarder(env, gMain);
     // que = new Queuer();
-    // ComputeVK().run(state->activity->assetManager);
 
     vis = new Camera(rew);
     aud = new Microphone(/*que*/nullptr);
     hpt = new Touchscreen(rew);
+
+    // ComputeVK().run(state->activity->assetManager);
+    // vis->BakeMetadata();
 
     return reinterpret_cast<jlong>(vis);
 }

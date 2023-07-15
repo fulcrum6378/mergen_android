@@ -73,18 +73,47 @@ Camera::Camera(Rewarder *) :
         AImageReader_setImageListener(reader_, &listener);
 
         // prepare the output directory for saving
-        DIR *dir = opendir(path);
+        /*DIR *dir = opendir(path);
         if (dir) closedir(dir);
         else {
             std::string cmd = "mkdir -p ";
             cmd += path;
             system(cmd.c_str());
-        }
+        }*/
     }
 }
 
 const std::pair<int32_t, int32_t> &Camera::GetDimensions() const {
     return dimensions_;
+}
+
+void Camera::BakeMetadata() const {
+    int32_t width = dimensions_.first;
+    int32_t height = dimensions_.second;
+    std::ofstream metadata(
+            filesDir + std::to_string(width) + "x" + std::to_string(height),
+            std::ios::out | std::ios::binary);
+
+    bmpfile_magic magic{'B', 'M'};
+    metadata.write((char *) (&magic), sizeof(magic));
+    bmpfile_header header = {0};
+    header.bmp_offset = sizeof(bmpfile_magic) + sizeof(bmpfile_header) + sizeof(bmpfile_dib_info);
+    header.file_size = header.bmp_offset + (height * 3 + width % 4) * height;
+    metadata.write((char *) (&header), sizeof(header));
+    bmpfile_dib_info dib_info = {0};
+    dib_info.header_size = sizeof(bmpfile_dib_info);
+    dib_info.width = width;
+    dib_info.height = height;
+    dib_info.num_planes = 1;
+    dib_info.bits_per_pixel = 24;
+    dib_info.compression = 0;
+    dib_info.bmp_byte_size = 0;
+    dib_info.hres = 2835;
+    dib_info.vres = 2835;
+    dib_info.num_colors = 0;
+    dib_info.num_important_colors = 0;
+    metadata.write((char *) (&dib_info), sizeof(dib_info));
+    metadata.close();
 }
 
 /**
@@ -224,7 +253,11 @@ void Camera::Preview(bool start) {
 bool Camera::SetRecording(bool b) {
     if (captureSessionState_ != CaptureSessionState::ACTIVE || b == recording_) return false;
     recording_ = b;
-    if (!recording_) skipped_count = 0;
+    if (recording_)
+        store = new std::ofstream(
+                (filesDir + std::string("vis.rgb")).c_str(),
+                std::ios::out | std::ios::binary);
+    else skipped_count = 0;
     return true;
 }
 
@@ -237,9 +270,9 @@ void Camera::ImageCallback(AImageReader *reader) {
     AImage *image = nullptr;
     if (AImageReader_acquireNextImage(reader, &image) != AMEDIA_OK || !image) return;
     bool submitted = false;
-    if (recording_) {
+    if (recording_ && store) {
         if (skipped_count == 0) {
-            std::thread(&Camera::Submit/*, this*/, image, Queuer::Now()).detach();
+            std::thread(&Camera::Submit, this, image, Queuer::Now()).detach();
             submitted = true;
         }
         skipped_count++;
@@ -256,6 +289,16 @@ void Camera::ImageCallback(AImageReader *reader) {
  * AImage_getTimestamp sucks! e.g. gives "1968167967185224" for 2023.06.28!
  */
 void Camera::Submit(AImage *image, int64_t time) {
+    if (!recording_ || !store) {
+        if (store) {
+            store->close();
+            delete &store;
+            store = nullptr;
+        }
+        AImage_delete(image);
+        return;
+    }
+
     AImageCropRect srcRect;
     AImage_getCropRect(image, &srcRect);
     int32_t yStride, uvStride;
@@ -274,29 +317,9 @@ void Camera::Submit(AImage *image, int64_t time) {
     height = MIN(width, (srcRect.bottom - srcRect.top));
     width = MIN(height, (srcRect.right - srcRect.left));
 
-    std::ofstream file((path + std::to_string(time) + ".bmp").c_str(),
-                       std::ios::out | std::ios::binary);
+    //std::to_string(time) FIXME
 
-    bmpfile_magic magic{'B', 'M'};
-    file.write((char *) (&magic), sizeof(magic));
-    bmpfile_header header = {0};
-    header.bmp_offset = sizeof(bmpfile_magic) + sizeof(bmpfile_header) + sizeof(bmpfile_dib_info);
-    header.file_size = header.bmp_offset + (height * 3 + width % 4) * height;
-    file.write((char *) (&header), sizeof(header));
-    bmpfile_dib_info dib_info = {0};
-    dib_info.header_size = sizeof(bmpfile_dib_info);
-    dib_info.width = width;
-    dib_info.height = height;
-    dib_info.num_planes = 1;
-    dib_info.bits_per_pixel = 24;
-    dib_info.compression = 0;
-    dib_info.bmp_byte_size = 0;
-    dib_info.hres = 2835;
-    dib_info.vres = 2835;
-    dib_info.num_colors = 0;
-    dib_info.num_important_colors = 0;
-    file.write((char *) (&dib_info), sizeof(dib_info));
-
+    store_mutex.lock();
     for (int32_t y = height - 1; y >= 0; y--) {
         const uint8_t *pY = yPixel + yStride * (y + srcRect.top) + srcRect.left;
 
@@ -325,13 +348,14 @@ void Camera::Submit(AImage *image, int64_t time) {
             nG = (nG >> 10) & 0xff;
             nB = (nB >> 10) & 0xff;
 
-            file.put((char) nR);
-            file.put((char) nG);
-            file.put((char) nB);
+            store->put((char) nR);
+            store->put((char) nG);
+            store->put((char) nB);
         }
-        for (int i = 0; i < width % 4; i++) file.put(0);
+        for (int i = 0; i < width % 4; i++) store->put(0);
     }
-    file.close();
+    //LOGE("%s", (std::to_string(store->tellp())).c_str());
+    store_mutex.unlock();
 
     //queuer_->Input(INPUT_ID_BACK_LENS, data, time);
     AImage_delete(image);
