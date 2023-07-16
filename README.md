@@ -15,6 +15,8 @@ and help them have a better life!
 Mergen shall differ human beings in the way of thinking, so that it won't trust anybody's words;
 it just seeks truths and to improve conditions for all living beings!
 
+> Mergen was named after a [*Turkic* god](https://en.wikipedia.org/wiki/Mergen) of abundance and **wisdom**!
+
 It is intended to serve as something like an operating system for AI robots, its job is to
 process vision, audio and touch and act logically based on them and according to its purpose,
 define by its Reward System (REW)!
@@ -34,7 +36,11 @@ Mergen is intended to have 2 aspects:
 > Leaving out the third case: one must be both - a philosopher.”
 > ― Nietzsche Friedrich Wilhelm
 
-> Mergen was named after a [*Turkic* god](https://en.wikipedia.org/wiki/Mergen) of abundance and **wisdom**!
+#### Dangers & Solutions
+
+- Robots in films are shown to be stubbornly doing crazy things, but this trait shall never be acceptable in Mergen;
+  He must be programmed to always be sceptical about himself, he must be really **Indecisive**!
+  And consult everything with a human being.
 
 ## Parts
 
@@ -48,7 +54,7 @@ Each part has its own README in its own directory.
 - [**VIS**](cpp/vis) : everything related to **Visual** inputs and outputs.
 - [**VLK**](cpp/vlk) : everything related to **Vulkan** API.
 
-## Previous versions of Mergen
+## History of Mergen
 
 #### Mergen I (v0.1)
 
@@ -88,8 +94,28 @@ Gradually I concluded that this server-client model and these radio waves takes 
 to communicate, and since I couldn't afford *robotic* resources, I was disappointed,
 so I cancelled this one two (March 2022) :(
 
-> I decided to use C++ instead of Python and do all the job temporarily inside an Android smartphone,
-> so I began developing **Mergen IV** (v0.4 - current) at 2 August 2022!
+### Mergen IV (v0.4 - current version)
+
+I decided to use C++ instead of Python and do all the job temporarily inside an Android smartphone,
+so I began developing **Mergen IV** (v0.4 - current) at 2 August 2022!
+
+I also started a subproject for the Computer Vision part ([MyCV](https://github.com/fulcrum6378/mycv))
+in Python for faster debugging of the vision-related algorithms.
+
+#### Timeline of Mergen's development periods
+
+This table shows how much I've worked on Mergen and when.
+
+| Starting date | Duration | Score |
+|:--------------|:---------|:-----:|
+| 6399/09/21    | 2 months |   4   |
+| 6399/11/05    | 8 months |   2   |
+| 6400/07/24    | 5 months |   1   |
+| 6400/12/19    | 5 months |   0   |
+| 6401/05/11    | 3 months |   2   |
+| 6401/08/21    | 4 months |   4   |
+| 6401/12/27    | 42 days  |   0   |
+| 6402/02/09    | TILL NOW |   4   |
 
 ## License
 
