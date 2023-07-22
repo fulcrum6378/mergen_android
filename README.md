@@ -41,6 +41,9 @@ Mergen is intended to have 2 aspects:
 - Robots in films are shown to be stubbornly doing crazy things, but this trait shall never be acceptable in Mergen;
   He must be programmed to always be sceptical about himself, he must be really **Indecisive**!
   And consult everything with a human being.
+- Using a [Reward System](https://en.wikipedia.org/wiki/Reward_system) in robots, namely [Reinforcement Learning](
+  https://en.wikipedia.org/wiki/Reinforcement_learning) could also be dangerous, this is intended to be removed in
+  Mergen in a near future.
 
 ## Parts
 
@@ -50,9 +53,11 @@ Each part has its own README in its own directory.
 - [**HPT**](cpp/hpt) : everything related to **Touchscreen** (haptic) inputs.
 - [**MEM**](cpp/mem) : everything related to **Memory**.
 - [**MOV**](cpp/mov) : everything related to **Movements**.
-- [**REW**](cpp/rew) : everything related to **Reward System** (reinforcement learning).
 - [**VIS**](cpp/vis) : everything related to **Visual** inputs and outputs.
-- [**VLK**](cpp/vlk) : everything related to **Vulkan** API.
+
+
+- [REW](cpp/rew) : everything related to the *Reward System* (reinforcement learning - deprecated).
+- [VLK](cpp/vlk) : everything related to the *Vulkan* API (will be merged into the others).
 
 ## History of Mergen
 
@@ -63,6 +68,8 @@ using which one can enter a sentence as a theorem and numerous chance factors be
 The app had to calculate their mathematical mean and say, for example:
 
 > There is 20.4657% chance that **a god** exists!
+
+This idea gradually turned into a robot who could do the exact same thing!
 
 #### Mergen I (v0.1)
 
@@ -115,23 +122,23 @@ so I cancelled this one too after a year at 10 March 2022 :(
 I decided to use C++ instead of Python and do all the job temporarily inside an Android smartphone,
 so I began developing **Mergen IV** at 2 August 2022!
 
-I also started a subproject for the Computer Vision part ([MyCV](https://github.com/fulcrum6378/mycv))
-in Python for faster debugging of the vision-related algorithms (10 July 2023).
+At 10 July 2023, I also started a subproject for the computer vision part, called [**MyCV**](
+https://github.com/fulcrum6378/mycv) using Python for faster debugging of the vision-related algorithms.
 
 #### Timeline of Mergen's development periods
 
 This table shows how much I've worked on Mergen and when.
 
-| Starting date           | Duration          | Score |
-|:------------------------|:------------------|:-----:|
-| 2020/12/13 - 6399/09/23 | 1 month, 12 days  |   4   |
-| 2021/01/24 - 6399/11/05 | 8 months, 19 days |   2   |
-| 2021/10/16 - 6400/07/24 | 4 months, 25 days |   1   |
-| 2022/03/10 - 6400/12/19 | 4 months, 21 days |   0   |
-| 2022/08/02 - 6401/05/11 | 3 months, 10 days |   2   |
-| 2022/11/12 - 6401/08/21 | 4 months, 6 days  |   4   |
-| 2023/03/18 - 6401/12/27 | 1, month, 11 days |   0   |
-| 2023/04/29 - 6402/02/09 | 2 months, 22 days |   4   |
+| Starting date           | Duration | Activeness |
+|:------------------------|:---------|:----------:|
+| 2020/12/13 - 6399/09/23 | 42 days  |     4      |
+| 2021/01/24 - 6399/11/05 | 265 days |     2      |
+| 2021/10/16 - 6400/07/24 | 145 days |     1      |
+| 2022/03/10 - 6400/12/19 | 144 days |     0      |
+| 2022/08/02 - 6401/05/11 | 102 days |     2      |
+| 2022/11/12 - 6401/08/21 | 126 days |     4      |
+| 2023/03/18 - 6401/12/27 | 42 days  |     0      |
+| 2023/04/29 - 6402/02/09 | ongoing  |     4      |
 
 ## License
 
