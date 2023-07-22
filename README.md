@@ -56,30 +56,46 @@ Each part has its own README in its own directory.
 
 ## History of Mergen
 
+#### Theorem
+
+At 21 August 2020, I wanted to programme an app based on [**logical theorems**](https://en.wikipedia.org/wiki/Theorem)
+using which one can enter a sentence as a theorem and numerous chance factors below it which can make it True or False.
+The app had to calculate their mathematical mean and say, for example:
+
+> There is 20.4657% chance that **a god** exists!
+
 #### Mergen I (v0.1)
 
-The first version of Mergen, started at **13 December 2020**, was intended to be a [natural language processing (NLP)](
-https://en.wikipedia.org/wiki/Natural_language_processing) bot, something like ChatGPT today.
+As I was getting more and more familiar with machine learning, I wanted to programme an Android app whose language was
+merely Python using a specific library, but it had a weird license, so I forgot about using Python in Android.
+Then I decided to use [ML Kit](https://developers.google.com/ml-kit), but it didn't satisfy me either!
+I wanted to name the robot I had planned to create "Horus", but then I found a better name for it!
 
-It was intended to process **only digital texts**, and the program itself was in pure Python,
-temporarily communicating with an Android client.
-But I cancelled its development and pursued a better method (Mergen II).
+The first version of *Mergen*, started at **13 December 2020**, was intended to be a
+[natural language processing (NLP)](https://en.wikipedia.org/wiki/Natural_language_processing) bot,
+something like ChatGPT today.
+
+It was intended to process **only digital texts** in a server using pure Python, and the server had to communicate with
+an Android client app.
+But I cancelled its development and pursued a better method in Mergen II, see below.
 
 #### Mergen II (v0.2)
 
-The second version of Mergen, was intended to primarily process audio, I also called it the [**Pronouncer**](
-https://github.com/fulcrum6378/pronouncer). It was a more advanced version of a [Text-To-Speech (TTS)](
-https://en.wikipedia.org/wiki/Speech_synthesis) engine, which pronounced vowels and consonants of the
-[International Phonetic Alphabet (**IPA**)](https://en.wikipedia.org/wiki/International_Phonetic_Alphabet)
-instead of normal alphabets.
+The second version of Mergen, started at 10-12 January 2021, was intended to primarily process audio,
+I also called it the [**Pronouncer**](https://github.com/fulcrum6378/pronouncer).
+It was a more advanced version of a [Text-To-Speech (TTS)](https://en.wikipedia.org/wiki/Speech_synthesis) engine,
+which pronounced vowels and consonants of the [**International Phonetic Alphabet (IPA)**](
+https://en.wikipedia.org/wiki/International_Phonetic_Alphabet) instead of normal alphabets.
 It synthesised human voices and was intended to be programmed to learn from voices and speak any kind of them.
 
-I started it in January 2021, soon after I cancelled it and pursued a better method (Mergen III).
+As I learnt more and more about [Telecommunications](https://en.wikipedia.org/wiki/Telecommunications),
+I preferred a better method in Mergen III, see below.
 
 #### Mergen III (v0.3)
 
-The third version of Mergen, after many researches, was more of a server-client approach,
-this time *temporarily* on LAN, instead of a server, thousands of kilometres away!
+The third version of Mergen, started at 29 March 2021 after many researches, had the same server-client approach,
+this time *temporarily* on a [**Local Area Network (LAN)**](https://en.wikipedia.org/wiki/Local_area_network),
+instead of a server thousands of kilometres away!
 
 Since my smartphone couldn't handle such heavy jobs and my laptop couldn't move,
 I decided to do the heavy job of training/learning in a [**local PC server in Python**](
@@ -90,32 +106,32 @@ https://github.com/fulcrum6378/mergen_client) whose...
 2. Microphone served as **ears**.
 3. Speaker served as a **mouth**.
 
-Gradually I concluded that this server-client model and these radio waves takes such a huge amount of time
-to communicate, and since I couldn't afford *robotic* resources, I was disappointed,
-so I cancelled this one two (March 2022) :(
+Gradually I concluded that this server-client model and these radio waves takes such a huge amount of time to
+communicate, and since I couldn't afford *robotic* resources, I was disappointed,
+so I cancelled this one too after a year at 10 March 2022 :(
 
 ### Mergen IV (v0.4 - current version)
 
 I decided to use C++ instead of Python and do all the job temporarily inside an Android smartphone,
-so I began developing **Mergen IV** (v0.4 - current) at 2 August 2022!
+so I began developing **Mergen IV** at 2 August 2022!
 
 I also started a subproject for the Computer Vision part ([MyCV](https://github.com/fulcrum6378/mycv))
-in Python for faster debugging of the vision-related algorithms.
+in Python for faster debugging of the vision-related algorithms (10 July 2023).
 
 #### Timeline of Mergen's development periods
 
 This table shows how much I've worked on Mergen and when.
 
-| Starting date | Duration | Score |
-|:--------------|:---------|:-----:|
-| 6399/09/21    | 2 months |   4   |
-| 6399/11/05    | 8 months |   2   |
-| 6400/07/24    | 5 months |   1   |
-| 6400/12/19    | 5 months |   0   |
-| 6401/05/11    | 3 months |   2   |
-| 6401/08/21    | 4 months |   4   |
-| 6401/12/27    | 42 days  |   0   |
-| 6402/02/09    | TILL NOW |   4   |
+| Starting date           | Duration          | Score |
+|:------------------------|:------------------|:-----:|
+| 2020/12/13 - 6399/09/23 | 1 month, 12 days  |   4   |
+| 2021/01/24 - 6399/11/05 | 8 months, 19 days |   2   |
+| 2021/10/16 - 6400/07/24 | 4 months, 25 days |   1   |
+| 2022/03/10 - 6400/12/19 | 4 months, 21 days |   0   |
+| 2022/08/02 - 6401/05/11 | 3 months, 10 days |   2   |
+| 2022/11/12 - 6401/08/21 | 4 months, 6 days  |   4   |
+| 2023/03/18 - 6401/12/27 | 1, month, 11 days |   0   |
+| 2023/04/29 - 6402/02/09 | 2 months, 22 days |   4   |
 
 ## License
 
