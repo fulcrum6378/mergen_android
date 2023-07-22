@@ -49,17 +49,20 @@ Mergen is intended to have 2 aspects:
 
 Each part has its own README in its own directory.
 
-- [**AUD**](cpp/aud) : everything related to **Auditory** inputs and outputs.
-- [**HPT**](cpp/hpt) : everything related to **Touchscreen** (haptic) inputs.
-- [**MEM**](cpp/mem) : everything related to **Memory**.
-- [**MOV**](cpp/mov) : everything related to **Movements**.
-- [**VIS**](cpp/vis) : everything related to **Visual** inputs and outputs.
+|      Codename      | Description                                            |
+|:------------------:|:-------------------------------------------------------|
+| [**AUD**](cpp/aud) | everything related to **Auditory** inputs and outputs. |
+| [**HPT**](cpp/hpt) | everything related to **Touch** (haptic) inputs.       |
+| [**MEM**](cpp/mem) | everything related to **Memory**.                      |
+| [**MOV**](cpp/mov) | everything related to **Movements**.                   |
+| [**VIS**](cpp/vis) | everything related to **Visual** inputs and outputs.   |
 
+Deprecated parts:
 
-- [REW](cpp/rew) : everything related to the *Reward System* (reinforcement learning - deprecated).
+- [REW](cpp/rew) : everything related to the *Reward System* (reinforcement learning).
 - [VLK](cpp/vlk) : everything related to the *Vulkan* API (will be merged into the others).
 
-## History of Mergen
+## History
 
 #### Theorem
 
@@ -129,16 +132,16 @@ https://github.com/fulcrum6378/mycv) using Python for faster debugging of the vi
 
 This table shows how much I've worked on Mergen and when.
 
-| Starting date           | Duration | Activeness |
-|:------------------------|:---------|:----------:|
-| 2020/12/13 - 6399/09/23 | 42 days  |     4      |
-| 2021/01/24 - 6399/11/05 | 265 days |     2      |
-| 2021/10/16 - 6400/07/24 | 145 days |     1      |
-| 2022/03/10 - 6400/12/19 | 144 days |     0      |
-| 2022/08/02 - 6401/05/11 | 102 days |     2      |
-| 2022/11/12 - 6401/08/21 | 126 days |     4      |
-| 2023/03/18 - 6401/12/27 | 42 days  |     0      |
-| 2023/04/29 - 6402/02/09 | ongoing  |     4      |
+| Starting date           | Duration | Active days | Score |  Version  |
+|:------------------------|:---------|:-----------:|:-----:|:---------:|
+| 2020/12/13 - 6399/09/23 | 42 days  |     ~12     |  29%  | 0.1..0.2  |
+| 2021/01/24 - 6399/11/05 | 265 days |     ~33     |  12%  | 0.2..0.3  |
+| 2021/10/16 - 6400/07/24 | 145 days |     18      |  12%  |    0.3    |
+| 2022/03/10 - 6400/12/19 | 144 days |      0      |  00%  |     -     |
+| 2022/08/02 - 6401/05/11 | 102 days |      9      |  09%  |    0.4    |
+| 2022/11/12 - 6401/08/21 | 126 days |  13+2+19+9  |  34%  |    0.4    |
+| 2023/03/18 - 6401/12/27 | 42 days  |      1      |  2%   |     -     |
+| 2023/04/29 - 6402/02/09 | ongoing  |    19+5     |  29%  | 0.4(+0.3) |
 
 ## License
 
