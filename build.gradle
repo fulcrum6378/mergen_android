@@ -1,16 +1,18 @@
 plugins { id 'com.android.application' version '8.1.0' apply false }
 
-// Calculate the version number (number of Git commits /= 10)
-def stdout = new ByteArrayOutputStream()
-exec {
-    workingDir rootDir
-    commandLine 'git', 'rev-list', 'HEAD'
-    args '--count'
-    standardOutput = stdout
+/** Calculates the number of Git commits in a project directory */
+int gitCount(String dir) {
+    return providers.exec {
+        workingDir dir
+        commandLine 'git', 'rev-list', 'HEAD'
+        args '--count'
+    }.standardOutput.asText.get().toInteger()
 }
-def gitCount = stdout.toString()
-ext { VERSION = '0.4.0.' + ('00000' + gitCount).substring(gitCount.length()) }
-println ext.VERSION
+
+ext {
+    VERSION = '0.4.0.' +
+            String.format("%04d", gitCount(rootDir.toString()) + gitCount('D:\\Programming\\MyCV'))
+}
 
 tasks.register('clean', Delete) {
     delete rootProject.buildDir
