@@ -1,6 +1,18 @@
-plugins { id 'com.android.application' version '8.0.2' apply false }
+plugins { id 'com.android.application' version '8.1.0' apply false }
 
-task clean(type: Delete) {
+// Calculate the version number (number of Git commits /= 10)
+def stdout = new ByteArrayOutputStream()
+exec {
+    workingDir rootDir
+    commandLine 'git', 'rev-list', 'HEAD'
+    args '--count'
+    standardOutput = stdout
+}
+def gitCount = stdout.toString()
+ext { VERSION = '0.4.0.' + ('00000' + gitCount).substring(gitCount.length()) }
+println ext.VERSION
+
+tasks.register('clean', Delete) {
     delete rootProject.buildDir
     delete "${rootDir}/android/.cxx/"
     delete "${rootDir}/android/build/"

@@ -3,7 +3,7 @@ plugins { id 'com.android.application' }
 android {
     namespace 'ir.mahdiparastesh.mergen'
     compileSdk 34
-    buildToolsVersion '34.0.0'
+    buildToolsVersion = '34.0.0'
     ndkVersion '25.2.9519653'
 
     defaultConfig {
@@ -11,8 +11,8 @@ android {
         minSdk 29
         targetSdk 34
         versionCode 1
-        versionName '0.4.0'
-        externalNativeBuild { cmake { cppFlags '' } }
+        versionName rootProject.ext.VERSION
+        externalNativeBuild { cmake { cppFlags ''; arguments "-DVERSION=${rootProject.ext.VERSION}" } }
         shaders { glslcArgs.addAll(['-c']) } // invokes Shaderc to compile shaders into SPIR-V
     }
     sourceSets.main {
