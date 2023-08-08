@@ -10,7 +10,7 @@ int gitCount(String dir) {
 }
 
 ext {
-    VERSION = '0.4.0.' +
+    VERSION = '0.4.' +
             String.format("%04d", gitCount(rootDir.toString()) + gitCount('D:\\Programming\\MyCV'))
 }
 
