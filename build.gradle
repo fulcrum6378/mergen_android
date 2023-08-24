@@ -1,4 +1,4 @@
-plugins { id 'com.android.application' version '8.1.0' apply false }
+plugins { id 'com.android.application' version '8.1.1' apply false }
 
 /** Calculates the number of Git commits in a project directory */
 int gitCount(String dir) {
@@ -15,7 +15,7 @@ ext {
 }
 
 tasks.register('clean', Delete) {
-    delete rootProject.buildDir
-    delete "${rootDir}/android/.cxx/"
-    delete "${rootDir}/android/build/"
+    delete "$rootDir/build"
+    delete "$rootDir/android/.cxx"
+    delete "$rootDir/android/build"
 }
