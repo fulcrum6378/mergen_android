@@ -125,12 +125,13 @@ so I cancelled this one too after a year at 10 March 2022 :(
 I decided to use C++ instead of Python and do all the job temporarily inside an Android smartphone,
 so I began developing **Mergen IV** at 2 August 2022!
 
-At 10 July 2023, I also started a subproject for the computer vision part, called [**MyCV**](
+In 10 July 2023, I also started a subproject for the computer vision (VIS) part, called [**MyCV**](
 https://github.com/fulcrum6378/mycv) using Python for faster debugging of the vision-related algorithms.
 
-#### Timeline of Mergen's development periods
+## Timeline of development
 
-This table shows how much I've worked on Mergen and when.
+This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
+(Updated as of 2023.08.22)
 
 | Starting date           | Duration | Active days | Score |  Version   |
 |:------------------------|:---------|:-----------:|:-----:|:----------:|
