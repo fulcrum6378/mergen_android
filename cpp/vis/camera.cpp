@@ -276,6 +276,8 @@ void Camera::ImageCallback(AImageReader *reader) {
  * Yuv2Rgb algorithm is from:
  * https://github.com/tensorflow/tensorflow/blob/5dcfc51118817f27fad5246812d83e5dccdc5f72/
  * tensorflow/tools/android/test/jni/yuv2rgb.cc
+ *
+ * TODO Images must be rotated by +90 degrees
  */
 void Camera::Submit(AImage *image) {
     store_mutex.lock();
