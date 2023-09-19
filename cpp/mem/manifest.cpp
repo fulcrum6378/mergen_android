@@ -1,5 +1,12 @@
 #include "manifest.h"
 
+/*
+ * Information defined here are of my Galaxy A50 phone.
+ * More info: https://www.gsmarena.com/samsung_galaxy_a50-9554.php
+ * GPU of my phone is Arm Mali-G72 and supports Vulkan 1.0.
+ * More info: https://developer.arm.com/Processors/Mali-G72
+ */
+
 /** Sensors */
 std::map<int8_t, Interaction> *Manifest::input;
 /** Controls/Expressions */
