@@ -1,7 +1,7 @@
 # Mergen
 
 Mergen is a [free and open-source](https://en.wikipedia.org/wiki/Free_and_open-source_software)
-logical real-time artificial-intelligence robot, in other words an "**Artificial Mind**",
+logical real-time robot, in other words an "**Artificial Mind**",
 written in C++ language, which is temporarily mounted on Android.
 
 The main C++ library located in the [/cpp/](cpp) is intended to be mounted on real robots with the
@@ -18,18 +18,15 @@ it just seeks truths and to improve conditions for all living beings!
 > Mergen was named after a [*Turkic* god](https://en.wikipedia.org/wiki/Mergen) of abundance and **wisdom**!
 
 It is intended to serve as something like an operating system for AI robots, its job is to
-process vision, audio and touch and act logically based on them and according to its purpose,
-define by its Reward System (REW)!
+process vision, audio and touch and act logically based on them and according to its purpose.
 
 Mergen is intended to have 2 aspects:
 
 1. **Animal** aspect : similar to the [**Unconscious mind**](https://en.wikipedia.org/wiki/Unconscious_mind)
-   this section of Mergen is intended to be programmed using [**Machine Learning** (ML)](
-   https://en.wikipedia.org/wiki/Machine_learning).
-2. **God** aspect : this section which contains the robot's beliefs, is **NOT** intended to be programmed
-   using *Machine Learning*, so it won't learn things from anybody, **unlike human beings**!
-   Instead, it'll compute probabilities of any [Theorem](https://en.wikipedia.org/wiki/Theorem) and act
-   in accordance with the [**Probabilist**](https://en.wikipedia.org/wiki/Probabilism) philosophy.
+   this section of Mergen is intended to be programmed to process raw image and audio inputs and touch patterns.
+2. **God** aspect : this section which contains the robot's thinking system and beliefs, will compute probabilities
+   of any logical [Theorem](https://en.wikipedia.org/wiki/Theorem) and act in accordance with the [**Probabilist**](
+   https://en.wikipedia.org/wiki/Probabilism) philosophy.
    So this robot CANNOT be brainwashed for dirty purposes (unless you hack or reprogramme it)!
 
 > “To live alone one must be either a beast or a god, says Aristotle.
@@ -76,9 +73,9 @@ This idea gradually turned into a robot who could do the exact same thing!
 
 #### Mergen I (v0.1)
 
-As I was getting more and more familiar with machine learning, I wanted to programme an Android app whose language was
-merely Python using a specific library, but it had a weird license, so I forgot about using Python in Android.
-Then I decided to use [ML Kit](https://developers.google.com/ml-kit), but it didn't satisfy me either!
+As I was getting more and more familiar with machine learning concepts, I wanted to programme an Android app whose
+programming language was merely Python using a specific library, but it had a weird license,
+so I forgot about using Python in Android. Then I decided to use [ML Kit](https://developers.google.com/ml-kit), but it didn't satisfy me either!
 I wanted to name the robot I had planned to create "Horus", but then I found a better name for it!
 
 The first version of *Mergen*, started at **13 December 2020**, was intended to be a
@@ -131,18 +128,18 @@ https://github.com/fulcrum6378/mycv) using Python for faster debugging of the vi
 ## Timeline of development
 
 This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
-(Updated as of 2023.08.22)
+(updated as of 2023.09.22)
 
-| Starting date           | Duration | Active days | Score |  Version   |
-|:------------------------|:---------|:-----------:|:-----:|:----------:|
-| 2020/12/13 - 6399/09/23 | 43 days  |     20      |  47   |  0.1..0.2  |
-| 2021/01/25 - 6399/11/06 | 264 days |     ~33     |  13   |  0.2..0.3  |
-| 2021/10/16 - 6400/07/24 | 145 days |     18      |  12   |    0.3     |
-| 2022/03/10 - 6400/12/19 | 144 days |      0      |   0   |     -      |
-| 2022/08/02 - 6401/05/11 | 102 days |      9      |   9   |    0.4     |
-| 2022/11/12 - 6401/08/21 | 126 days |     43      |  34   |    0.4     |
-| 2023/03/18 - 6401/12/27 | 42 days  |      1      |   2   |     -      |
-| 2023/04/29 - 6402/02/09 | ongoing  |     28      |  24   | 0.4 (+0.3) |
+| Starting date          | Duration | Active days | Score |   Version   |
+|:-----------------------|:---------|:-----------:|:-----:|:-----------:|
+| 2020/12/13, 6399/09/23 | 43 days  |     20      |  47   |  0.1..0.2   |
+| 2021/01/25, 6399/11/06 | 264 days |     ~33     |  13   |  0.2..0.3   |
+| 2021/10/16, 6400/07/24 | 145 days |     18      |  12   |     0.3     |
+| 2022/03/10, 6400/12/19 | 144 days |      0      |   0   |      -      |
+| 2022/08/02, 6401/05/11 | 102 days |      9      |   9   |     0.4     |
+| 2022/11/12, 6401/08/21 | 126 days |     43      |  34   |     0.4     |
+| 2023/03/18, 6401/12/27 | 42 days  |      1      |   2   |      -      |
+| 2023/04/29, 6402/02/09 | ongoing  |     42      |  28   | 0.4 (+mycv) |
 
 ## License
 
