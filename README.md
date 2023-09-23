@@ -75,7 +75,8 @@ This idea gradually turned into a robot who could do the exact same thing!
 
 As I was getting more and more familiar with machine learning concepts, I wanted to programme an Android app whose
 programming language was merely Python using a specific library, but it had a weird license,
-so I forgot about using Python in Android. Then I decided to use [ML Kit](https://developers.google.com/ml-kit), but it didn't satisfy me either!
+so I forgot about using Python in Android. Then I decided to use [ML Kit](https://developers.google.com/ml-kit), but it
+didn't satisfy me either!
 I wanted to name the robot I had planned to create "Horus", but then I found a better name for it!
 
 The first version of *Mergen*, started at **13 December 2020**, was intended to be a
@@ -123,23 +124,26 @@ I decided to use C++ instead of Python and do all the job temporarily inside an 
 so I began developing **Mergen IV** at 2 August 2022!
 
 In 10 July 2023, I also started a subproject for the computer vision (VIS) part, called [**MyCV**](
-https://github.com/fulcrum6378/mycv) using Python for faster debugging of the vision-related algorithms.
+https://github.com/fulcrum6378/mycv) using Python for faster debugging of the vision-related methods. It somehow was
+finished at 23 September 2023.
 
 ## Timeline of development
 
 This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
-(updated as of 2023.09.22)
+(updated as of 2023.09.23)
 
-| Starting date          | Duration | Active days | Score |   Version   |
-|:-----------------------|:---------|:-----------:|:-----:|:-----------:|
-| 2020/12/13, 6399/09/23 | 43 days  |     20      |  47   |  0.1..0.2   |
-| 2021/01/25, 6399/11/06 | 264 days |     ~33     |  13   |  0.2..0.3   |
-| 2021/10/16, 6400/07/24 | 145 days |     18      |  12   |     0.3     |
-| 2022/03/10, 6400/12/19 | 144 days |      0      |   0   |      -      |
-| 2022/08/02, 6401/05/11 | 102 days |      9      |   9   |     0.4     |
-| 2022/11/12, 6401/08/21 | 126 days |     43      |  34   |     0.4     |
-| 2023/03/18, 6401/12/27 | 42 days  |      1      |   2   |      -      |
-| 2023/04/29, 6402/02/09 | ongoing  |     42      |  28   | 0.4 (+mycv) |
+| # | Starting date          | Duration | Active days | Score |   Version   |
+|---|:-----------------------|:---------|:-----------:|:-----:|:-----------:|
+| 1 | 2020/12/13, 6399/09/23 | 43 days  |     20      |  47   |  0.1..0.2   |
+| 2 | 2021/01/25, 6399/11/06 | 264 days |     ~33     |  13   |  0.2..0.3   |
+| 3 | 2021/10/16, 6400/07/24 | 145 days |     18      |  12   |     0.3     |
+| 4 | 2022/03/10, 6400/12/19 | 144 days |      0      |   0   |      -      |
+| 5 | 2022/08/02, 6401/05/11 | 102 days |      9      |   9   |     0.4     |
+| 6 | 2022/11/12, 6401/08/21 | 126 days |     43      |  34   |     0.4     |
+| 7 | 2023/03/18, 6401/12/27 | 42 days  |      1      |   2   |      -      |
+| 8 | 2023/04/29, 6402/02/09 | 147 days |     44      |  29   | 0.4 (+mycv) |
+
+Periods 6, 7 and 8 include a few days when I was learning Vulkan, FreeBSD, PyTorch and Statistics.
 
 ## License
 
