@@ -11,10 +11,9 @@
     <application
         android:allowBackup="false"
         android:hasCode="true"
-        android:icon="@mipmap/launcher"
+        android:icon="@drawable/launcher"
         android:label="Mergen"
         android:largeHeap="true"
-        android:roundIcon="@mipmap/launcher_round"
         android:supportsRtl="false"
         android:theme="@style/Theme.Mergen"
         tools:ignore="DataExtractionRules,UnusedAttribute">

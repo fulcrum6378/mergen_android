@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="226.5dp"
+    android:height="201.75dp"
+    android:viewportWidth="906"
+    android:viewportHeight="807">
+    <path
+        android:name="Beard"
+        android:fillColor="#7a8391"
+        android:pathData="m1.7 495h904l-207.2 312h-493.4l-203.4 -312z" />
+    <path
+        android:name="Jaw"
+        android:fillColor="#333"
+        android:pathData="m182 670h540l182 -175h-904l182 175z" />
+    <path
+        android:name="Forehead"
+        android:fillColor="#333"
+        android:pathData="m182 0h540l182 495h-904l182 -495z" />
+    <path
+        android:name="Mouth Border"
+        android:fillColor="#4f596a"
+        android:pathData="m282 551h341l-26.8 256h-287.5l-26.8 -256z" />
+    <path
+        android:name="Mouth"
+        android:fillColor="#212937"
+        android:pathData="m377.2 633h152.5l-19.8 94h-112.8l-19.8 -94z" />
+    <path
+        android:name="Nose"
+        android:fillColor="#606b7d"
+        android:pathData="m395.2 222h114.2l113.5 329h-341l113.2 -329z" />
+    <path
+        android:name="Left Border"
+        android:fillColor="#7a8391"
+        android:pathData="m203 295c44.2 0 80 35.8 80 80c0 44.2 -35.8 80 -80 80c-44.2 0 -80 -35.8 -80 -80c0 -44.2 35.8 -80 80 -80z" />
+    <path
+        android:name="Left Eye"
+        android:fillColor="#fdfad5"
+        android:pathData="m201.5 317c31.8 0 57.5 25.7 57.5 57.5c0 31.8 -25.7 57.5 -57.5 57.5c-31.8 0 -57.5 -25.7 -57.5 -57.5c0 -31.8 25.7 -57.5 57.5 -57.5z" />
+    <path
+        android:name="Right Border"
+        android:fillColor="#7a8391"
+        android:pathData="m703 295c44.2 0 80 35.8 80 80c0 44.2 -35.8 80 -80 80c-44.2 0 -80 -35.8 -80 -80c0 -44.2 35.8 -80 80 -80z" />
+    <path
+        android:name="Right Eye"
+        android:fillColor="#fdfad5"
+        android:pathData="m701.5 317c31.8 0 57.5 25.7 57.5 57.5c0 31.8 -25.7 57.5 -57.5 57.5c-31.8 0 -57.5 -25.7 -57.5 -57.5c0 -31.8 25.7 -57.5 57.5 -57.5z" />
+    <path
+        android:name="Border"
+        android:fillColor="#666"
+        android:pathData="m452 76c54.1 0 98 43.9 98 98c0 54.1 -43.9 98 -98 98c-54.1 0 -98 -43.9 -98 -98c0 -54.1 43.9 -98 98 -98z" />
+    <path
+        android:name="Light"
+        android:fillColor="#fffffd"
+        android:pathData="m452.5 124.2c27.8 0 50.3 22.5 50.3 50.3c0 27.8 -22.5 50.3 -50.3 50.3c-27.8 0 -50.3 -22.5 -50.3 -50.3c0 -27.8 22.5 -50.3 50.3 -50.3z" />
+</vector>
