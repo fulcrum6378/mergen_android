@@ -10,56 +10,16 @@
 #include <string>
 #include <utility>
 
-#include "../rew/rewarder.h"
-
-//#define INPUT_ID_BACK_LENS 1
-//#define INPUT_ID_FRONT_LENS 2
+#include "bitmap_stream.h"
 
 // together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone!
 #define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
 /** Let's make it a sqaure for less trouble, at least for now!
  * it would result in 2336x1080 in Galaxy A50. */
 #define VIS_IMAGE_NEAREST_HEIGHT 1088
-// N frames are skipped and the next one is submitted.
-#define VIS_SKIP_N_FRAMES 5
-
 #define MAX_BUF_COUNT 4 // max image buffers
-#define MAX(a, b) ({__typeof__(a) _a = (a); __typeof__(b) _b = (b); _a > _b ? _a : _b; })
-#define MIN(a, b) ({__typeof__(a) _a = (a); __typeof__(b) _b = (b); _a < _b ? _a : _b; })
 
-static const char *filesDir = "/data/data/ir.mahdiparastesh.mergen/files/";
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-pragmas"
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
-
-// related to Windows
-struct bmpfile_magic {
-    unsigned char magic[2];
-};
-
-struct bmpfile_header {
-    uint32_t file_size;
-    uint16_t creator1;
-    uint16_t creator2;
-    uint32_t bmp_offset;
-};
-
-struct bmpfile_dib_info {
-    uint32_t header_size;
-    int32_t width;
-    int32_t height;
-    uint16_t num_planes;
-    uint16_t bits_per_pixel;
-    uint32_t compression;
-    uint32_t bmp_byte_size;
-    int32_t hres;
-    int32_t vres;
-    uint32_t num_colors;
-    uint32_t num_important_colors;
-};
-
-#pragma clang diagnostic pop
+static bool VIS_SAVE = false;
 
 enum class CaptureSessionState : int32_t {
     READY,      // session is ready
@@ -80,11 +40,8 @@ private:
      */
     AImageReader *reader_{};
     std::pair<int32_t, int32_t> dimensions_;
-    std::ofstream *store;
-    std::mutex store_mutex;
     bool recording_{false};
-    static const int kMaxChannelValue = 262143;
-    int skipped_count = 0;
+    BitmapStream *bmp_stream_{};
 
     // Managing cameras
     ACameraManager *cameraMgr_;
@@ -121,14 +78,10 @@ private:
 
     void ImageCallback(AImageReader *reader);
 
-    void Submit(AImage *image);
-
 public:
     Camera();
 
     const std::pair<int32_t, int32_t> &GetDimensions() const;
-
-    [[maybe_unused]] void BakeMetadata() const;
 
     void CreateSession(ANativeWindow *displayWindow);
 

@@ -117,7 +117,7 @@ bool Microphone::Start() {
     result = (*recItf_)->SetRecordState(recItf_, SL_RECORDSTATE_RECORDING);
 
     if (AUD_SAVE) {
-        char path[] = "/data/data/ir.mahdiparastesh.mergen/files/aud.pcm";
+        char path[] = "/data/data/ir.mahdiparastesh.mergen/cache/aud.pcm";
         remove(path);
         test = std::ofstream(path, std::ios::binary | std::ios::out);
     }

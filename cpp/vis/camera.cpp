@@ -1,7 +1,6 @@
 #include <cstdlib>
 #include <dirent.h>
 #include <fstream>
-#include <thread>
 
 #include "camera.h"
 #include "../global.h"
@@ -11,7 +10,7 @@
  * its return value will be needed for Main::getCameraDimensions, then we should have some
  * configurations done and then we'll create a camera session.
  */
-Camera::Camera() : store(nullptr), captureSessionState_(CaptureSessionState::MAX_STATE) {
+Camera::Camera() : captureSessionState_(CaptureSessionState::MAX_STATE) {
 
     // initialise ACameraManager and get ACameraDevice instances
     cameraMgr_ = ACameraManager_create();
@@ -74,35 +73,6 @@ Camera::Camera() : store(nullptr), captureSessionState_(CaptureSessionState::MAX
 
 const std::pair<int32_t, int32_t> &Camera::GetDimensions() const {
     return dimensions_;
-}
-
-[[maybe_unused]] void Camera::BakeMetadata() const {
-    int32_t width = dimensions_.first;
-    int32_t height = dimensions_.second;
-    std::ofstream metadata(
-            filesDir + std::to_string(width) + "x" + std::to_string(height),
-            std::ios::out | std::ios::binary);
-
-    bmpfile_magic magic{'B', 'M'};
-    metadata.write((char *) (&magic), sizeof(magic));
-    bmpfile_header header = {0};
-    header.bmp_offset = sizeof(bmpfile_magic) + sizeof(bmpfile_header) + sizeof(bmpfile_dib_info);
-    header.file_size = header.bmp_offset + (height * 3 + width % 4) * height;
-    metadata.write((char *) (&header), sizeof(header));
-    bmpfile_dib_info dib_info = {0};
-    dib_info.header_size = sizeof(bmpfile_dib_info);
-    dib_info.width = width;
-    dib_info.height = height;
-    dib_info.num_planes = 1;
-    dib_info.bits_per_pixel = 24;
-    dib_info.compression = 0;
-    dib_info.bmp_byte_size = 0;
-    dib_info.hres = 2835;
-    dib_info.vres = 2835;
-    dib_info.num_colors = 0;
-    dib_info.num_important_colors = 0;
-    metadata.write((char *) (&dib_info), sizeof(dib_info));
-    metadata.close();
 }
 
 /**
@@ -241,12 +211,11 @@ void Camera::Preview(bool start) {
 
 bool Camera::SetRecording(bool b) {
     if (captureSessionState_ != CaptureSessionState::ACTIVE || b == recording_) return false;
-    if (b)
-        store = new std::ofstream(
-                (filesDir + std::string("vis.rgb")).c_str(),
-                std::ios::out | std::ios::binary);
     recording_ = b;
-    if (!recording_) skipped_count = 0;
+    if (VIS_SAVE) {
+        if (b) bmp_stream_ = new BitmapStream(dimensions_); else delete bmp_stream_;
+        // if (bmp_stream_) bmp_stream_->BakeMetadata();
+    }
     return true;
 }
 
@@ -260,97 +229,11 @@ bool Camera::SetRecording(bool b) {
 void Camera::ImageCallback(AImageReader *reader) {
     AImage *image = nullptr;
     if (AImageReader_acquireNextImage(reader, &image) != AMEDIA_OK || !image) return;
-    bool submitted = false;
+    bool used = false;
     if (recording_) {
-        if (skipped_count == 0) {
-            std::thread(&Camera::Submit, this, image).detach();
-            submitted = true;
-        }
-        skipped_count++;
-        if (skipped_count == VIS_SKIP_N_FRAMES) skipped_count = 0;
+        if (VIS_SAVE) used = bmp_stream_->HandleImage(image);
     }
-    if (!submitted) AImage_delete(image);
-}
-
-/**
- * Yuv2Rgb algorithm is from:
- * https://github.com/tensorflow/tensorflow/blob/5dcfc51118817f27fad5246812d83e5dccdc5f72/
- * tensorflow/tools/android/test/jni/yuv2rgb.cc
- *
- * TODO Images must be rotated by +90 degrees
- */
-void Camera::Submit(AImage *image) {
-    store_mutex.lock();
-    if (!recording_ || !store) {
-        if (store) {
-            store->close();
-            delete &store;
-            store = nullptr;
-        }
-        store_mutex.unlock();
-        AImage_delete(image);
-        return;
-    }
-
-    AImageCropRect srcRect;
-    AImage_getCropRect(image, &srcRect);
-    int32_t yStride, uvStride;
-    uint8_t *yPixel, *uPixel, *vPixel;
-    int32_t yLen, uLen, vLen;
-    AImage_getPlaneRowStride(image, 0, &yStride);
-    AImage_getPlaneRowStride(image, 1, &uvStride);
-    AImage_getPlaneData(image, 0, &yPixel, &yLen);
-    AImage_getPlaneData(image, 1, &vPixel, &vLen);
-    AImage_getPlaneData(image, 2, &uPixel, &uLen);
-    int32_t uvPixelStride;
-    AImage_getPlanePixelStride(image, 1, &uvPixelStride);
-    int32_t width = dimensions_.first, height = dimensions_.second;
-    /*AImage_getWidth(image, &width);
-    AImage_getHeight(image, &height);
-    height = MIN(width, (srcRect.bottom - srcRect.top));
-    width = MIN(height, (srcRect.right - srcRect.left));*/
-
-    for (int32_t y = height - 1; y >= 0; y--) {
-        const uint8_t *pY = yPixel + yStride * (y + srcRect.top) + srcRect.left;
-
-        int32_t uv_row_start = uvStride * ((y + srcRect.top) >> 1);
-        const uint8_t *pU = uPixel + uv_row_start + (srcRect.left >> 1);
-        const uint8_t *pV = vPixel + uv_row_start + (srcRect.left >> 1);
-
-        for (int32_t x = 0; x < width; x++) {
-            const int32_t uv_offset = (x >> 1) * uvPixelStride;
-
-            int nY = pY[x] - 16;
-            int nU = pU[uv_offset] - 128;
-            int nV = pV[uv_offset] - 128;
-            if (nY < 0) nY = 0;
-
-            int nR = (int) (1192 * nY + 1634 * nV);
-            int nG = (int) (1192 * nY - 833 * nV - 400 * nU);
-            int nB = (int) (1192 * nY + 2066 * nU);
-
-            int maxR = MAX(0, nR), maxG = MAX(0, nG), maxB = MAX(0, nB);
-            nR = MIN(kMaxChannelValue, maxR);
-            nG = MIN(kMaxChannelValue, maxG);
-            nB = MIN(kMaxChannelValue, maxB);
-
-            nR = (nR >> 10) & 0xff;
-            nG = (nG >> 10) & 0xff;
-            nB = (nB >> 10) & 0xff;
-
-            store->put((char) nR);
-            store->put((char) nG);
-            store->put((char) nB);
-        }
-        for (int i = 0; i < width % 4; i++) store->put(0);
-    }
-    /*LOGE("%s", (std::to_string(store->tellp()) +
-                " bytes - dimensions: " + std::to_string(width) + "x" + std::to_string(height)
-    ).c_str());*/
-    store_mutex.unlock();
-
-    //queuer_->Input(INPUT_ID_BACK_LENS, data, time);
-    AImage_delete(image);
+    if (!used) AImage_delete(image);
 }
 
 Camera::~Camera() {

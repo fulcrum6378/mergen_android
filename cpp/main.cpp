@@ -24,7 +24,6 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     hpt = new Touchscreen(rew);
 
     // ComputeVK().run(state->activity->assetManager);
-    // vis->BakeMetadata();
 
     return reinterpret_cast<jlong>(vis);
 }
