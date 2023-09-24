@@ -16,16 +16,24 @@ struct Segment {
     uint8_t m[3];
 };
 
+/** Dimensions are defined explicitly in order to avoid type-casting complications. */
 class Segmentation {
 private:
-    int16_t w, h;  // width, height
+    const int16_t h = 1088, w = 1088;  // width, height
+    uint8_t arr[1088][1088][3];
+    uint32_t status[1088][1088];
+    std::vector<Segment> segments;
 
     void NeighboursOf(int16_t y, int16_t x, Segment *seg);
+
+    bool CompareColours(uint8_t a[3], uint8_t b[3]);
+
+    void Reset();
 
 public:
     bool locked = false;
 
-    Segmentation(std::pair<int16_t, int16_t> dimensions);
+    Segmentation();
 
     void Process(AImage *image);
 

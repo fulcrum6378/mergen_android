@@ -72,7 +72,7 @@ Camera::Camera() : captureSessionState_(CaptureSessionState::MAX_STATE) {
     AImageReader_setImageListener(reader_, &listener);
 
     // prepare the image analysis objects
-    segmentation_ = new Segmentation(dimensions);
+    segmentation_ = new Segmentation();
 }
 
 /**

@@ -1,8 +1,7 @@
+#include "../global.h"
 #include "segmentation.h"
 
-Segmentation::Segmentation(std::pair<int16_t, int16_t> dimensions) {
-    w = dimensions.first;
-    h = dimensions.second;
+Segmentation::Segmentation() {
 }
 
 void Segmentation::Process(AImage *image) {
@@ -10,9 +9,9 @@ void Segmentation::Process(AImage *image) {
     /*std::ofstream test; // #include <fstream> #include <ios>
     test.open("/data/data/ir.mahdiparastesh.mergen/cache/test.yuv",
               std::ios::out | std::ios::binary);*/
-    int8_t arr[h][w][3];
+    auto t0 = std::chrono::system_clock::now();
 
-    // bring separate YUV data into the above multidimensional array of pixels `arr`
+    // bring separate YUV data into the multidimensional array of pixels `arr`
     AImageCropRect srcRect;
     AImage_getCropRect(image, &srcRect);
     int32_t yStride, uvStride;
@@ -42,8 +41,6 @@ void Segmentation::Process(AImage *image) {
     }
 
     // segmentation begins
-    uint32_t status[h][w];
-    std::vector<Segment> segments;
     int16_t thisY = 0, thisX = 0;
     bool foundSthToAnalyse = true;
     while (foundSthToAnalyse) {
@@ -64,12 +61,39 @@ void Segmentation::Process(AImage *image) {
         segments.push_back(segment);
     }
 
+    // Dissolution
+
+    auto t1 = std::chrono::system_clock::now();
+    LOGI("%lld", std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count());
+
     AImage_delete(image); // test.close();
+    Reset();
     locked = false;
 }
 
 void Segmentation::NeighboursOf(int16_t y, int16_t x, Segment *seg) {
+    seg->p.push_back(std::pair(y, x));
+    status[y][x] = seg->id;
+    if (x > 0 && status[y][x - 1] == -1 && CompareColours(arr[y][x], arr[y][x - 1])) // left
+        NeighboursOf(y, x - 1, seg);
+    if (y > 0 && status[y - 1][x] == -1 && CompareColours(arr[y][x], arr[y - 1][x])) // top
+        NeighboursOf(y - 1, x, seg);
+    if (x < (w - 1) && status[y][x + 1] == -1 && CompareColours(arr[y][x], arr[y][x + 1])) // right
+        NeighboursOf(y, x + 1, seg);
+    if (y < (h - 1) && status[y + 1][x] == -1 && CompareColours(arr[y][x], arr[y + 1][x])) // bottom
+        NeighboursOf(y + 1, x, seg);
+}
 
+bool Segmentation::CompareColours(uint8_t a[3], uint8_t b[3]) {
+    return abs(a[0] - b[0]) <= 4 && abs(a[1] - b[1]) <= 4 && abs(a[2] - b[2]) <= 4;
+}
+
+void Segmentation::Reset() {
+    // https://stackoverflow.com/questions/23039134/how-to-use-memset-function-in-two-dimensional-
+    // array-for-initialization-of-member
+    memset(arr, 0, sizeof(arr)); // these might not work correctly
+    memset(status, 0, sizeof(status));
+    segments.clear();
 }
 
 Segmentation::~Segmentation() {
