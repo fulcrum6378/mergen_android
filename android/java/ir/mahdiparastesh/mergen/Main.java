@@ -76,8 +76,8 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         previewLP.height = size.getHeight();
         preview.setLayoutParams(previewLP);
         preview.setSurfaceTextureListener(this);
-        if (preview.isAvailable()) onSurfaceTextureAvailable(
-                preview.getSurfaceTexture(), size.getWidth(), size.getHeight());
+        if (preview.isAvailable()) //noinspection DataFlowIssue
+            onSurfaceTextureAvailable(preview.getSurfaceTexture(), size.getWidth(), size.getHeight());
     }
 
     @Override

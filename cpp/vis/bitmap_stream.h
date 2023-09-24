@@ -4,8 +4,7 @@
 #include <media/NdkImage.h>
 #include <thread>
 
-#define MAX(a, b) ({__typeof__(a) _a = (a); __typeof__(b) _b = (b); _a > _b ? _a : _b; })
-#define MIN(a, b) ({__typeof__(a) _a = (a); __typeof__(b) _b = (b); _a < _b ? _a : _b; })
+#include "global.h"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-pragmas"
@@ -45,11 +44,11 @@ private:
     std::ofstream *store{nullptr};
     std::mutex store_mutex;
     int skipped_count = 0;
-    std::pair<int32_t, int32_t> dimensions_;
+    std::pair<int16_t, int16_t> dimensions_;
     const int kMaxChannelValue = 262143;
 
 public:
-    BitmapStream(std::pair<int32_t, int32_t> dimensions) {
+    BitmapStream(std::pair<int16_t, int16_t> dimensions) {
         store = new std::ofstream(
                 (filesDir + std::string("vis.rgb")).c_str(),
                 std::ios::out | std::ios::binary);
@@ -119,11 +118,11 @@ public:
         AImage_getPlaneData(image, 2, &uPixel, &uLen);
         int32_t uvPixelStride;
         AImage_getPlanePixelStride(image, 1, &uvPixelStride);
-        int32_t width = dimensions_.first, height = dimensions_.second;
         /*AImage_getWidth(image, &width);
         AImage_getHeight(image, &height);
         height = MIN(width, (srcRect.bottom - srcRect.top));
         width = MIN(height, (srcRect.right - srcRect.left));*/
+        int32_t width = dimensions_.first, height = dimensions_.second;
 
         for (int32_t y = height - 1; y >= 0; y--) {
             const uint8_t *pY = yPixel + yStride * (y + srcRect.top) + srcRect.left;
@@ -167,6 +166,7 @@ public:
     }
 
     ~BitmapStream() {
+        delete store;
         store = nullptr;
     }
 };

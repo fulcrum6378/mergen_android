@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "bitmap_stream.h"
+#include "segmentation.h"
 
 // together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone!
 #define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
@@ -21,7 +22,7 @@
 
 static bool VIS_SAVE = false;
 
-enum class CaptureSessionState : int32_t {
+enum class CaptureSessionState : int8_t {
     READY,      // session is ready
     ACTIVE,     // session is busy
     CLOSED,     // session is closed(by itself or a new session evicts)
@@ -39,7 +40,6 @@ private:
      * ANativeWindow; so AImageReader has no choice except creating it, itself!
      */
     AImageReader *reader_{};
-    std::pair<int32_t, int32_t> dimensions_;
     bool recording_{false};
     BitmapStream *bmp_stream_{};
 
@@ -67,21 +67,24 @@ private:
     ACameraOutputTarget *displayTarget_{};
     ACaptureRequest *displayRequest_{};
 
+    // Image Analysis
+    Segmentation *segmentation_;
+
 
     void EnumerateCamera(void);
 
-    bool DetermineCaptureDimensions(std::pair<int32_t, int32_t> *dimen);
+    void DetermineCaptureDimensions();
 
-    //int32_t GetCameraSensorOrientation(int32_t facing);
+    //int32_t GetCameraSensorOrientation(int8_t facing);
 
     void Preview(bool start);
 
     void ImageCallback(AImageReader *reader);
 
 public:
-    Camera();
+    std::pair<int16_t, int16_t> dimensions;
 
-    const std::pair<int32_t, int32_t> &GetDimensions() const;
+    Camera();
 
     void CreateSession(ANativeWindow *displayWindow);
 

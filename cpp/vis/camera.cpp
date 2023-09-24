@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <dirent.h>
 #include <fstream>
+#include <thread>
 
 #include "camera.h"
 #include "../global.h"
@@ -51,11 +52,11 @@ Camera::Camera() : captureSessionState_(CaptureSessionState::MAX_STATE) {
     };
 
     // determine width and height of output images
-    DetermineCaptureDimensions(&dimensions_);
+    DetermineCaptureDimensions();
 
     // initialise AImageReader and retrieve its ANativeWindow (Surface in Java)
     media_status_t status = AImageReader_newWithUsage(
-            dimensions_.first, dimensions_.second, VIS_IMAGE_FORMAT,
+            dimensions.first, dimensions.second, VIS_IMAGE_FORMAT,
             AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN, MAX_BUF_COUNT, &reader_);
     ASSERT(reader_ && status == AMEDIA_OK, "Failed to create AImageReader")
     status = AImageReader_getWindow(reader_, &readerWindow_);
@@ -69,10 +70,9 @@ Camera::Camera() : captureSessionState_(CaptureSessionState::MAX_STATE) {
             },
     };
     AImageReader_setImageListener(reader_, &listener);
-}
 
-const std::pair<int32_t, int32_t> &Camera::GetDimensions() const {
-    return dimensions_;
+    // prepare the image analysis objects
+    segmentation_ = new Segmentation(dimensions);
 }
 
 /**
@@ -117,7 +117,7 @@ void Camera::EnumerateCamera() {
     ACameraManager_deleteCameraIdList(cameraIds);
 }
 
-bool Camera::DetermineCaptureDimensions(std::pair<int32_t, int32_t> *dimen) {
+void Camera::DetermineCaptureDimensions() {
     ACameraMetadata *metadata;
     ACameraManager_getCameraCharacteristics(
             cameraMgr_, activeCameraId_.c_str(), &metadata);
@@ -126,7 +126,7 @@ bool Camera::DetermineCaptureDimensions(std::pair<int32_t, int32_t> *dimen) {
             metadata, ACAMERA_SCALER_AVAILABLE_STREAM_CONFIGURATIONS, &entry);
     // format of the data: format, width, height, input?, type int32
     bool foundIt = false;
-    std::pair<int32_t, int32_t> ultimate(720, 720);
+    dimensions = std::pair<int16_t, int16_t>(720, 720);
 
     for (uint32_t i = 0; i < entry.count; i += 4) {
         int32_t input = entry.data.i32[i + 3];
@@ -137,18 +137,15 @@ bool Camera::DetermineCaptureDimensions(std::pair<int32_t, int32_t> *dimen) {
         //if (ent.first == ent.second) continue; // discard square dimensions
 
         if (abs(ent.second - VIS_IMAGE_NEAREST_HEIGHT) <
-            abs(ultimate.second - VIS_IMAGE_NEAREST_HEIGHT)) {
+            abs(dimensions.second - VIS_IMAGE_NEAREST_HEIGHT)) {
             foundIt = true;
-            ultimate = ent;
+            dimensions = ent;
         }
     }
     if (!foundIt) LOGW("Did not find any compatible camera resolution, taking 720x720");
-
-    *dimen = ultimate;
-    return foundIt;
 }
 
-/*int NDKCamera::GetCameraSensorOrientation(int32_t requestFacing) {
+/*int NDKCamera::GetCameraSensorOrientation(int8_t requestFacing) {
     if (!cameraMgr_) return false;
     ASSERT(requestFacing == ACAMERA_LENS_FACING_BACK, "Only support rear facing camera")
     int32_t facing, angle;
@@ -213,7 +210,7 @@ bool Camera::SetRecording(bool b) {
     if (captureSessionState_ != CaptureSessionState::ACTIVE || b == recording_) return false;
     recording_ = b;
     if (VIS_SAVE) {
-        if (b) bmp_stream_ = new BitmapStream(dimensions_); else delete bmp_stream_;
+        if (b) bmp_stream_ = new BitmapStream(dimensions); else delete bmp_stream_;
         // if (bmp_stream_) bmp_stream_->BakeMetadata();
     }
     return true;
@@ -231,7 +228,10 @@ void Camera::ImageCallback(AImageReader *reader) {
     if (AImageReader_acquireNextImage(reader, &image) != AMEDIA_OK || !image) return;
     bool used = false;
     if (recording_) {
-        if (VIS_SAVE) used = bmp_stream_->HandleImage(image);
+        if (!VIS_SAVE) {
+            used = !segmentation_->locked;
+            if (used) std::thread(&Segmentation::Process, segmentation_, image).detach();
+        } else used = bmp_stream_->HandleImage(image);
     }
     if (!used) AImage_delete(image);
 }
@@ -239,6 +239,10 @@ void Camera::ImageCallback(AImageReader *reader) {
 Camera::~Camera() {
     Preview(false);
     ACameraCaptureSession_close(captureSession_);
+
+    // destroy the image analysis objects
+    delete segmentation_;
+    segmentation_ = nullptr;
 
     // destroy camera session
     if (readerWindow_) {
