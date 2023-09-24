@@ -206,6 +206,7 @@ void Camera::Preview(bool start) {
         ACameraCaptureSession_stopRepeating(captureSession_);
 }
 
+/** Always use the camera while rotating the phone in -90 degrees. */
 bool Camera::SetRecording(bool b) {
     if (captureSessionState_ != CaptureSessionState::ACTIVE || b == recording_) return false;
     recording_ = b;
@@ -217,7 +218,7 @@ bool Camera::SetRecording(bool b) {
 }
 
 /**
- * Called when a frame is captured
+ * Called when a frame is captured.
  * Beware that AImageReader_acquireLatestImage deletes the previous images.
  * You should always call acquireNextImage() and delete() even if you don't wanna save it!
  *
@@ -231,7 +232,8 @@ void Camera::ImageCallback(AImageReader *reader) {
         if (!VIS_SAVE) {
             used = !segmentation_->locked;
             if (used) std::thread(&Segmentation::Process, segmentation_, image).detach();
-        } else used = bmp_stream_->HandleImage(image);
+        } else
+            used = bmp_stream_->HandleImage(image);
     }
     if (!used) AImage_delete(image);
 }

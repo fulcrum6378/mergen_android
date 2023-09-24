@@ -100,8 +100,6 @@ public:
      * Yuv2Rgb algorithm is from:
      * https://github.com/tensorflow/tensorflow/blob/5dcfc51118817f27fad5246812d83e5dccdc5f72/
      * tensorflow/tools/android/test/jni/yuv2rgb.cc
-     *
-     * TO-DO Images must be rotated by +90 degrees
      */
     void Append(AImage *image) {
         store_mutex.lock();
@@ -122,16 +120,16 @@ public:
         AImage_getHeight(image, &height);
         height = MIN(width, (srcRect.bottom - srcRect.top));
         width = MIN(height, (srcRect.right - srcRect.left));*/
-        int32_t width = dimensions_.first, height = dimensions_.second;
+        int16_t width = dimensions_.first, height = dimensions_.second;
 
-        for (int32_t y = height - 1; y >= 0; y--) {
+        for (int16_t y = height - 1; y >= 0; y--) {
             const uint8_t *pY = yPixel + yStride * (y + srcRect.top) + srcRect.left;
 
             int32_t uv_row_start = uvStride * ((y + srcRect.top) >> 1);
             const uint8_t *pU = uPixel + uv_row_start + (srcRect.left >> 1);
             const uint8_t *pV = vPixel + uv_row_start + (srcRect.left >> 1);
 
-            for (int32_t x = 0; x < width; x++) {
+            for (int16_t x = 0; x < width; x++) {
                 const int32_t uv_offset = (x >> 1) * uvPixelStride;
 
                 int nY = pY[x] - 16;
