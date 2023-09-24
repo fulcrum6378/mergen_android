@@ -1,6 +1,3 @@
-#include <fstream>
-#include <ios>
-
 #include "segmentation.h"
 
 Segmentation::Segmentation(std::pair<int16_t, int16_t> dimensions) {
@@ -10,11 +7,12 @@ Segmentation::Segmentation(std::pair<int16_t, int16_t> dimensions) {
 
 void Segmentation::Process(AImage *image) {
     locked = true;
-
-    std::ofstream test;
+    /*std::ofstream test; // #include <fstream> #include <ios>
     test.open("/data/data/ir.mahdiparastesh.mergen/cache/test.yuv",
-              std::ios::out | std::ios::binary);
+              std::ios::out | std::ios::binary);*/
+    int8_t arr[h][w][3];
 
+    // bring separate YUV data into the above multidimensional array of pixels `arr`
     AImageCropRect srcRect;
     AImage_getCropRect(image, &srcRect);
     int32_t yStride, uvStride;
@@ -36,15 +34,42 @@ void Segmentation::Process(AImage *image) {
 
         for (int16_t x = 0; x < w; x++) {
             const int32_t uv_offset = (x >> 1) * uvPixelStride;
-            test.put(pY[x]);
-            test.put(pU[uv_offset]);
-            test.put(pV[uv_offset]);
+            //test.put(pY[x]); test.put(pU[uv_offset]); test.put(pV[uv_offset]);
+            arr[y][x][0] = pY[x];
+            arr[y][x][1] = pU[uv_offset];
+            arr[y][x][2] = pV[uv_offset];
         }
     }
 
-    AImage_delete(image);
-    test.close();
+    // segmentation begins
+    uint32_t status[h][w];
+    std::vector<Segment> segments;
+    int16_t thisY = 0, thisX = 0;
+    bool foundSthToAnalyse = true;
+    while (foundSthToAnalyse) {
+        foundSthToAnalyse = false;
+        for (int16_t y = thisY; y < h; y++) {
+            for (int16_t x = (y == thisY) ? thisX : 0; x < w; x++)
+                if (status[y][x] == 0) {
+                    foundSthToAnalyse = true;
+                    thisY = y;
+                    thisX = x;
+                    break;
+                }
+            if (!foundSthToAnalyse) break;
+        }
+        if (!foundSthToAnalyse) break;
+        Segment segment;
+        NeighboursOf(thisY, thisX, &segment);
+        segments.push_back(segment);
+    }
+
+    AImage_delete(image); // test.close();
     locked = false;
+}
+
+void Segmentation::NeighboursOf(int16_t y, int16_t x, Segment *seg) {
+
 }
 
 Segmentation::~Segmentation() {
