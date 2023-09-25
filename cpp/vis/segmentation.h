@@ -16,6 +16,12 @@ struct Segment {
     uint8_t m[3];
 };
 
+struct SegmentSorter {
+    inline bool operator()(const Segment &a, const Segment &b) {
+        return (a.p.size() > b.p.size());
+    }
+};
+
 /** Dimensions are defined explicitly in order to avoid type-casting complications. */
 class Segmentation {
 private:

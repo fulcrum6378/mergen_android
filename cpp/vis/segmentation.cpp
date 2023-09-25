@@ -64,10 +64,10 @@ void Segmentation::Process(AImage *image) {
     }
 
     // segmentation begins
-    LOGI("%zu", segments.size());
     int16_t thisY = 0, thisX = 0;
     bool foundSthToAnalyse = true;
     while (foundSthToAnalyse) {
+        //LOGI("foundSthToAnalyse");
         foundSthToAnalyse = false;
         for (int16_t y = thisY; y < h; y++) {
             for (int16_t x = (y == thisY) ? thisX : 0; x < w; x++)
@@ -83,28 +83,28 @@ void Segmentation::Process(AImage *image) {
 
         Segment seg{static_cast<uint32_t>(segments.size() + 1)};
         stack.push_back(new int16_t[3]{thisY, thisX, 0});
-        int32_t l_;
-        while ((l_ = stack.size()) != 0) {
-            int16_t y = stack[l_][0], x = stack[l_][1], dr = stack[l_][2];
+        int32_t last;
+        while ((last = stack.size() - 1) != 0) {
+            int16_t y = stack[last][0], x = stack[last][1], dr = stack[last][2];
             if (dr == 0) {
                 seg.p.push_back(std::pair(y, x));
                 status[y][x] = seg.id;
                 // left
-                stack[l_][2]++;
+                stack[last][2]++;
                 if (x > 0 && status[y][x - 1] == 0 && CompareColours(arr[y][x], arr[y][x - 1])) {
                     stack.push_back(new int16_t[3]{y, static_cast<int16_t>(x - 1), 0});
                     continue;
                 }
             }
             if (dr <= 1) { // top
-                stack[l_][2]++;
+                stack[last][2]++;
                 if (y > 0 && status[y - 1][x] == 0 && CompareColours(arr[y][x], arr[y - 1][x])) {
                     stack.push_back(new int16_t[3]{static_cast<int16_t>(y - 1), x, 0});
                     continue;
                 }
             }
             if (dr <= 2) { // right
-                stack[l_][2]++;
+                stack[last][2]++;
                 if (x < (w - 1) && status[y][x + 1] == 0 &&
                     CompareColours(arr[y][x], arr[y][x + 1])) {
                     stack.push_back(new int16_t[3]{y, static_cast<int16_t>(x + 1), 0});
@@ -112,7 +112,7 @@ void Segmentation::Process(AImage *image) {
                 }
             }
             if (dr <= 3) { // bottom
-                stack[l_][2]++;
+                stack[last][2]++;
                 if (y < (h - 1) && status[y + 1][x] == 0 &&
                     CompareColours(arr[y][x], arr[y + 1][x])) {
                     stack.push_back(new int16_t[3]{static_cast<int16_t>(y + 1), x, 0});
@@ -127,8 +127,18 @@ void Segmentation::Process(AImage *image) {
     // TODO Dissolution (is -1 necessary?)
 
     auto t1 = std::chrono::system_clock::now();
-    LOGI("%lld", std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count());
-    LOGI("%zu", segments.size());
+    LOGI("Segmentations time: %lld",
+         std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count());
+    LOGI("Total segments: %zu", segments.size());
+
+    std::sort(segments.begin(), segments.end(), SegmentSorter());
+
+    LOGI("#0 : %zu", segments[0].p.size());
+    LOGI("#1 : %zu", segments[1].p.size());
+    LOGI("#2 : %zu", segments[2].p.size());
+    int last = segments.size() - 1;
+    LOGI("#%d : %zu", last, segments[last].p.size());
+    LOGI("----------------------");
 
     AImage_delete(image); // test.close();
     Reset();
