@@ -1,3 +1,5 @@
+#include <sys/resource.h>
+
 #include "../global.h"
 #include "segmentation.h"
 
@@ -12,12 +14,17 @@ void Segmentation::Process(AImage *image) {
     auto t0 = std::chrono::system_clock::now();
 
     // increase the maximum recursion depth space
-    /*struct rlimit lim;  // #include <sys/resource.h>
+    /*struct rlimit lim;
     getrlimit(RLIMIT_STACK, &lim);
-    lim.rlim_cur = 1778384896; // def:   8388608 (8MB)
-    //lim.rlim_max = 10485760; // def:   18446744073709551615
+    lim.rlim_cur = 838860800; // def:   8388608 (8MB)
+    //lim.rlim_max = 18446744073709551615; // def:   18446744073709551615
     ASSERT(setrlimit(RLIMIT_STACK, &lim) != -1,
-           "Could not increase the maximum recursion depth space!");*/
+           "Could not increase the maximum recursion depth space!");
+
+    struct rlimit lim2;
+    getrlimit(RLIMIT_STACK, &lim2);
+    LOGI("%lu", lim2.rlim_cur);*/
+
     /*std::stringstream ss; #include <thread> #include <sstream>
     ss << std::this_thread::get_id();
     uint64_t id = std::stoull(ss.str());
@@ -25,9 +32,7 @@ void Segmentation::Process(AImage *image) {
     size_t kir;
     LOGI("%d", pthread_attr_getstacksize(reinterpret_cast<pthread_attr_t *>(id), &kir)); // 0*/
 
-    /*struct rlimit lim2;
-    getrlimit(RLIMIT_STACK, &lim2);
-    LOGI("%lu", lim2.rlim_cur);*/
+    // system("bash -c 'ulimit -s unlimited'");
 
     // bring separate YUV data into the multidimensional array of pixels `arr`
     AImageCropRect srcRect;

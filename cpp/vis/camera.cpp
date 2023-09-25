@@ -2,7 +2,6 @@
 #include <dirent.h>
 #include <fstream>
 #include <thread>
-#include <boost/thread/thread.hpp>
 
 #include "camera.h"
 #include "../global.h"
@@ -234,7 +233,6 @@ void Camera::ImageCallback(AImageReader *reader) {
             used = !segmentation_->locked;
             if (used) std::thread(&Segmentation::Process, segmentation_, image).detach();
                 // segmentation_->Process(image);
-            //boost::thread(boost::ref(x));
         } else
             used = bmp_stream_->HandleImage(image);
     }
