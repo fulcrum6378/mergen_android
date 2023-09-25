@@ -23,8 +23,7 @@ private:
     uint8_t arr[1088][1088][3];
     uint32_t status[1088][1088];
     std::vector<Segment> segments;
-
-    void NeighboursOf(int16_t y, int16_t x, Segment *seg);
+    std::vector<int16_t *> stack;
 
     bool CompareColours(uint8_t a[3], uint8_t b[3]);
 

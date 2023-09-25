@@ -1,6 +1,5 @@
 #include <cstdlib>
 #include <dirent.h>
-#include <fstream>
 #include <thread>
 
 #include "camera.h"
@@ -232,7 +231,6 @@ void Camera::ImageCallback(AImageReader *reader) {
         if (!VIS_SAVE) {
             used = !segmentation_->locked;
             if (used) std::thread(&Segmentation::Process, segmentation_, image).detach();
-                // segmentation_->Process(image);
         } else
             used = bmp_stream_->HandleImage(image);
     }

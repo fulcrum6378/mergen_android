@@ -1,6 +1,7 @@
 #ifndef VIS_BITMAP_STREAM_H
 #define VIS_BITMAP_STREAM_H
 
+#include <fstream>
 #include <media/NdkImage.h>
 #include <thread>
 

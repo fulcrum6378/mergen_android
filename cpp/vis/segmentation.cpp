@@ -80,12 +80,51 @@ void Segmentation::Process(AImage *image) {
             if (foundSthToAnalyse) break;
         }
         if (!foundSthToAnalyse) break;
-        Segment segment{static_cast<uint32_t>(segments.size())};
-        NeighboursOf(thisY, thisX, &segment);
-        segments.push_back(segment);
+
+        Segment seg{static_cast<uint32_t>(segments.size() + 1)};
+        stack.push_back(new int16_t[3]{thisY, thisX, 0});
+        int32_t l_;
+        while ((l_ = stack.size()) != 0) {
+            int16_t y = stack[l_][0], x = stack[l_][1], dr = stack[l_][2];
+            if (dr == 0) {
+                seg.p.push_back(std::pair(y, x));
+                status[y][x] = seg.id;
+                // left
+                stack[l_][2]++;
+                if (x > 0 && status[y][x - 1] == 0 && CompareColours(arr[y][x], arr[y][x - 1])) {
+                    stack.push_back(new int16_t[3]{y, static_cast<int16_t>(x - 1), 0});
+                    continue;
+                }
+            }
+            if (dr <= 1) { // top
+                stack[l_][2]++;
+                if (y > 0 && status[y - 1][x] == 0 && CompareColours(arr[y][x], arr[y - 1][x])) {
+                    stack.push_back(new int16_t[3]{static_cast<int16_t>(y - 1), x, 0});
+                    continue;
+                }
+            }
+            if (dr <= 2) { // right
+                stack[l_][2]++;
+                if (x < (w - 1) && status[y][x + 1] == 0 &&
+                    CompareColours(arr[y][x], arr[y][x + 1])) {
+                    stack.push_back(new int16_t[3]{y, static_cast<int16_t>(x + 1), 0});
+                    continue;
+                }
+            }
+            if (dr <= 3) { // bottom
+                stack[l_][2]++;
+                if (y < (h - 1) && status[y + 1][x] == 0 &&
+                    CompareColours(arr[y][x], arr[y + 1][x])) {
+                    stack.push_back(new int16_t[3]{static_cast<int16_t>(y + 1), x, 0});
+                    continue;
+                }
+            }
+            stack.pop_back();
+        }
+        segments.push_back(seg);
     }
 
-    // Dissolution
+    // TODO Dissolution (is -1 necessary?)
 
     auto t1 = std::chrono::system_clock::now();
     LOGI("%lld", std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count());
@@ -94,19 +133,6 @@ void Segmentation::Process(AImage *image) {
     AImage_delete(image); // test.close();
     Reset();
     locked = false;
-}
-
-void Segmentation::NeighboursOf(int16_t y, int16_t x, Segment *seg) {
-    seg->p.push_back(std::pair(y, x));
-    status[y][x] = seg->id;
-    if (x > 0 && status[y][x - 1] == 0 && CompareColours(arr[y][x], arr[y][x - 1])) // left
-        NeighboursOf(y, x - 1, seg);
-    if (y > 0 && status[y - 1][x] == 0 && CompareColours(arr[y][x], arr[y - 1][x])) // top
-        NeighboursOf(y - 1, x, seg);
-    if (x < (w - 1) && status[y][x + 1] == 0 && CompareColours(arr[y][x], arr[y][x + 1])) // right
-        NeighboursOf(y, x + 1, seg);
-    if (y < (h - 1) && status[y + 1][x] == 0 && CompareColours(arr[y][x], arr[y + 1][x])) // bottom
-        NeighboursOf(y + 1, x, seg);
 }
 
 bool Segmentation::CompareColours(uint8_t a[3], uint8_t b[3]) {
