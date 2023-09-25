@@ -2,6 +2,17 @@
 #include "segmentation.h"
 
 Segmentation::Segmentation() {
+    // increase the maximum recursion depth space
+    /*struct rlimit lim; // #include <sys/resource.h>
+    getrlimit(RLIMIT_STACK, &lim);
+    lim.rlim_cur = 65536;
+    lim.rlim_max = 65536;
+    ASSERT(setrlimit(RLIMIT_STACK, &lim) != -1,
+           "Could not increase the maximum recursion depth space!");*/
+
+    /*uint8_t a = 50, b = 200;
+    LOGI("%d", abs(a - b));
+    LOGI("%d", 256 - static_cast<uint8_t>(a - b));*/
 }
 
 void Segmentation::Process(AImage *image) {
@@ -87,7 +98,17 @@ void Segmentation::NeighboursOf(int16_t y, int16_t x, Segment *seg) {
 }
 
 bool Segmentation::CompareColours(uint8_t a[3], uint8_t b[3]) {
-    return abs(a[0] - b[0]) <= 4 && abs(a[1] - b[1]) <= 4 && abs(a[2] - b[2]) <= 4;
+    // you can try this: 256 - static_cast<uint8_t>(a - b)
+    /*return abs(static_cast<int16_t>(a[0]) - static_cast<int16_t>(b[0])) <= 4 &&
+           abs(static_cast<int16_t>(a[1]) - static_cast<int16_t>(b[1])) <= 4 &&
+           abs(static_cast<int16_t>(a[2]) - static_cast<int16_t>(b[2])) <= 4;*/
+    /*return abs(static_cast<int16_t>(a[0]) - static_cast<int16_t>(b[0])) <= 4 &&
+           abs(static_cast<int16_t>(a[1]) - static_cast<int16_t>(b[1])) <= 4 &&
+           abs(static_cast<int16_t>(a[2]) - static_cast<int16_t>(b[2])) <= 4;*/
+    /*return abs((int16_t) a[0] - (int16_t) b[0]) <= 4 &&
+           abs((int16_t) a[1] - (int16_t) b[1]) <= 4 &&
+           abs((int16_t) a[2] - (int16_t) b[2]) <= 4;*/
+    return true;
 }
 
 void Segmentation::Reset() {
