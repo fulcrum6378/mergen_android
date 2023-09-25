@@ -1,5 +1,3 @@
-#include <sys/resource.h>
-
 #include "../global.h"
 #include "segmentation.h"
 
@@ -14,12 +12,12 @@ void Segmentation::Process(AImage *image) {
     auto t0 = std::chrono::system_clock::now();
 
     // increase the maximum recursion depth space
-    struct rlimit lim;
+    /*struct rlimit lim;  // #include <sys/resource.h>
     getrlimit(RLIMIT_STACK, &lim);
     lim.rlim_cur = 1778384896; // def:   8388608 (8MB)
     //lim.rlim_max = 10485760; // def:   18446744073709551615
     ASSERT(setrlimit(RLIMIT_STACK, &lim) != -1,
-           "Could not increase the maximum recursion depth space!");
+           "Could not increase the maximum recursion depth space!");*/
     /*std::stringstream ss; #include <thread> #include <sstream>
     ss << std::this_thread::get_id();
     uint64_t id = std::stoull(ss.str());
