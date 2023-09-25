@@ -41,6 +41,7 @@ void Segmentation::Process(AImage *image) {
     }
 
     // segmentation begins
+    LOGI("%zu", segments.size());
     int16_t thisY = 0, thisX = 0;
     bool foundSthToAnalyse = true;
     while (foundSthToAnalyse) {
@@ -53,10 +54,10 @@ void Segmentation::Process(AImage *image) {
                     thisX = x;
                     break;
                 }
-            if (!foundSthToAnalyse) break;
+            if (foundSthToAnalyse) break;
         }
         if (!foundSthToAnalyse) break;
-        Segment segment;
+        Segment segment{static_cast<uint32_t>(segments.size())};
         NeighboursOf(thisY, thisX, &segment);
         segments.push_back(segment);
     }
@@ -65,6 +66,7 @@ void Segmentation::Process(AImage *image) {
 
     auto t1 = std::chrono::system_clock::now();
     LOGI("%lld", std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count());
+    LOGI("%zu", segments.size());
 
     AImage_delete(image); // test.close();
     Reset();
@@ -74,13 +76,13 @@ void Segmentation::Process(AImage *image) {
 void Segmentation::NeighboursOf(int16_t y, int16_t x, Segment *seg) {
     seg->p.push_back(std::pair(y, x));
     status[y][x] = seg->id;
-    if (x > 0 && status[y][x - 1] == -1 && CompareColours(arr[y][x], arr[y][x - 1])) // left
+    if (x > 0 && status[y][x - 1] == 0 && CompareColours(arr[y][x], arr[y][x - 1])) // left
         NeighboursOf(y, x - 1, seg);
-    if (y > 0 && status[y - 1][x] == -1 && CompareColours(arr[y][x], arr[y - 1][x])) // top
+    if (y > 0 && status[y - 1][x] == 0 && CompareColours(arr[y][x], arr[y - 1][x])) // top
         NeighboursOf(y - 1, x, seg);
-    if (x < (w - 1) && status[y][x + 1] == -1 && CompareColours(arr[y][x], arr[y][x + 1])) // right
+    if (x < (w - 1) && status[y][x + 1] == 0 && CompareColours(arr[y][x], arr[y][x + 1])) // right
         NeighboursOf(y, x + 1, seg);
-    if (y < (h - 1) && status[y + 1][x] == -1 && CompareColours(arr[y][x], arr[y + 1][x])) // bottom
+    if (y < (h - 1) && status[y + 1][x] == 0 && CompareColours(arr[y][x], arr[y + 1][x])) // bottom
         NeighboursOf(y + 1, x, seg);
 }
 
