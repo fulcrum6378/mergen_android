@@ -13,27 +13,6 @@ void Segmentation::Process(AImage *image) {
               std::ios::out | std::ios::binary);*/
     auto t0 = std::chrono::system_clock::now();
 
-    // increase the maximum recursion depth space
-    /*struct rlimit lim;
-    getrlimit(RLIMIT_STACK, &lim);
-    lim.rlim_cur = 838860800; // def:   8388608 (8MB)
-    //lim.rlim_max = 18446744073709551615; // def:   18446744073709551615
-    ASSERT(setrlimit(RLIMIT_STACK, &lim) != -1,
-           "Could not increase the maximum recursion depth space!");
-
-    struct rlimit lim2;
-    getrlimit(RLIMIT_STACK, &lim2);
-    LOGI("%lu", lim2.rlim_cur);*/
-
-    /*std::stringstream ss; #include <thread> #include <sstream>
-    ss << std::this_thread::get_id();
-    uint64_t id = std::stoull(ss.str());
-    pthread_attr_setstacksize(reinterpret_cast<pthread_attr_t *>(id), 104857600);
-    size_t kir;
-    LOGI("%d", pthread_attr_getstacksize(reinterpret_cast<pthread_attr_t *>(id), &kir)); // 0*/
-
-    // system("bash -c 'ulimit -s unlimited'");
-
     // bring separate YUV data into the multidimensional array of pixels `arr`
     AImageCropRect srcRect;
     AImage_getCropRect(image, &srcRect);
@@ -67,7 +46,6 @@ void Segmentation::Process(AImage *image) {
     int16_t thisY = 0, thisX = 0;
     bool foundSthToAnalyse = true;
     while (foundSthToAnalyse) {
-        //LOGI("foundSthToAnalyse");
         foundSthToAnalyse = false;
         for (int16_t y = thisY; y < h; y++) {
             for (int16_t x = (y == thisY) ? thisX : 0; x < w; x++)
@@ -81,7 +59,7 @@ void Segmentation::Process(AImage *image) {
         }
         if (!foundSthToAnalyse) break;
 
-        Segment seg{static_cast<uint32_t>(segments.size() + 1)};
+        Segment seg{segments.size() + 1};
         stack.push_back(new int16_t[3]{thisY, thisX, 0});
         int32_t last;
         while ((last = stack.size() - 1) != 0) {
@@ -124,7 +102,21 @@ void Segmentation::Process(AImage *image) {
         segments.push_back(seg);
     }
 
-    // TODO Dissolution (is -1 necessary?)
+    // dissolution
+    if (min_seg > 1) {
+        for (int32_t seg = segments.size() - 1; seg > 0; seg--)
+            if (segments[seg].p.size() < min_seg) {
+                absorber_index = find_a_segment_to_dissolve_in(segments[seg])
+                if (absorber_index is None) continue
+                absorber:
+                Segment = segments[status[*absorber_index] - 1]
+                for (p in segments[seg].p) {
+                    absorber.p.append(p)
+                    status[*p] = absorber.id
+                }
+                segments.pop(seg)
+            }
+    }
 
     auto t1 = std::chrono::system_clock::now();
     LOGI("Segmentations time: %lld",
@@ -148,6 +140,18 @@ void Segmentation::Process(AImage *image) {
 bool Segmentation::CompareColours(uint8_t a[3], uint8_t b[3]) {
     // you can try this: 256 - static_cast<uint8_t>(a - b)
     return abs(a[0] - b[0]) <= 4 && abs(a[1] - b[1]) <= 4 && abs(a[2] - b[2]) <= 4;
+}
+
+int16_t** Segmentation::FindASegmentToDissolveIn(Segment *seg) {
+    if (seg->p[0].first > 0)
+        return &{static_cast<int16_t>(seg->p[0].first - 1), seg->p[0].second};
+    /*if (seg_.p[0][1] > 0)
+    return seg->p[0][0], seg_.p[0][1] - 1
+    if (seg->p[len(seg_.p) - 1][0] < dim - 1)
+    return seg_.p[len(seg_.p) - 1][0] + 1, seg_.p[len(seg_.p) - 1][1]
+    if (seg_.p[len(seg_.p) - 1][1] < dim - 1)
+    return seg_.p[len(seg_.p) - 1][0], seg_.p[len(seg_.p) - 1][1] + 1*/
+    return nullptr;
 }
 
 void Segmentation::Reset() {
