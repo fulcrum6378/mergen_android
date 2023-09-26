@@ -9,9 +9,9 @@
 
 struct Segment {
     // starting from 1
-    int32_t id;
+    uint32_t id;
     // pixel coordinates
-    std::vector<std::pair<int16_t, int16_t>> p;
+    std::vector<uint32_t> p;
     // average colour
     uint8_t m[3];
 };
@@ -35,18 +35,18 @@ struct SegmentSorter {
 class Segmentation {
 private:
     // configurations
-    const int16_t h = 1088, w = 1088;  // width, height
+    const uint16_t h = 1088, w = 1088;  // width, height
     // minimum allowed number of pixels for a segment to contain
-    const int32_t min_seg = 30;
+    const uint32_t min_seg = 30;
 
-    uint8_t arr[1088][1088][3];
-    int32_t status[1088][1088];
+    uint32_t arr[1088][1088];
+    uint32_t status[1088][1088];
     std::vector<Segment> segments;
-    std::vector<int16_t *> stack;
+    std::vector<uint16_t *> stack;
 
-    bool CompareColours(uint8_t a[3], uint8_t b[3]);
+    bool CompareColours(uint32_t a, uint32_t b);
 
-    int16_t** FindASegmentToDissolveIn(Segment *seg);
+    uint32_t FindASegmentToDissolveIn(Segment *seg);
 
     void Reset();
 
