@@ -43,6 +43,7 @@ void Segmentation::Process(AImage *image) {
             //test.put(pY[x]); test.put(pU[uv_offset]); test.put(pV[uv_offset]);
         }
     }
+    AImage_delete(image); // test.close();
     auto delta1 = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now() - t0).count();
 
@@ -114,18 +115,22 @@ void Segmentation::Process(AImage *image) {
     if (min_seg > 1) {
         uint32_t absorber_i, size_bef = segments.size();
         Segment *absorber; // not putting a `*` COST 20 SECONDS!
-        auto beg = segments.begin();
+        std::list<int32_t> removal;
         for (int32_t seg = size_bef - 1; seg > -1; seg--)
             if (segments[seg].p.size() < min_seg) {
                 absorber_i = FindASegmentToDissolveIn(&segments[seg]);
                 if (absorber_i == 0xFFFFFFFF) continue;
                 absorber = &segments[status[(absorber_i >> 16) & 0xFF][absorber_i & 0xFF] - 1];
-                for (uint32_t p: segments[seg].p) {
-                    absorber->p.push_back(p);
+                for (uint32_t &p: segments[seg].p) {
+                    absorber->p.push_back(p); // merge()
                     status[(p >> 16) & 0xFF][p & 0xFF] = absorber->id;
                 }
-                segments.erase(beg + seg);
             }
+        for (int32_t &rem: removal) {
+            // https://stackoverflow.com/questions/3487717/erasing-multiple-objects-from-a-stdvector
+            segments[rem] = segments.back();
+            segments.pop_back();
+        }
         LOGI("Total segments: %zu / %zu", segments.size(), size_bef);
     } else
         LOGI("Total segments: %zu", segments.size());
@@ -134,15 +139,17 @@ void Segmentation::Process(AImage *image) {
 
     // 4. average colours of each segment
     t0 = std::chrono::system_clock::now();
-    for (Segment seg: segments) {
-        uint64_t aa = 0, bb = 0, cc = 0;
-        for (uint32_t p: seg.p) {
-            uint32_t col = arr[(p >> 16) & 0xFF][p & 0xFF];
+    uint32_t col, l_;
+    uint64_t aa, bb, cc;
+    for (Segment &seg: segments) {
+        aa = 0, bb = 0, cc = 0;
+        for (uint32_t &p: seg.p) {
+            col = arr[(p >> 16) & 0xFF][p & 0xFF];
             aa += (col >> 16) & 0xFF;
             bb += (col >> 8) & 0xFF;
             cc += col & 0xFF;
         }
-        uint32_t l_ = seg.p.size();
+        l_ = seg.p.size();
         seg.m = new uint8_t[3]{static_cast<uint8_t>(aa / l_),
                                static_cast<uint8_t>(bb / l_),
                                static_cast<uint8_t>(cc / l_)};
@@ -164,7 +171,6 @@ void Segmentation::Process(AImage *image) {
          delta1 + delta2 + delta3 + delta4 + delta5);
     LOGI("----------------------------------");
 
-    AImage_delete(image); // test.close();
     Reset();
     locked = false;
 }
@@ -196,9 +202,7 @@ uint32_t Segmentation::FindASegmentToDissolveIn(Segment *seg) {
 }
 
 void Segmentation::Reset() {
-    // https://stackoverflow.com/questions/23039134/how-to-use-memset-function-in-two-dimensional-
-    // array-for-initialization-of-member
-    memset(arr, 0, sizeof(arr)); // these might not work correctly
+    // zeroing `arr` is not necessary.
     memset(status, 0, sizeof(status));
     segments.clear();
 }
