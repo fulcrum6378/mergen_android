@@ -64,7 +64,7 @@ void Segmentation::Process(AImage *image) {
         Segment seg{static_cast<uint32_t>(segments.size() + 1)};
         stack.push_back(new uint16_t[3]{thisY, thisX, 0});
         uint32_t last;
-        while ((last = stack.size() - 1) != 0) {
+        while ((last = stack.size() - 1) != -1) {
             uint16_t y = stack[last][0], x = stack[last][1], dr = stack[last][2];
             if (dr == 0) {
                 seg.p.push_back((y << 16) | x);
@@ -113,18 +113,20 @@ void Segmentation::Process(AImage *image) {
     if (min_seg > 1) {
         t0 = std::chrono::system_clock::now();
         uint32_t absorber_i;
-        Segment absorber;
+        Segment *absorber; // not putting a `*` COST 20 SECONDS!
+        auto beg = segments.begin();
         for (int32_t seg = segments.size() - 1; seg > -1; seg--)
             if (segments[seg].p.size() < min_seg) {
-                //LOGI("%zu", seg);
-                /*absorber_i = FindASegmentToDissolveIn(&segments[seg]);
+                absorber_i = FindASegmentToDissolveIn(&segments[seg]);
                 if (absorber_i == 0xFFFFFFFF) continue;
-                absorber = segments[status[(absorber_i >> 16) & 0xFF][absorber_i & 0xFF] - 1];
+                absorber = &segments[status[(absorber_i >> 16) & 0xFF][absorber_i & 0xFF] - 1];
+                /*absorber->p.reserve(absorber->p.size() +
+                                    distance(segments[seg].p.begin(), segments[seg].p.end()));*/
                 for (uint32_t p: segments[seg].p) {
-                    absorber.p.push_back(p);
-                    status[(p >> 16) & 0xFF][p & 0xFF] = absorber.id;
-                }*/
-                //segments.erase(segments.begin() + seg);
+                    absorber->p.push_back(p);
+                    status[(p >> 16) & 0xFF][p & 0xFF] = absorber->id;
+                }
+                segments.erase(beg + seg);
             }
 
         t1 = std::chrono::system_clock::now();
@@ -133,13 +135,27 @@ void Segmentation::Process(AImage *image) {
         LOGI("Total segments: %zu", segments.size());
     }
 
-    std::sort(segments.begin(), segments.end(), SegmentSorter());
+    // average colours of each segment
+    t0 = std::chrono::system_clock::now();
+    for (Segment seg: segments) {
+        uint64_t aa = 0, bb = 0, cc = 0;
+        for (uint32_t p: seg.p) {
+            uint32_t col = arr[(p >> 16) & 0xFF][p & 0xFF];
+            aa += (col >> 16) & 0xFF;
+            bb += (col >> 8) & 0xFF;
+            cc += col & 0xFF;
+        }
+        uint32_t l_ = seg.p.size();
+        seg.m = new uint8_t[3]{static_cast<uint8_t>(aa / l_),
+                               static_cast<uint8_t>(bb / l_),
+                               static_cast<uint8_t>(cc / l_)};
+    }
+    t1 = std::chrono::system_clock::now();
+    LOGI("Average colours time: %lld",
+         std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count());
 
-    LOGI("#0 : %zu", segments[0].p.size());
-    LOGI("#1 : %zu", segments[1].p.size());
-    LOGI("#2 : %zu", segments[2].p.size());
-    int last = segments.size() - 1;
-    LOGI("#%d : %zu", last, segments[last].p.size());
+    // std::sort(segments.begin(), segments.end(), SegmentSorter());
+
     LOGI("----------------------");
 
     AImage_delete(image); // test.close();
@@ -155,6 +171,7 @@ bool Segmentation::CompareColours(uint32_t a, uint32_t b) {
 }
 
 uint32_t Segmentation::FindASegmentToDissolveIn(Segment *seg) {
+    if (seg->p.size() == 0) LOGI("FUCK");
     uint16_t a = (seg->p[0] >> 16) & 0xFF, b = seg->p[0] & 0xFF, last;
     if (a > 0)
         return (static_cast<uint16_t>(a - 1) << 16) | b;
