@@ -4,20 +4,20 @@
 #include "segmentation.h"
 
 Segmentation::Segmentation() {
-    /*uint8_t a = 100, b = 150, c = 200, d = 250;
-    uint32_t z = (a << 24) | (b << 16) | (c << 8) | d;
-    LOGI("z: %d", z);
-    LOGI("%d, %d, %d, %d", (z >> 24) & 0xFF, (z >> 16) & 0xFF, (z >> 8) & 0xFF, z & 0xFF);*/
 }
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma ide diagnostic ignored "ConstantConditionsOC"
 
 void Segmentation::Process(AImage *image) {
     locked = true;
     /*std::ofstream test; // #include <fstream> #include <ios>
     test.open("/data/data/ir.mahdiparastesh.mergen/cache/test.yuv",
               std::ios::out | std::ios::binary);*/
-    auto t0 = std::chrono::system_clock::now();
 
-    // bring separate YUV data into the multidimensional array of pixels `arr`
+    // 1. loading; bring separate YUV data into the multidimensional array of pixels `arr`
+    auto t0 = std::chrono::system_clock::now();
     AImageCropRect srcRect;
     AImage_getCropRect(image, &srcRect);
     int32_t yStride, uvStride;
@@ -43,8 +43,11 @@ void Segmentation::Process(AImage *image) {
             //test.put(pY[x]); test.put(pU[uv_offset]); test.put(pV[uv_offset]);
         }
     }
+    auto delta1 = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now() - t0).count();
 
-    // segmentation begins
+    // 2. segmentation
+    t0 = std::chrono::system_clock::now();
     uint16_t thisY = 0, thisX = 0;
     bool foundSthToAnalyse = true;
     while (foundSthToAnalyse) {
@@ -103,39 +106,33 @@ void Segmentation::Process(AImage *image) {
         }
         segments.push_back(seg);
     }
+    auto delta2 = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now() - t0).count();
 
-    auto t1 = std::chrono::system_clock::now();
-    LOGI("Segmentation time: %lld",
-         std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count());
-    LOGI("Total segments: %zu", segments.size());
-
-    // dissolution
+    // 3. dissolution
+    t0 = std::chrono::system_clock::now();
     if (min_seg > 1) {
-        t0 = std::chrono::system_clock::now();
-        uint32_t absorber_i;
+        uint32_t absorber_i, size_bef = segments.size();
         Segment *absorber; // not putting a `*` COST 20 SECONDS!
         auto beg = segments.begin();
-        for (int32_t seg = segments.size() - 1; seg > -1; seg--)
+        for (int32_t seg = size_bef - 1; seg > -1; seg--)
             if (segments[seg].p.size() < min_seg) {
                 absorber_i = FindASegmentToDissolveIn(&segments[seg]);
                 if (absorber_i == 0xFFFFFFFF) continue;
                 absorber = &segments[status[(absorber_i >> 16) & 0xFF][absorber_i & 0xFF] - 1];
-                /*absorber->p.reserve(absorber->p.size() +
-                                    distance(segments[seg].p.begin(), segments[seg].p.end()));*/
                 for (uint32_t p: segments[seg].p) {
                     absorber->p.push_back(p);
                     status[(p >> 16) & 0xFF][p & 0xFF] = absorber->id;
                 }
                 segments.erase(beg + seg);
             }
-
-        t1 = std::chrono::system_clock::now();
-        LOGI("Dissolution time: %lld",
-             std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count());
+        LOGI("Total segments: %zu / %zu", segments.size(), size_bef);
+    } else
         LOGI("Total segments: %zu", segments.size());
-    }
+    auto delta3 = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now() - t0).count();
 
-    // average colours of each segment
+    // 4. average colours of each segment
     t0 = std::chrono::system_clock::now();
     for (Segment seg: segments) {
         uint64_t aa = 0, bb = 0, cc = 0;
@@ -150,18 +147,29 @@ void Segmentation::Process(AImage *image) {
                                static_cast<uint8_t>(bb / l_),
                                static_cast<uint8_t>(cc / l_)};
     }
-    t1 = std::chrono::system_clock::now();
-    LOGI("Average colours time: %lld",
-         std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count());
+    auto delta4 = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now() - t0).count();
 
     // std::sort(segments.begin(), segments.end(), SegmentSorter());
 
-    LOGI("----------------------");
+    // 5. trace border pixels
+    t0 = std::chrono::system_clock::now();
+    // TODO
+    auto delta5 = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now() - t0).count();
+
+    // summary: loading + segmentation + dissolution + average colours + tracing
+    LOGI("Delta times: %lld + %lld + %lld + %lld + %lld => %lld",
+         delta1, delta2, delta3, delta4, delta5,
+         delta1 + delta2 + delta3 + delta4 + delta5);
+    LOGI("----------------------------------");
 
     AImage_delete(image); // test.close();
     Reset();
     locked = false;
 }
+
+#pragma clang diagnostic pop
 
 bool Segmentation::CompareColours(uint32_t a, uint32_t b) {
     return abs(static_cast<int16_t>(((a >> 16) & 0xFF) - ((b >> 16) & 0xFF))) <= 4 &&

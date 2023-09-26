@@ -13,7 +13,7 @@ struct Segment {
     // pixel coordinates
     std::vector<uint32_t> p;
     // average colour
-    uint8_t* m;
+    uint8_t *m;
 };
 
 struct SegmentSorter {
