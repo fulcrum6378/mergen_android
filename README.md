@@ -31,7 +31,7 @@ Mergen is intended to have 2 aspects:
 
 > “To live alone one must be either a beast or a god, says Aristotle.
 > Leaving out the third case: one must be both - a philosopher.”
-> ― Nietzsche Friedrich Wilhelm
+> ― Friedrich Wilhelm Nietzsche
 
 #### Dangers & Solutions
 

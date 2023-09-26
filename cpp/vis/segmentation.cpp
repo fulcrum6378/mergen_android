@@ -180,13 +180,14 @@ bool Segmentation::CompareColours(uint32_t a, uint32_t b) {
 
 uint32_t Segmentation::FindASegmentToDissolveIn(Segment *seg) {
     if (seg->p.size() == 0) LOGI("FUCK");
-    uint16_t a = (seg->p[0] >> 16) & 0xFF, b = seg->p[0] & 0xFF, last;
+    uint32_t cor = seg->p.front();
+    uint16_t a = (cor >> 16) & 0xFF, b = cor & 0xFF;
     if (a > 0)
         return (static_cast<uint16_t>(a - 1) << 16) | b;
     if (b > 0)
         return (a << 16) | static_cast<uint16_t>(b - 1);
-    last = seg->p.size();
-    a = (seg->p[last] >> 16) & 0xFF, b = seg->p[last] & 0xFF;
+    cor = seg->p.back();
+    a = (cor >> 16) & 0xFF, b = cor & 0xFF;
     if (a < h - 1)
         return (static_cast<uint16_t>(a + 1) << 16) | b;
     if (b < w - 1)

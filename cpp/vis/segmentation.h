@@ -1,6 +1,7 @@
 #ifndef VIS_SEGMENTATION_H
 #define VIS_SEGMENTATION_H
 
+#include <list>
 #include <media/NdkImage.h>
 #include <utility>
 #include <vector>
@@ -11,7 +12,7 @@ struct Segment {
     // starting from 1
     uint32_t id;
     // pixel coordinates
-    std::vector<uint32_t> p;
+    std::list<uint32_t> p;
     // average colour
     uint8_t *m;
 };
