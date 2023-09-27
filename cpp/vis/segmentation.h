@@ -42,7 +42,7 @@ private:
     // configurations
     const uint16_t h = 1088, w = 1088;  // width, height
     // minimum allowed number of pixels for a segment to contain
-    const uint32_t min_seg = 1;
+    const uint32_t min_seg = 30;
 
     // multidimensional array of pixels
     uint32_t arr[1088][1088];
@@ -53,17 +53,17 @@ private:
     // simulates recursive programming (vector is always better for it than list!)
     std::vector<uint16_t *> stack;
     // maps IDs of Segments to themselves
-    std::unordered_map<uint32_t, Segment*> s_index;
+    std::unordered_map<uint32_t, Segment *> s_index;
 
     bool CompareColours(uint32_t a, uint32_t b);
 
     uint32_t FindASegmentToDissolveIn(Segment *seg);
 
     // Checks if this pixel is in border.
-    void CheckIfBorder(Segment* seg, uint16_t y, uint16_t x);
+    void CheckIfBorder(Segment *seg, uint16_t y, uint16_t x);
 
     // Checks if this is a border pixel and not detected before.
-    bool IsNextB(Segment* org_s, uint16_t y, uint16_t x);
+    bool IsNextB(Segment *org_s, uint16_t y, uint16_t x);
 
     void Reset();
 

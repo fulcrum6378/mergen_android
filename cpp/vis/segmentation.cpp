@@ -120,10 +120,10 @@ void Segmentation::Process(AImage *image) {
             if (segments[seg].p.size() < min_seg) {
                 absorber_i = FindASegmentToDissolveIn(&segments[seg]);
                 if (absorber_i == 0xFFFFFFFF) continue;
-                absorber = &segments[status[(absorber_i >> 16) & 0xFF][absorber_i & 0xFF] - 1];
+                absorber = &segments[status[(absorber_i >> 16) & 0xFFFF][absorber_i & 0xFFFF] - 1];
                 for (uint32_t &p: segments[seg].p) {
                     absorber->p.push_back(p); // merge()
-                    status[(p >> 16) & 0xFF][p & 0xFF] = absorber->id;
+                    status[(p >> 16) & 0xFFFF][p & 0xFFFF] = absorber->id;
                 }
                 std::swap(segments[seg], segments[size_bef - removal]);
                 removal++;
@@ -158,8 +158,8 @@ void Segmentation::Process(AImage *image) {
         // detect boundaries (min_y, min_x, max_y, max_x)
         isFirst = true;
         for (uint32_t &p: seg.p) {
-            y = (p >> 16) & 0xFF;
-            x = p & 0xFF;
+            y = (p >> 16) & 0xFFFF;
+            x = p & 0xFFFF;
             if (isFirst) {
                 seg.min_y = y;
                 seg.min_x = x;
@@ -182,16 +182,14 @@ void Segmentation::Process(AImage *image) {
     auto delta4 = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now() - t0).count();
 
-    // std::sort(segments.begin(), segments.end(), SegmentSorter());
-
     // 5. trace border pixels
     t0 = std::chrono::system_clock::now();
     uint16_t ny, nx, avoidDr;
     for (Segment &seg: segments) {
         // find the first encountering border pixel as a checkpoint...
         for (uint32_t &p: seg.p) {
-            y = (p >> 16) & 0xFF;
-            x = p & 0xFF;
+            y = (p >> 16) & 0xFFFF;
+            x = p & 0xFFFF;
             if (((status[y][x] >> 30) & 1) == 0) CheckIfBorder(&seg, y, x);
             if ((status[y][x] >> 31) == 1) break;
         }
@@ -251,6 +249,8 @@ void Segmentation::Process(AImage *image) {
     auto delta5 = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now() - t0).count();
 
+    // std::sort(segments.begin(), segments.end(), SegmentSorter());
+
     // summary: loading + segmentation + dissolution + average colours + tracing
     LOGI("Delta times: %lld + %lld + %lld + %lld + %lld => %lld",
          delta1, delta2, delta3, delta4, delta5,
@@ -272,13 +272,13 @@ bool Segmentation::CompareColours(uint32_t a, uint32_t b) {
 
 uint32_t Segmentation::FindASegmentToDissolveIn(Segment *seg) {
     uint32_t cor = seg->p.front();
-    uint16_t a = (cor >> 16) & 0xFF, b = cor & 0xFF;
+    uint16_t a = (cor >> 16) & 0xFFFF, b = cor & 0xFFFF;
     if (a > 0)
         return (static_cast<uint16_t>(a - 1) << 16) | b;
     if (b > 0)
         return (a << 16) | static_cast<uint16_t>(b - 1);
     cor = seg->p.back();
-    a = (cor >> 16) & 0xFF, b = cor & 0xFF;
+    a = (cor >> 16) & 0xFFFF, b = cor & 0xFFFF;
     if (a < h - 1)
         return (static_cast<uint16_t>(a + 1) << 16) | b;
     if (b < w - 1)
@@ -287,11 +287,6 @@ uint32_t Segmentation::FindASegmentToDissolveIn(Segment *seg) {
 }
 
 void Segmentation::CheckIfBorder(Segment *seg, uint16_t y, uint16_t x) {
-    if (((status[y][x] >> 30) & 1) == 1) return; // not such a big deal of difference though TODO test it
-    if (seg == nullptr) {
-        LOGI("CheckIfBorder %u x %u segment is NULL!", y, x);
-        return;
-    }
     status[y][x] |= (1 << 30); // resembling a non-null value
     if ((x < (w - 1) && seg->id != ((status[y][x + 1] << 2) >> 2)) ||  // right
         (y < (h - 1) && seg->id != ((status[y + 1][x] << 2) >> 2)) ||  // bottom
@@ -309,9 +304,7 @@ bool Segmentation::IsNextB(Segment *org_s, uint16_t y, uint16_t x) {
     uint32_t s_ = (status[y][x] << 2) >> 2;
     if (s_ == org_s->id) return false;
     if (((status[y][x] >> 30) & 1) == 0) {
-        if (s_index[s_] == nullptr)
-            LOGI("IsNextB %u x %u segment %u", y, x, s_);
-        CheckIfBorder(s_index[s_], y, x);
+        CheckIfBorder(s_index[s_], y, x); // no repeated work was detected!
         return (status[y][x] >> 31) == 1;
     }
     return false;
