@@ -287,13 +287,12 @@ uint32_t Segmentation::FindASegmentToDissolveIn(Segment *seg) {
 }
 
 void Segmentation::CheckIfBorder(Segment *seg, uint16_t y, uint16_t x) {
-    if (((status[y][x] >> 30) & 1) == 1) return; // FIXME repeated work!
+    if (((status[y][x] >> 30) & 1) == 1) return; // not such a big deal of difference though TODO test it
+    if (seg == nullptr) {
+        LOGI("CheckIfBorder %u x %u segment is NULL!", y, x);
+        return;
+    }
     status[y][x] |= (1 << 30); // resembling a non-null value
-    //LOGI("CheckIfBorder %u x %u - %zu", y, x, sizeof(status));
-    /*if (x < (w - 1)) LOGI("CheckIfBorder %u x %u - %zu", y, x + 1, ((status[y][x + 1] << 2) >> 2));
-    if (y < (h - 1)) LOGI("CheckIfBorder %u x %u - %zu", y + 1, x, ((status[y + 1][x] << 2) >> 2));
-    if (x > 0) LOGI("CheckIfBorder %u x %u - %zu", y, x - 1, ((status[y][x - 1] << 2) >> 2));
-    if (y > 0) LOGI("CheckIfBorder %u x %u - %zu", y - 1, x, ((status[y - 1][x] << 2) >> 2));*/
     if ((x < (w - 1) && seg->id != ((status[y][x + 1] << 2) >> 2)) ||  // right
         (y < (h - 1) && seg->id != ((status[y + 1][x] << 2) >> 2)) ||  // bottom
         (x > 0 && seg->id != ((status[y][x - 1] << 2) >> 2)) ||        // left
@@ -310,6 +309,8 @@ bool Segmentation::IsNextB(Segment *org_s, uint16_t y, uint16_t x) {
     uint32_t s_ = (status[y][x] << 2) >> 2;
     if (s_ == org_s->id) return false;
     if (((status[y][x] >> 30) & 1) == 0) {
+        if (s_index[s_] == nullptr)
+            LOGI("IsNextB %u x %u segment %u", y, x, s_);
         CheckIfBorder(s_index[s_], y, x);
         return (status[y][x] >> 31) == 1;
     }

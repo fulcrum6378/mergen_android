@@ -42,7 +42,7 @@ private:
     // configurations
     const uint16_t h = 1088, w = 1088;  // width, height
     // minimum allowed number of pixels for a segment to contain
-    const uint32_t min_seg = 30;
+    const uint32_t min_seg = 1;
 
     // multidimensional array of pixels
     uint32_t arr[1088][1088];
