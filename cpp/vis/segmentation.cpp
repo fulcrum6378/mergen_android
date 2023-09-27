@@ -4,22 +4,6 @@
 #include "segmentation.h"
 
 Segmentation::Segmentation() {
-    /*std::vector<uint8_t> fuck;
-    fuck.push_back(1);
-    fuck.push_back(2);
-    fuck.push_back(3); // -
-    fuck.push_back(4);
-    fuck.push_back(5); // -
-    fuck.push_back(6); // -
-    uint32_t i = 1, l_ = fuck.size();
-    std::swap(fuck[5], fuck[l_ - i]);
-    i++;
-    std::swap(fuck[4], fuck[l_ - i]);
-    i++;
-    std::swap(fuck[2], fuck[l_ - i]);
-    i++;
-    fuck.resize(l_ - (i - 1));
-    LOGI("%u %u %u ; %u", fuck[0], fuck[1], fuck[2], fuck.size()); // 1 2 4 ; 3*/
 }
 
 #pragma clang diagnostic push
@@ -131,14 +115,12 @@ void Segmentation::Process(AImage *image) {
     t0 = std::chrono::system_clock::now();
     if (min_seg > 1) {
         uint32_t absorber_i, size_bef = segments.size(), removal = 1;
-        Segment *absorber; // not putting a `*` COST 20 SECONDS!
-        //std::list<int32_t> removal;
+        Segment *absorber;
         for (int32_t seg = size_bef - 1; seg > -1; seg--)
             if (segments[seg].p.size() < min_seg) {
                 absorber_i = FindASegmentToDissolveIn(&segments[seg]);
                 if (absorber_i == 0xFFFFFFFF) continue;
                 absorber = &segments[status[(absorber_i >> 16) & 0xFF][absorber_i & 0xFF] - 1];
-                //removal.push_back(segments[seg].id);
                 for (uint32_t &p: segments[seg].p) {
                     absorber->p.push_back(p); // merge()
                     status[(p >> 16) & 0xFF][p & 0xFF] = absorber->id;
@@ -147,23 +129,6 @@ void Segmentation::Process(AImage *image) {
                 removal++;
             }
         segments.resize(size_bef - (removal - 1));
-        //removal.reverse();
-        /*for (int32_t rem: removal) {
-            // https://stackoverflow.com/questions/3487717/erasing-multiple-objects-from-a-stdvector
-            segments[rem] = segments.back();
-            segments
-        }*/
-        /*segments.resize(std::distance(
-                segments.begin(),
-                std::stable_partition(
-                        segments.begin(), segments.end(),
-                        [&removal, &segments](const Segment &item) {
-                            return !std::binary_search(
-                                    removal.begin(),
-                                    removal.end(),
-                                    static_cast<int>(static_cast<const Segment *>(&item)->id -
-                                                     segments[0].id));
-                        })));*/
         LOGI("Total segments: %zu / %zu", segments.size(), size_bef);
     } else
         LOGI("Total segments: %zu", segments.size());
@@ -221,7 +186,7 @@ void Segmentation::Process(AImage *image) {
 
     // 5. trace border pixels
     t0 = std::chrono::system_clock::now();
-    uint16_t avoidDr;
+    uint16_t ny, nx, avoidDr;
     for (Segment &seg: segments) {
         // find the first encountering border pixel as a checkpoint...
         for (uint32_t &p: seg.p) {
@@ -232,10 +197,10 @@ void Segmentation::Process(AImage *image) {
         }
 
         // then start collecting all border pixels using that checkpoint
-        /*stack.push_back(new uint16_t[3]{y, x, 0});
+        stack.push_back(new uint16_t[3]{y, x, 0});
         while (stack.size() != 0) {
             y = stack[0][0], x = stack[0][1], avoidDr = stack[0][2];
-            uint16_t ny = y, nx = x;
+            ny = y, nx = x;
             if (avoidDr != 1 && y > 0) { // northern
                 ny = y - 1;
                 if (IsNextB(&seg, ny, nx))
@@ -281,7 +246,7 @@ void Segmentation::Process(AImage *image) {
                     stack.push_back(new uint16_t[3]{ny, nx, 8});
             }
             stack.pop_back();
-        }*/
+        }
     }
     auto delta5 = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now() - t0).count();
@@ -306,7 +271,6 @@ bool Segmentation::CompareColours(uint32_t a, uint32_t b) {
 }
 
 uint32_t Segmentation::FindASegmentToDissolveIn(Segment *seg) {
-    if (seg->p.size() == 0) LOGI("FUCK");
     uint32_t cor = seg->p.front();
     uint16_t a = (cor >> 16) & 0xFF, b = cor & 0xFF;
     if (a > 0)
@@ -323,11 +287,17 @@ uint32_t Segmentation::FindASegmentToDissolveIn(Segment *seg) {
 }
 
 void Segmentation::CheckIfBorder(Segment *seg, uint16_t y, uint16_t x) {
+    if (((status[y][x] >> 30) & 1) == 1) return; // FIXME repeated work!
     status[y][x] |= (1 << 30); // resembling a non-null value
-    if ((x == (w - 1) || seg->id != status[y][x + 1]) ||  // right
-         (y == (h - 1) || seg->id != status[y + 1][x]) ||  // bottom
-         (x == 0 || seg->id != status[y][x - 1]) ||  // left
-         (y == 0 || seg->id != status[y - 1][x])) {  // top
+    //LOGI("CheckIfBorder %u x %u - %zu", y, x, sizeof(status));
+    /*if (x < (w - 1)) LOGI("CheckIfBorder %u x %u - %zu", y, x + 1, ((status[y][x + 1] << 2) >> 2));
+    if (y < (h - 1)) LOGI("CheckIfBorder %u x %u - %zu", y + 1, x, ((status[y + 1][x] << 2) >> 2));
+    if (x > 0) LOGI("CheckIfBorder %u x %u - %zu", y, x - 1, ((status[y][x - 1] << 2) >> 2));
+    if (y > 0) LOGI("CheckIfBorder %u x %u - %zu", y - 1, x, ((status[y - 1][x] << 2) >> 2));*/
+    if ((x < (w - 1) && seg->id != ((status[y][x + 1] << 2) >> 2)) ||  // right
+        (y < (h - 1) && seg->id != ((status[y + 1][x] << 2) >> 2)) ||  // bottom
+        (x > 0 && seg->id != ((status[y][x - 1] << 2) >> 2)) ||        // left
+        (y > 0 && seg->id != ((status[y - 1][x] << 2) >> 2))) {        // top
         status[y][x] |= (1 << 31);
         seg->border.push_back(std::pair(
                 (100.0 / seg->w) * (seg->min_x - x), // fractional X
@@ -349,6 +319,7 @@ bool Segmentation::IsNextB(Segment *org_s, uint16_t y, uint16_t x) {
 void Segmentation::Reset() {
     // zeroing `arr` is not necessary.
     memset(status, 0, sizeof(status));
+    s_index.clear();
     segments.clear();
 }
 
