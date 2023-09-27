@@ -50,6 +50,7 @@ void Segmentation::Process(AImage *image) {
     // 2. segmentation
     t0 = std::chrono::system_clock::now();
     uint16_t thisY = 0, thisX = 0;
+    uint16_t **bs;
     bool foundSthToAnalyse = true;
     while (foundSthToAnalyse) {
         foundSthToAnalyse = false;
@@ -67,28 +68,28 @@ void Segmentation::Process(AImage *image) {
 
         Segment seg{static_cast<uint32_t>(segments.size() + 1)};
         stack.push_back(new uint16_t[3]{thisY, thisX, 0});
-        uint32_t last;
-        while ((last = stack.size() - 1) != -1) {
-            uint16_t y = stack[last][0], x = stack[last][1], dr = stack[last][2];
+        while (stack.size() != 0) {
+            bs = &stack.front();
+            uint16_t y = (*bs)[0], x = (*bs)[1], dr = (*bs)[2];
             if (dr == 0) {
                 seg.p.push_back((y << 16) | x);
                 status[y][x] = seg.id;
                 // left
-                stack[last][2]++;
+                (*bs)[2]++;
                 if (x > 0 && status[y][x - 1] == 0 && CompareColours(arr[y][x], arr[y][x - 1])) {
                     stack.push_back(new uint16_t[3]{y, static_cast<uint16_t>(x - 1), 0});
                     continue;
                 }
             }
             if (dr <= 1) { // top
-                stack[last][2]++;
+                (*bs)[2]++;
                 if (y > 0 && status[y - 1][x] == 0 && CompareColours(arr[y][x], arr[y - 1][x])) {
                     stack.push_back(new uint16_t[3]{static_cast<uint16_t>(y - 1), x, 0});
                     continue;
                 }
             }
             if (dr <= 2) { // right
-                stack[last][2]++;
+                (*bs)[2]++;
                 if (x < (w - 1) && status[y][x + 1] == 0 &&
                     CompareColours(arr[y][x], arr[y][x + 1])) {
                     stack.push_back(new uint16_t[3]{y, static_cast<uint16_t>(x + 1), 0});
@@ -96,7 +97,7 @@ void Segmentation::Process(AImage *image) {
                 }
             }
             if (dr <= 3) { // bottom
-                stack[last][2]++;
+                (*bs)[2]++;
                 if (y < (h - 1) && status[y + 1][x] == 0 &&
                     CompareColours(arr[y][x], arr[y + 1][x])) {
                     stack.push_back(new uint16_t[3]{static_cast<uint16_t>(y + 1), x, 0});
@@ -115,7 +116,7 @@ void Segmentation::Process(AImage *image) {
     if (min_seg > 1) {
         uint32_t absorber_i, size_bef = segments.size();
         Segment *absorber; // not putting a `*` COST 20 SECONDS!
-        std::list <int32_t> removal;
+        std::list<int32_t> removal;
         for (int32_t seg = size_bef - 1; seg > -1; seg--)
             if (segments[seg].p.size() < min_seg) {
                 absorber_i = FindASegmentToDissolveIn(&segments[seg]);
@@ -187,6 +188,7 @@ void Segmentation::Process(AImage *image) {
 
     // 5. trace border pixels
     t0 = std::chrono::system_clock::now();
+    uint16_t avoidDr;
     for (Segment &seg: segments) {
         // find the first encountering border pixel as a checkpoint...
         for (uint32_t &p: seg.p) {
@@ -195,8 +197,59 @@ void Segmentation::Process(AImage *image) {
             if (((status[y][x] >> 30) & 1) == 0) CheckIfBorder(&seg, y, x);
             if ((status[y][x] >> 31) == 1) break;
         }
-        // then explore its neighbours recursively.
-        CheckNeighbours(&seg, y, x, -1);
+
+        // then start collecting all border pixels using that checkpoint
+        stack.push_back(new uint16_t[3]{y, x, 0});
+        while (stack.size() != 0) {
+            bs = &stack.back();
+            y = (*bs)[0], x = (*bs)[1], avoidDr = (*bs)[2];
+            uint16_t ny = y, nx = x;
+            if (avoidDr != 1 && y > 0) { // northern
+                ny = y - 1;
+                if (IsNextB(&seg, ny, nx))
+                    stack.push_back(new uint16_t[3]{ny, nx, 1});
+            }
+            if (avoidDr != 2 && y > 0 && x < (w - 1)) { // north-eastern
+                ny = y - 1;
+                nx = x + 1;
+                if (IsNextB(&seg, ny, nx))
+                    stack.push_back(new uint16_t[3]{ny, nx, 2});
+            }
+            if (avoidDr != 3 && x < (w - 1)) { // eastern
+                nx = x + 1;
+                if (IsNextB(&seg, ny, nx))
+                    stack.push_back(new uint16_t[3]{ny, nx, 3});
+            }
+            if (avoidDr != 4 && y < (h - 1) && x < (w - 1)) { // south-eastern
+                ny = y + 1;
+                nx = x + 1;
+                if (IsNextB(&seg, ny, nx))
+                    stack.push_back(new uint16_t[3]{ny, nx, 4});
+            }
+            if (avoidDr != 5 && y < (h - 1)) { // southern
+                ny = y + 1;
+                if (IsNextB(&seg, ny, nx))
+                    stack.push_back(new uint16_t[3]{ny, nx, 5});
+            }
+            if (avoidDr != 6 && y < (h - 1) && x > 0) { // south-western
+                ny = y + 1;
+                nx = x - 1;
+                if (IsNextB(&seg, ny, nx))
+                    stack.push_back(new uint16_t[3]{ny, nx, 6});
+            }
+            if (avoidDr != 7 && x > 0) { // western
+                nx = x - 1;
+                if (IsNextB(&seg, ny, nx))
+                    stack.push_back(new uint16_t[3]{ny, nx, 7});
+            }
+            if (avoidDr != 8 && y > 0 && x > 0) { // north-western
+                ny = y - 1;
+                nx = x - 1;
+                if (IsNextB(&seg, ny, nx))
+                    stack.push_back(new uint16_t[3]{ny, nx, 8});
+            }
+            stack.pop_back();
+        }
     }
     auto delta5 = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now() - t0).count();
@@ -248,46 +301,6 @@ void Segmentation::CheckIfBorder(Segment *seg, uint16_t y, uint16_t x) {
                 (100.0 / seg->w) * (seg->min_x - x), // fractional X
                 (100.0 / seg->h) * (seg->min_y - y)  // fractional Y
         ));
-    }
-}
-
-void Segmentation::CheckNeighbours(Segment *seg, uint16_t y, uint16_t x, int8_t avoidDr) {
-    uint16_t ny = y, nx = x;
-    if (avoidDr != 0 && y > 0) { // northern
-        ny -= 1;
-        if (IsNextB(seg, ny, nx)) CheckNeighbours(seg, ny, nx, 0);
-    }
-    if (avoidDr != 1 && y > 0 && x < (w - 1)) { // north-eastern
-        ny -= 1;
-        nx += 1;
-        if (IsNextB(seg, ny, nx)) CheckNeighbours(seg, ny, nx, 1);
-    }
-    if (avoidDr != 2 && x < (w - 1)) { // eastern
-        nx += 1;
-        if (IsNextB(seg, ny, nx)) CheckNeighbours(seg, ny, nx, 2);
-    }
-    if (avoidDr != 3 && y < (h - 1) && x < (w - 1)) { // south-eastern
-        ny += 1;
-        nx += 1;
-        if (IsNextB(seg, ny, nx)) CheckNeighbours(seg, ny, nx, 3);
-    }
-    if (avoidDr != 4 && y < (h - 1)) { // southern
-        ny += 1;
-        if (IsNextB(seg, ny, nx)) CheckNeighbours(seg, ny, nx, 4);
-    }
-    if (avoidDr != 5 && y < (h - 1) && x > 0) { // south-western
-        ny += 1;
-        nx -= 1;
-        if (IsNextB(seg, ny, nx)) CheckNeighbours(seg, ny, nx, 5);
-    }
-    if (avoidDr != 6 && x > 0) { // western
-        nx -= 1;
-        if (IsNextB(seg, ny, nx)) CheckNeighbours(seg, ny, nx, 6);
-    }
-    if (avoidDr != 7 && y > 0 && x > 0) { // north-western
-        ny -= 1;
-        nx -= 1;
-        if (IsNextB(seg, ny, nx)) CheckNeighbours(seg, ny, nx, 7);
     }
 }
 

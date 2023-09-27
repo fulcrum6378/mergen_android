@@ -51,7 +51,7 @@ private:
     // vector of all Segments
     std::vector<Segment> segments;
     // simulates recursive programming
-    std::vector<uint16_t *> stack;
+    std::list<uint16_t *> stack;
     // maps IDs of Segments to themselves
     std::unordered_map<uint32_t, Segment*> s_index;
 
@@ -61,9 +61,6 @@ private:
 
     // Checks if this pixel is in border.
     void CheckIfBorder(Segment* seg, uint16_t y, uint16_t x);
-
-    // Recursively checks if neighbours are border pixels. Directions range are 0..7.
-    void CheckNeighbours(Segment* seg, uint16_t y, uint16_t x, int8_t avoidDr);
 
     // Checks if this is a border pixel and not detected before.
     bool IsNextB(Segment* org_s, uint16_t y, uint16_t x);
