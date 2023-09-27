@@ -52,6 +52,8 @@ private:
     std::vector<Segment> segments;
     // simulates recursive programming
     std::vector<uint16_t *> stack;
+    // maps IDs of Segments to themselves
+    std::unordered_map<uint32_t, Segment*> s_index;
 
     bool CompareColours(uint32_t a, uint32_t b);
 

@@ -4,11 +4,6 @@
 #include "segmentation.h"
 
 Segmentation::Segmentation() {
-    /*uint32_t max = 1183744, one = 1, two = 0, z;
-    one <<= 31;
-    two << 30;
-    z = max | one | two;
-    LOGI("%u %u %u %u", z, (z << 1) >> 1, z >> 31, (z >> 30) & 1); // 2148667392 1183744 1 0*/
 }
 
 #pragma clang diagnostic push
@@ -120,7 +115,7 @@ void Segmentation::Process(AImage *image) {
     if (min_seg > 1) {
         uint32_t absorber_i, size_bef = segments.size();
         Segment *absorber; // not putting a `*` COST 20 SECONDS!
-        std::list<int32_t> removal;
+        std::list <int32_t> removal;
         for (int32_t seg = size_bef - 1; seg > -1; seg--)
             if (segments[seg].p.size() < min_seg) {
                 absorber_i = FindASegmentToDissolveIn(&segments[seg]);
@@ -142,11 +137,14 @@ void Segmentation::Process(AImage *image) {
     auto delta3 = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now() - t0).count();
 
-    // 4. average colours of each segment
+    // 4. average colours + detect boundaries
     t0 = std::chrono::system_clock::now();
     uint32_t col, l_;
     uint64_t aa, bb, cc;
+    bool isFirst;
+    uint16_t y, x;
     for (Segment &seg: segments) {
+        // average colours of each segment
         aa = 0, bb = 0, cc = 0;
         for (uint32_t &p: seg.p) {
             col = arr[(p >> 16) & 0xFF][p & 0xFF];
@@ -158,17 +156,7 @@ void Segmentation::Process(AImage *image) {
         seg.m = new uint8_t[3]{static_cast<uint8_t>(aa / l_),
                                static_cast<uint8_t>(bb / l_),
                                static_cast<uint8_t>(cc / l_)};
-    }
-    auto delta4 = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now() - t0).count();
 
-    // std::sort(segments.begin(), segments.end(), SegmentSorter());
-
-    // 5. trace border pixels
-    t0 = std::chrono::system_clock::now();
-    bool isFirst;
-    uint16_t y, x;
-    for (Segment &seg: segments) {
         // detect boundaries (min_y, min_x, max_y, max_x)
         isFirst = true;
         for (uint32_t &p: seg.p) {
@@ -188,22 +176,27 @@ void Segmentation::Process(AImage *image) {
             seg.w = (seg.max_x + 1) - seg.min_x;
             seg.h = (seg.max_y + 1) - seg.min_y;
         }
+
+        // index the Segments by their IDs
+        s_index[seg.id] = &seg;
     }
+    auto delta4 = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now() - t0).count();
+
+    // std::sort(segments.begin(), segments.end(), SegmentSorter());
+
+    // 5. trace border pixels
+    t0 = std::chrono::system_clock::now();
     for (Segment &seg: segments) {
-        // find the first encountering border pixel as a checkpoint
-        std::pair<uint16_t, uint16_t> border_checkpoint;
+        // find the first encountering border pixel as a checkpoint...
         for (uint32_t &p: seg.p) {
             y = (p >> 16) & 0xFF;
             x = p & 0xFF;
             if (((status[y][x] >> 30) & 1) == 0) CheckIfBorder(&seg, y, x);
-            if ((status[y][x] >> 31) == 1) {
-                border_checkpoint = std::pair(y, x);
-                break;
-            }
-
-            // now start collecting all border pixels using that checkpoint
-            CheckNeighbours(seg, border_checkpoint.first, border_checkpoint.second);
+            if ((status[y][x] >> 31) == 1) break;
         }
+        // then explore its neighbours recursively.
+        CheckNeighbours(&seg, y, x, -1);
     }
     auto delta5 = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now() - t0).count();
@@ -256,6 +249,56 @@ void Segmentation::CheckIfBorder(Segment *seg, uint16_t y, uint16_t x) {
                 (100.0 / seg->h) * (seg->min_y - y)  // fractional Y
         ));
     }
+}
+
+void Segmentation::CheckNeighbours(Segment *seg, uint16_t y, uint16_t x, int8_t avoidDr) {
+    uint16_t ny = y, nx = x;
+    if (avoidDr != 0 && y > 0) { // northern
+        ny -= 1;
+        if (IsNextB(seg, ny, nx)) CheckNeighbours(seg, ny, nx, 0);
+    }
+    if (avoidDr != 1 && y > 0 && x < (w - 1)) { // north-eastern
+        ny -= 1;
+        nx += 1;
+        if (IsNextB(seg, ny, nx)) CheckNeighbours(seg, ny, nx, 1);
+    }
+    if (avoidDr != 2 && x < (w - 1)) { // eastern
+        nx += 1;
+        if (IsNextB(seg, ny, nx)) CheckNeighbours(seg, ny, nx, 2);
+    }
+    if (avoidDr != 3 && y < (h - 1) && x < (w - 1)) { // south-eastern
+        ny += 1;
+        nx += 1;
+        if (IsNextB(seg, ny, nx)) CheckNeighbours(seg, ny, nx, 3);
+    }
+    if (avoidDr != 4 && y < (h - 1)) { // southern
+        ny += 1;
+        if (IsNextB(seg, ny, nx)) CheckNeighbours(seg, ny, nx, 4);
+    }
+    if (avoidDr != 5 && y < (h - 1) && x > 0) { // south-western
+        ny += 1;
+        nx -= 1;
+        if (IsNextB(seg, ny, nx)) CheckNeighbours(seg, ny, nx, 5);
+    }
+    if (avoidDr != 6 && x > 0) { // western
+        nx -= 1;
+        if (IsNextB(seg, ny, nx)) CheckNeighbours(seg, ny, nx, 6);
+    }
+    if (avoidDr != 7 && y > 0 && x > 0) { // north-western
+        ny -= 1;
+        nx -= 1;
+        if (IsNextB(seg, ny, nx)) CheckNeighbours(seg, ny, nx, 7);
+    }
+}
+
+bool Segmentation::IsNextB(Segment *org_s, uint16_t y, uint16_t x) {
+    uint32_t s_ = (status[y][x] << 2) >> 2;
+    if (s_ == org_s->id) return false;
+    if (((status[y][x] >> 30) & 1) == 0) {
+        CheckIfBorder(s_index[s_], y, x);
+        return (status[y][x] >> 31) == 1;
+    }
+    return false;
 }
 
 void Segmentation::Reset() {
