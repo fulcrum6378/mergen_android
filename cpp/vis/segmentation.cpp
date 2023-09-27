@@ -4,6 +4,11 @@
 #include "segmentation.h"
 
 Segmentation::Segmentation() {
+    /*uint32_t max = 1183744, one = 1, two = 0, z;
+    one <<= 31;
+    two << 30;
+    z = max | one | two;
+    LOGI("%u %u %u %u", z, (z << 1) >> 1, z >> 31, (z >> 30) & 1); // 2148667392 1183744 1 0*/
 }
 
 #pragma clang diagnostic push
@@ -161,7 +166,45 @@ void Segmentation::Process(AImage *image) {
 
     // 5. trace border pixels
     t0 = std::chrono::system_clock::now();
-    // TODO
+    bool isFirst;
+    uint16_t y, x;
+    for (Segment &seg: segments) {
+        // detect boundaries (min_y, min_x, max_y, max_x)
+        isFirst = true;
+        for (uint32_t &p: seg.p) {
+            y = (p >> 16) & 0xFF;
+            x = p & 0xFF;
+            if (isFirst) {
+                seg.min_y = y;
+                seg.min_x = x;
+                seg.max_y = y;
+                seg.max_x = x;
+            } else {
+                if (y < seg.min_y) seg.min_y = y;
+                if (x < seg.min_x) seg.min_x = x;
+                if (y > seg.max_y) seg.max_y = y;
+                if (x > seg.max_x) seg.max_x = x;
+            }
+            seg.w = (seg.max_x + 1) - seg.min_x;
+            seg.h = (seg.max_y + 1) - seg.min_y;
+        }
+    }
+    for (Segment &seg: segments) {
+        // find the first encountering border pixel as a checkpoint
+        std::pair<uint16_t, uint16_t> border_checkpoint;
+        for (uint32_t &p: seg.p) {
+            y = (p >> 16) & 0xFF;
+            x = p & 0xFF;
+            if (((status[y][x] >> 30) & 1) == 0) CheckIfBorder(&seg, y, x);
+            if ((status[y][x] >> 31) == 1) {
+                border_checkpoint = std::pair(y, x);
+                break;
+            }
+
+            // now start collecting all border pixels using that checkpoint
+            CheckNeighbours(seg, border_checkpoint.first, border_checkpoint.second);
+        }
+    }
     auto delta5 = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now() - t0).count();
 
@@ -199,6 +242,20 @@ uint32_t Segmentation::FindASegmentToDissolveIn(Segment *seg) {
     if (b < w - 1)
         return (a << 16) | static_cast<uint16_t>(b + 1);
     return 0xFFFFFFFF;
+}
+
+void Segmentation::CheckIfBorder(Segment *seg, uint16_t y, uint16_t x) {
+    status[y][x] |= (1 << 30); // resembling a non-null value
+    if ((x == (w - 1) || seg->id != status[y][x + 1] ||  // right
+         y == (h - 1) || seg->id != status[y + 1][x] ||  // bottom
+         x == 0 || seg->id != status[y][x - 1] ||  // left
+         y == 0 || seg->id != status[y - 1][x])) {  // top
+        status[y][x] |= (1 << 31);
+        seg->border.push_back(std::pair(
+                (100.0 / seg->w) * (seg->min_x - x), // fractional X
+                (100.0 / seg->h) * (seg->min_y - y)  // fractional Y
+        ));
+    }
 }
 
 void Segmentation::Reset() {
