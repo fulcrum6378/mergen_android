@@ -18,7 +18,8 @@ it just seeks truths and to improve conditions for all living beings!
 > Mergen was named after a [*Turkic* god](https://en.wikipedia.org/wiki/Mergen) of abundance and **wisdom**!
 
 It is intended to serve as something like an operating system for AI robots, its job is to
-process vision, audio and touch and act logically based on them and according to its purpose.
+process vision, audio and touch and act logically based on them and according to its purpose,
+define by its Reward System (REW)!
 
 Mergen is intended to have 2 aspects:
 
@@ -38,26 +39,19 @@ Mergen is intended to have 2 aspects:
 - Robots in films are shown to be stubbornly doing crazy things, but this trait shall never be acceptable in Mergen;
   He must be programmed to always be sceptical about himself, he must be really **Indecisive**!
   And consult everything with a human being.
-- Using a [Reward System](https://en.wikipedia.org/wiki/Reward_system) in robots, namely [Reinforcement Learning](
-  https://en.wikipedia.org/wiki/Reinforcement_learning) could also be dangerous, this is intended to be removed in
-  Mergen in a near future.
 
 ## Parts
 
-Each part has its own README in its own directory.
+|      Codename      | Description                                                           |
+|:------------------:|:----------------------------------------------------------------------|
+| [**AUD**](cpp/aud) | everything related to **Auditory** inputs and outputs.                |
+| [**HPT**](cpp/hpt) | everything related to **Touch** (haptic) inputs.                      |
+| [**MEM**](cpp/mem) | everything related to **Memory**.                                     |
+| [**MOV**](cpp/mov) | everything related to **Movements**.                                  |
+| [**VIS**](cpp/vis) | everything related to **Visual** inputs and outputs.                  |
+| [**REW**](cpp/rew) | everything related to the **Reward System** (reinforcement learning). |
 
-|      Codename      | Description                                            |
-|:------------------:|:-------------------------------------------------------|
-| [**AUD**](cpp/aud) | everything related to **Auditory** inputs and outputs. |
-| [**HPT**](cpp/hpt) | everything related to **Touch** (haptic) inputs.       |
-| [**MEM**](cpp/mem) | everything related to **Memory**.                      |
-| [**MOV**](cpp/mov) | everything related to **Movements**.                   |
-| [**VIS**](cpp/vis) | everything related to **Visual** inputs and outputs.   |
-
-Deprecated parts:
-
-- [REW](cpp/rew) : everything related to the *Reward System* (reinforcement learning).
-- [VLK](cpp/vlk) : everything related to the *Vulkan* API (will be merged into the others).
+- [VLK](cpp/vlk) : contains two practices of the *Vulkan* API.
 
 ## History
 
@@ -73,19 +67,20 @@ This idea gradually turned into a robot who could do the exact same thing!
 
 #### Mergen I (v0.1)
 
-As I was getting more and more familiar with machine learning concepts, I wanted to programme an Android app whose
-programming language was merely Python using a specific library, but it had a weird license,
-so I forgot about using Python in Android. Then I decided to use [ML Kit](https://developers.google.com/ml-kit), but it
-didn't satisfy me either!
+As I was getting more and more familiar with the machine learning concepts, I wanted to programme an Android app whose
+programming language was merely Python using Chaquopy, but since it had a weird bothersome license,
+I decided to forget about using Python in Android. Then I decided to try [ML Kit](
+https://developers.google.com/ml-kit), but it had no use to me either!
 I wanted to name the robot I had planned to create "Horus", but then I found a better name for it!
 
 The first version of *Mergen*, started at **13 December 2020**, was intended to be a
 [natural language processing (NLP)](https://en.wikipedia.org/wiki/Natural_language_processing) bot,
-something like ChatGPT today.
+something like ChatGPT today. In other words, it was going to simulate brain of a **mature human being**.
 
 It was intended to process **only digital texts** in a server using pure Python, and the server had to communicate with
 an Android client app.
-But I cancelled its development and pursued a better method in Mergen II, see below.
+But I concluded that such kind of robot has little "actual" use to human beings;
+therefore I cancelled its development and pursued a better method in Mergen II, see below.
 
 #### Mergen II (v0.2)
 
@@ -95,6 +90,7 @@ It was a more advanced version of a [Text-To-Speech (TTS)](https://en.wikipedia.
 which pronounced vowels and consonants of the [**International Phonetic Alphabet (IPA)**](
 https://en.wikipedia.org/wiki/International_Phonetic_Alphabet) instead of normal alphabets.
 It synthesised human voices and was intended to be programmed to learn from voices and speak any kind of them.
+In other words, it tried to imitate a **human child**!
 
 As I learnt more and more about [Telecommunications](https://en.wikipedia.org/wiki/Telecommunications),
 I preferred a better method in Mergen III, see below.
@@ -114,6 +110,10 @@ https://github.com/fulcrum6378/mergen_client) whose...
 2. Microphone served as **ears**.
 3. Speaker served as a **mouth**.
 
+Mergen I was going to be like an adult human being and Mergen II was a human child,
+but I decided that I should start from something much, much earlier: **an animal**.
+I decided to programme an animal then gradually grow it to be a super-human being, namely a god of logic!!!
+
 Gradually I concluded that this server-client model and these radio waves takes such a huge amount of time to
 communicate, and since I couldn't afford *robotic* resources, I was disappointed,
 so I cancelled this one too after a year at 10 March 2022 :(
@@ -123,14 +123,14 @@ so I cancelled this one too after a year at 10 March 2022 :(
 I decided to use C++ instead of Python and do all the job temporarily inside an Android smartphone,
 so I began developing **Mergen IV** at 2 August 2022!
 
-In 10 July 2023, I also started a subproject for the computer vision (VIS) part, called [**MyCV**](
-https://github.com/fulcrum6378/mycv) using Python for faster debugging of the vision-related methods. It somehow was
-finished at 23 September 2023.
+In 10 July 2023, I started a subproject for the computer vision (VIS) part and named it [**MyCV**](
+https://github.com/fulcrum6378/mycv).It uses Python for faster debugging of the vision-related methods.
+After its successful image processing, I started translating it to C++ since 24 September 2023.
 
 ## Timeline of development
 
 This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
-(updated as of 2023.09.23)
+(updated as of 2023.09.27)
 
 | # | Starting date          | Duration | Active days | Score |   Version   |
 |---|:-----------------------|:---------|:-----------:|:-----:|:-----------:|
@@ -139,11 +139,13 @@ This table shows how much I've worked on Mergen and when. The timeline is divide
 | 3 | 2021/10/16, 6400/07/24 | 145 days |     18      |  12   |     0.3     |
 | 4 | 2022/03/10, 6400/12/19 | 144 days |      0      |   0   |      -      |
 | 5 | 2022/08/02, 6401/05/11 | 102 days |      9      |   9   |     0.4     |
-| 6 | 2022/11/12, 6401/08/21 | 126 days |     43      |  34   |     0.4     |
-| 7 | 2023/03/18, 6401/12/27 | 42 days  |      1      |   2   |      -      |
-| 8 | 2023/04/29, 6402/02/09 | 147 days |     44      |  29   | 0.4 (+mycv) |
+| 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    |  32   |     0.4     |
+| 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     |   2   |      -      |
+| 8 | 2023/04/29, 6402/02/09 | 151 days |    40+8     |  32   | 0.4 (+mycv) |
 
-Periods 6, 7 and 8 include a few days when I was learning Vulkan, FreeBSD, PyTorch and Statistics.
+Periods 6, 7 and 8 include a few days when I was learning and evaluating Vulkan (18-0-0 days), OpenBSD (2-0-0 days),
+FreeBSD (1-0-3 days), TensorFlow (3-0-0 days), PyTorch (3-1-0/5 days) and
+Statistics (Data Science, Linear Algebra, 0-0-3/5 days).
 
 ## License
 
