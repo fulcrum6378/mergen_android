@@ -8,9 +8,8 @@ Segmentation::Segmentation() : shortTermMemory(ShortTermMemory()) {}
 
 void Segmentation::Process(AImage *image) {
     locked = true;
-    /*std::ofstream test; // #include <fstream> #include <ios>
-    test.open("/data/data/ir.mahdiparastesh.mergen/cache/test.yuv",
-              std::ios::out | std::ios::binary);*/
+    /*#include <fstream> #include <ios>
+    std::ofstream test("/data/data/ir.mahdiparastesh.mergen/cache/test.yuv", std::ios::binary);*/
 
     // 1. loading; bring separate YUV data into the multidimensional array of pixels `arr`
     auto t0 = std::chrono::system_clock::now();
@@ -247,11 +246,13 @@ void Segmentation::Process(AImage *image) {
 
     // 6. store the segments
     t0 = std::chrono::system_clock::now();
-    shortTermMemory;
+    for (Segment &seg: segments)
+        shortTermMemory.Insert(seg.m, seg.w, seg.h, seg.border);
+    shortTermMemory.SaveState();
     auto delta6 = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now() - t0).count();
 
-    // summary: loading + segmentation + dissolution + average colours + tracing
+    // summary: loading + segmentation + dissolution + segment_analysis + tracing + saving
     LOGI("Delta times: %lld + %lld + %lld + %lld + %lld + %lld => %lld",
          delta1, delta2, delta3, delta4, delta5, delta6,
          delta1 + delta2 + delta3 + delta4 + delta5 + delta6);
