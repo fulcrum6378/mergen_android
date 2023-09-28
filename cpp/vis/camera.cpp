@@ -1,9 +1,7 @@
-#include <cstdlib>
-#include <dirent.h>
 #include <thread>
 
 #include "camera.h"
-#include "../global.h"
+#include "global.h"
 
 /**
  * This should be invoked before the first Main::onSurfaceTextureAvailable;

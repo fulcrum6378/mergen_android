@@ -46,11 +46,13 @@ Mergen is intended to have 2 aspects:
 |:------------------:|:----------------------------------------------------------------------|
 | [**AUD**](cpp/aud) | everything related to **Auditory** inputs and outputs.                |
 | [**HPT**](cpp/hpt) | everything related to **Touch** (haptic) inputs.                      |
-| [**MEM**](cpp/mem) | everything related to **Memory**.                                     |
 | [**MOV**](cpp/mov) | everything related to **Movements**.                                  |
-| [**VIS**](cpp/vis) | everything related to **Visual** inputs and outputs.                  |
 | [**REW**](cpp/rew) | everything related to the **Reward System** (reinforcement learning). |
+| [**VIS**](cpp/vis) | everything related to **Visual** inputs and outputs.                  |
 
+Deprecated parts:
+
+- [MEM](cpp/mem) : everything related to *Memory*.
 - [VLK](cpp/vlk) : contains two practices of the *Vulkan* API.
 
 ## History
@@ -130,22 +132,25 @@ After its successful image processing, I started translating it to C++ since 24 
 ## Timeline of development
 
 This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
-(updated as of 2023.09.27)
+(updated as of 2023.09.28)
 
-| # | Starting date          | Duration | Active days | Score |   Version   |
-|---|:-----------------------|:---------|:-----------:|:-----:|:-----------:|
-| 1 | 2020/12/13, 6399/09/23 | 43 days  |     20      |  47   |  0.1..0.2   |
-| 2 | 2021/01/25, 6399/11/06 | 264 days |     ~33     |  13   |  0.2..0.3   |
-| 3 | 2021/10/16, 6400/07/24 | 145 days |     18      |  12   |     0.3     |
-| 4 | 2022/03/10, 6400/12/19 | 144 days |      0      |   0   |      -      |
-| 5 | 2022/08/02, 6401/05/11 | 102 days |      9      |   9   |     0.4     |
-| 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    |  32   |     0.4     |
-| 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     |   2   |      -      |
-| 8 | 2023/04/29, 6402/02/09 | 151 days |    40+8     |  32   | 0.4 (+mycv) |
+| # | Starting date          | Duration | Active days | %  |   Version   |
+|---|:-----------------------|:---------|:-----------:|:--:|:-----------:|
+| 1 | 2020/12/13, 6399/09/23 | 43 days  |     20      | 47 |  0.1..0.2   |
+| 2 | 2021/01/25, 6399/11/06 | 264 days |     ~33     | 13 |  0.2..0.3   |
+| 3 | 2021/10/16, 6400/07/24 | 145 days |     18      | 12 |     0.3     |
+| 4 | 2022/03/10, 6400/12/19 | 137 days |      0      | 0  |      -      |
+| 5 | 2022/07/26, 6401/05/04 | 109 days |     7+8     | 14 |     0.4     |
+| 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    | 32 |     0.4     |
+| 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     | 2  |      -      |
+| 8 | 2023/04/29, 6402/02/09 | 152 days |    40+11    | 34 | 0.4 (+mycv) |
 
-Periods 6, 7 and 8 include a few days when I was learning and evaluating Vulkan (18-0-0 days), OpenBSD (2-0-0 days),
-FreeBSD (1-0-3 days), TensorFlow (3-0-0 days), PyTorch (3-1-0/5 days) and
-Statistics (Data Science, Linear Algebra, 0-0-3/5 days).
+- Periods 1, 2 and 3 include days of researches which are not recorded.
+- Period 5 includes a few days of researching/practicing about/on a new programming language for Mergen (4 days),
+  JNI+NDK (3 days) and OCR (1 day).
+- Periods 6, 7 and 8 include a few days when I was learning/evaluating Vulkan (18-0-0 days), OpenBSD (2-0-0 days),
+  FreeBSD (1-0-2 days), TensorFlow (3-0-0 days), PyTorch (3-1-0/5 days),
+  Statistics (Data Science, 0-0-3/5 days) and Machine Learning (0-0-5 days).
 
 ## License
 

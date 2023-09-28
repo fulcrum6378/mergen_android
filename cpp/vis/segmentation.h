@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-#include "global.h"
+#include "short_term_memory.h"
 
 struct Segment {
     // starting from 1
@@ -21,11 +21,12 @@ struct Segment {
     std::list<std::pair<float, float>> border;
 };
 
-struct SegmentSorter {
+/*struct SegmentSorter {
     inline bool operator()(const Segment &a, const Segment &b) {
         return (a.p.size() > b.p.size());
     }
-};
+};*/
+// std::sort(segments.begin(), segments.end(), SegmentSorter());
 
 /**
  * Image Segmentation, using a Region-Growing method
@@ -54,6 +55,8 @@ private:
     std::vector<uint16_t *> stack;
     // maps IDs of Segments to themselves
     std::unordered_map<uint32_t, Segment *> s_index;
+
+    ShortTermMemory shortTermMemory;
 
     bool CompareColours(uint32_t a, uint32_t b);
 

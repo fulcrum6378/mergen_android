@@ -2,6 +2,7 @@
 #define GLOBAL_H
 
 #include <android/log.h>
+#include <string>
 
 #define LOG_TAG "ASAJJ"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
@@ -11,5 +12,7 @@
   if (!(cond)) {                                              \
     __android_log_assert(#cond, LOG_TAG, fmt, ##__VA_ARGS__); \
   }
+
+static const std::string cacheDirPath("/data/data/ir.mahdiparastesh.mergen/cache/");
 
 #endif //GLOBAL_H

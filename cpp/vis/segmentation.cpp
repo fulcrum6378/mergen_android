@@ -1,10 +1,6 @@
-#include <sys/resource.h>
-
-#include "../global.h"
 #include "segmentation.h"
 
-Segmentation::Segmentation() {
-}
+Segmentation::Segmentation() : shortTermMemory(ShortTermMemory()) {}
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-pragmas"
@@ -249,12 +245,16 @@ void Segmentation::Process(AImage *image) {
     auto delta5 = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now() - t0).count();
 
-    // std::sort(segments.begin(), segments.end(), SegmentSorter());
+    // 6. store the segments
+    t0 = std::chrono::system_clock::now();
+    shortTermMemory;
+    auto delta6 = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now() - t0).count();
 
     // summary: loading + segmentation + dissolution + average colours + tracing
-    LOGI("Delta times: %lld + %lld + %lld + %lld + %lld => %lld",
-         delta1, delta2, delta3, delta4, delta5,
-         delta1 + delta2 + delta3 + delta4 + delta5);
+    LOGI("Delta times: %lld + %lld + %lld + %lld + %lld + %lld => %lld",
+         delta1, delta2, delta3, delta4, delta5, delta6,
+         delta1 + delta2 + delta3 + delta4 + delta5 + delta6);
     LOGI("----------------------------------");
 
     Reset();
@@ -318,4 +318,5 @@ void Segmentation::Reset() {
 }
 
 Segmentation::~Segmentation() {
+    delete &shortTermMemory;
 }

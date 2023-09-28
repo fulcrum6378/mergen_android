@@ -5,7 +5,6 @@
 #include <camera/NdkCameraManager.h>
 #include <camera/NdkCameraMetadataTags.h>
 #include <map>
-#include <media/NdkImage.h>
 #include <media/NdkImageReader.h>
 #include <string>
 #include <utility>

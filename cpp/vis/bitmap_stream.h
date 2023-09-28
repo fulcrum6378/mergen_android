@@ -41,7 +41,6 @@ struct bmpfile_dib_info {
 
 class BitmapStream {
 private:
-    const char *filesDir = "/data/data/ir.mahdiparastesh.mergen/cache/";
     std::ofstream *store{nullptr};
     std::mutex store_mutex;
     int skipped_count = 0;
@@ -51,7 +50,7 @@ private:
 public:
     BitmapStream(std::pair<int16_t, int16_t> dimensions) {
         store = new std::ofstream(
-                (filesDir + std::string("vis.rgb")).c_str(),
+                (cacheDirPath + std::string("vis.rgb")).c_str(),
                 std::ios::out | std::ios::binary);
         dimensions_ = dimensions;
     }
@@ -60,7 +59,7 @@ public:
         int32_t width = dimensions_.first;
         int32_t height = dimensions_.second;
         std::ofstream metadata(
-                filesDir + std::to_string(width) + "x" + std::to_string(height),
+                cacheDirPath + std::to_string(width) + "x" + std::to_string(height),
                 std::ios::out | std::ios::binary);
 
         bmpfile_magic magic{'B', 'M'};

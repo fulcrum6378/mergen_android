@@ -1,4 +1,5 @@
 #include <complex>
+
 #include "colouring.h"
 
 void Colouring::OnReward(double fortuna) {
