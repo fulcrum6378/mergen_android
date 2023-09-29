@@ -21,12 +21,11 @@ struct Segment {
     std::list<std::pair<float, float>> border;
 };
 
-/*struct SegmentSorter {
+struct SegmentSorter {
     inline bool operator()(const Segment &a, const Segment &b) {
         return (a.p.size() > b.p.size());
     }
-};*/
-// std::sort(segments.begin(), segments.end(), SegmentSorter());
+};
 
 /**
  * Image Segmentation, using a Region-Growing method

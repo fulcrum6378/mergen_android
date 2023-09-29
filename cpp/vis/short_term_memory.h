@@ -14,7 +14,7 @@ private:
     std::string dirY = "y";
     std::string dirU = "u";
     std::string dirV = "v";
-    std::string dirRt = "ratio";
+    std::string dirRt = "r";
     uint16_t nextId;
     const char *nextIdPath;
 
@@ -52,10 +52,11 @@ public:
     ) {
         // write the shape file
         std::ofstream shf(dirShapes + std::to_string(nextId), std::ios::binary);
-        shf.write((char *) &m, sizeof(m));
+        for (int8_t mm = 0; mm < 3; mm++) shf.put(m[mm]);
         shf.write((char *) &w, sizeof(w));
         shf.write((char *) &h, sizeof(h));
-        for (std::pair p: path) { // FIXME use normal arrays instead of list<pair>
+        //LOGI("%d", int(shf.tellp()));
+        for (std::pair p: path) {
             shf.write((char *) &p.first, sizeof(p.first));
             shf.write((char *) &p.second, sizeof(p.second));
         }
@@ -92,7 +93,7 @@ public:
 
     void SaveState() { // FIXME Segmentation::Process cannot write, but the main thread can!!?!
         std::ofstream ssf(nextIdPath, std::ios::binary);
-        LOGI("%d %d", ssf.is_open(), ssf.good());
+        // LOGI("%d %d", ssf.is_open(), ssf.good());
         ssf.write((char *) &nextId, sizeof(nextId));
         ssf.close();
     }

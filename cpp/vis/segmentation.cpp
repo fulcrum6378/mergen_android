@@ -246,8 +246,10 @@ void Segmentation::Process(AImage *image) {
 
     // 6. store the segments
     t0 = std::chrono::system_clock::now();
-    for (Segment &seg: segments)
-        shortTermMemory.Insert(seg.m, seg.w, seg.h, seg.border);
+    std::sort(segments.begin(), segments.end(), SegmentSorter());
+    for (uint16_t seg = 0; seg < 20; seg++) // Segment &seg: segments
+        shortTermMemory.Insert(segments[seg].m, segments[seg].w, segments[seg].h,
+                               segments[seg].border);
     shortTermMemory.SaveState();
     auto delta6 = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now() - t0).count();
