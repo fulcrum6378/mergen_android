@@ -1,18 +1,22 @@
+#include <algorithm> // std::sort
+#include <cstring>
+
 #include "segmentation.h"
+
+using namespace std;
 
 Segmentation::Segmentation() : shortTermMemory(ShortTermMemory()) {}
 
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-pragmas"
 #pragma ide diagnostic ignored "ConstantConditionsOC"
 
 void Segmentation::Process(AImage *image) {
     locked = true;
     /*#include <fstream> #include <ios>
-    std::ofstream test("/data/data/ir.mahdiparastesh.mergen/cache/test.yuv", std::ios::binary);*/
+    ofstream test("/data/data/ir.mahdiparastesh.mergen/cache/test.yuv", ios::binary);*/
 
     // 1. loading; bring separate YUV data into the multidimensional array of pixels `arr`
-    auto t0 = std::chrono::system_clock::now();
+    auto t0 = chrono::system_clock::now();
     AImageCropRect srcRect;
     AImage_getCropRect(image, &srcRect);
     int32_t yStride, uvStride;
@@ -39,11 +43,11 @@ void Segmentation::Process(AImage *image) {
         }
     }
     AImage_delete(image); // test.close();
-    auto delta1 = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now() - t0).count();
+    auto delta1 = chrono::duration_cast<chrono::milliseconds>(
+            chrono::system_clock::now() - t0).count();
 
     // 2. segmentation
-    t0 = std::chrono::system_clock::now();
+    t0 = chrono::system_clock::now();
     uint16_t thisY = 0, thisX = 0;
     bool foundSthToAnalyse = true;
     while (foundSthToAnalyse) {
@@ -103,11 +107,11 @@ void Segmentation::Process(AImage *image) {
         }
         segments.push_back(seg);
     }
-    auto delta2 = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now() - t0).count();
+    auto delta2 = chrono::duration_cast<chrono::milliseconds>(
+            chrono::system_clock::now() - t0).count();
 
     // 3. dissolution
-    t0 = std::chrono::system_clock::now();
+    t0 = chrono::system_clock::now();
     if (min_seg > 1) {
         uint32_t absorber_i, size_bef = segments.size(), removal = 1;
         Segment *absorber;
@@ -120,18 +124,18 @@ void Segmentation::Process(AImage *image) {
                     absorber->p.push_back(p); // merge()
                     status[(p >> 16) & 0xFFFF][p & 0xFFFF] = absorber->id;
                 }
-                std::swap(segments[seg], segments[size_bef - removal]);
+                swap(segments[seg], segments[size_bef - removal]);
                 removal++;
             }
         segments.resize(size_bef - (removal - 1));
-        LOGI("Total segments: %zu / %zu", segments.size(), size_bef);
+        LOGI("Total segments: %zu / %u", segments.size(), size_bef);
     } else
         LOGI("Total segments: %zu", segments.size());
-    auto delta3 = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now() - t0).count();
+    auto delta3 = chrono::duration_cast<chrono::milliseconds>(
+            chrono::system_clock::now() - t0).count();
 
     // 4. average colours + detect boundaries
-    t0 = std::chrono::system_clock::now();
+    t0 = chrono::system_clock::now();
     uint32_t col, l_;
     uint64_t aa, bb, cc;
     bool isFirst;
@@ -174,11 +178,11 @@ void Segmentation::Process(AImage *image) {
         // index the Segments by their IDs
         s_index[seg.id] = &seg;
     }
-    auto delta4 = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now() - t0).count();
+    auto delta4 = chrono::duration_cast<chrono::milliseconds>(
+            chrono::system_clock::now() - t0).count();
 
     // 5. trace border pixels
-    t0 = std::chrono::system_clock::now();
+    t0 = chrono::system_clock::now();
     uint16_t ny, nx, avoidDr;
     for (Segment &seg: segments) {
         // find the first encountering border pixel as a checkpoint...
@@ -241,18 +245,18 @@ void Segmentation::Process(AImage *image) {
             stack.pop_back();
         }
     }
-    auto delta5 = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now() - t0).count();
+    auto delta5 = chrono::duration_cast<chrono::milliseconds>(
+            chrono::system_clock::now() - t0).count();
 
     // 6. store the segments
-    t0 = std::chrono::system_clock::now();
-    std::sort(segments.begin(), segments.end(), SegmentSorter());
+    t0 = chrono::system_clock::now();
+    sort(segments.begin(), segments.end(), SegmentSorter());
     for (uint16_t seg = 0; seg < 20; seg++) // Segment &seg: segments
         shortTermMemory.Insert(segments[seg].m, segments[seg].w, segments[seg].h,
                                segments[seg].border);
     shortTermMemory.SaveState();
-    auto delta6 = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now() - t0).count();
+    auto delta6 = chrono::duration_cast<chrono::milliseconds>(
+            chrono::system_clock::now() - t0).count();
 
     // summary: loading + segmentation + dissolution + segment_analysis + tracing + saving
     LOGI("Delta times: %lld + %lld + %lld + %lld + %lld + %lld => %lld",
@@ -296,7 +300,7 @@ void Segmentation::CheckIfBorder(Segment *seg, uint16_t y, uint16_t x) {
         (x > 0 && seg->id != ((status[y][x - 1] << 2) >> 2)) ||        // left
         (y > 0 && seg->id != ((status[y - 1][x] << 2) >> 2))) {        // top
         status[y][x] |= (1 << 31);
-        seg->border.push_back(std::pair(
+        seg->border.push_back(pair(
                 (100.0 / seg->w) * (seg->min_x - x), // fractional X
                 (100.0 / seg->h) * (seg->min_y - y)  // fractional Y
         ));

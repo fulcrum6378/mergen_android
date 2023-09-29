@@ -3,6 +3,7 @@
 
 #include <list>
 #include <media/NdkImage.h>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 

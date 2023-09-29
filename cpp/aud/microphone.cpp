@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include "microphone.h"
 
 Microphone::Microphone() : freeQueue_(nullptr), recQueue_(nullptr), devShadowQueue_(nullptr) {
@@ -53,7 +55,7 @@ Microphone::Microphone() : freeQueue_(nullptr), recQueue_(nullptr), devShadowQue
             recBufQueueItf_,
             [](SLAndroidSimpleBufferQueueItf bq, void *recorder) {
                 // Called for every buffer is full; pass directly to handler.
-                (static_cast<Microphone *>(recorder))->ProcessSLCallback(bq, Queuer::Now());
+                (static_cast<Microphone *>(recorder))->ProcessSLCallback(bq, 0/*Queuer::Now()*/);
             }, this);
     SLASSERT(result);
 
@@ -151,7 +153,6 @@ void Microphone::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq, int64_t) {
     if (buf != &silentBuf_) {
         //LOGE("%s", ("AUD: " + std::to_string(buf->size_)).c_str());
         test.write((char *) buf->buf_, buf->size_); // size=384 (FRAMES_PER_BUF*2)
-        //queuer_->Input(INPUT_ID_MICROPHONE, buf->buf_, time);
 
         buf->size_ = 0;
         freeQueue_->push(buf);
@@ -181,6 +182,9 @@ void Microphone::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq, int64_t) {
     }
 }
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "ConstantFunctionResult"
+
 bool Microphone::Stop() {
     if (AUD_SAVE) test.close();
 
@@ -197,6 +201,8 @@ bool Microphone::Stop() {
     SLASSERT(result);
     return true;
 }
+
+#pragma clang diagnostic pop
 
 Microphone::~Microphone() {
     // destroy audio recorder object, and invalidate all associated interfaces

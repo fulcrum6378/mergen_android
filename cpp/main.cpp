@@ -2,7 +2,6 @@
 
 #include "aud/microphone.h"
 #include "hpt/touchscreen.h"
-#include "mem/queuer.h"
 #include "rew/rewarder.h"
 #include "vis/camera.h"
 

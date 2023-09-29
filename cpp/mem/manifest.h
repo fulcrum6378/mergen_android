@@ -11,11 +11,11 @@ enum class ActType : uint8_t {
 struct Interaction {
     /** Input/sense IDs must be positive and Output/{control/expression} IDs must be negative. */
     int8_t id;
-    ActType type;
+    [[maybe_unused]] ActType type;
     /** Range -1..1 ; 0 means centre */
-    float x, y, z;
+    [[maybe_unused]] float x, y, z;
     /** In pixels */
-    uint16_t width, height, depth;
+    [[maybe_unused]] uint16_t width, height, depth;
 };
 
 class Manifest {

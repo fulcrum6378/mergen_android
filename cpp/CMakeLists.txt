@@ -7,26 +7,48 @@ add_definitions(-DVK_USE_PLATFORM_ANDROID_KHR=1)
 
 add_library(main SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+        global.h
 
-        ${CMAKE_CURRENT_SOURCE_DIR}/aud/commons.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/aud/microphone.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/aud/speaker.cpp
+        aud/commons.cpp
+        aud/commons.h
+        aud/microphone.cpp
+        aud/microphone.h
+        aud/speaker.cpp
+        aud/speaker.h
 
-        ${CMAKE_CURRENT_SOURCE_DIR}/hpt/touchscreen.cpp
+        hpt/touchscreen.cpp
+        hpt/touchscreen.h
 
-        ${CMAKE_CURRENT_SOURCE_DIR}/mem/manifest.cpp
+        mem/manifest.cpp
+        mem/manifest.h
 
-        ${CMAKE_CURRENT_SOURCE_DIR}/mov/vibrator.cpp
+        mov/vibrator.cpp
+        mov/vibrator.h
 
-        ${CMAKE_CURRENT_SOURCE_DIR}/rew/rewarder.cpp
+        rew/expression.h
+        rew/rewarder.cpp
+        rew/rewarder.h
 
-        ${CMAKE_CURRENT_SOURCE_DIR}/vis/camera.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/vis/colouring.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/vis/segmentation.cpp
+        vis/bitmap_stream.h
+        vis/camera.cpp
+        vis/camera.h
+        vis/colouring.cpp
+        vis/colouring.h
+        vis/global.h
+        vis/segmentation.cpp
+        vis/segmentation.h
+        vis/short_term_memory.h
 
-        ${CMAKE_CURRENT_SOURCE_DIR}/vlk/hello_vk.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/vlk/compute_vk.cpp
-        )
+        vlk/hello_vk.cpp
+        vlk/hello_vk.h
+        vlk/global.h
+        vlk/compute_vk.cpp
+        vlk/compute_vk.h
+)
+
+target_include_directories(main PUBLIC
+        D:/Programming/android/ndk/26.0.10792818/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include
+) # for CLion to recognise the NDK headers
 
 target_link_libraries(main
         android      # for ANativeWindow
@@ -35,4 +57,4 @@ target_link_libraries(main
         mediandk     # for AImageReader
         OpenSLES
         vulkan
-        )
+)

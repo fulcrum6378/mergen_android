@@ -3,7 +3,7 @@
 
 #include "../rew/expression.h"
 
-#define OUTPUT_ID_SCREEN -1
+#define OUTPUT_ID_SCREEN (-1)
 
 class Colouring : public Expression {
 public:

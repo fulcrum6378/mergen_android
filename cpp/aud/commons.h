@@ -1,7 +1,9 @@
 #ifndef AUD_COMMONS_H
 #define AUD_COMMONS_H
 
+#include <atomic>
 #include <cassert>
+#include <limits> // std::numeric_limits
 #include <memory>
 #include <SLES/OpenSLES_Android.h>
 

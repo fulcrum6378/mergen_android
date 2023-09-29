@@ -4,9 +4,8 @@
 #include <fstream>
 
 #include "commons.h"
-#include "../mem/queuer.h"
 
-static bool AUD_SAVE = true;
+static const bool AUD_SAVE = true;
 
 class Microphone {
 private:

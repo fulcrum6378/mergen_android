@@ -1,6 +1,7 @@
 #ifndef VIS_SHORT_TERM_MEMORY_H
 #define VIS_SHORT_TERM_MEMORY_H
 
+#include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <sys/stat.h>

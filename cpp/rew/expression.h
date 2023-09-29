@@ -13,9 +13,9 @@ protected:
 
 public:
     uint16_t id;
-    int8_t interaction_id;
+    [[maybe_unused]] int8_t interaction_id;
 
-    Expression(uint16_t _id, int8_t interaction_id, JNIEnv *env, jobject main) :
+    Expression(uint16_t _id, [[maybe_unused]] int8_t interaction_id, JNIEnv *env, jobject main) :
             env_(env), main_(main), id(_id), interaction_id() {}
 
     virtual void OnReward(double fortuna) = 0;

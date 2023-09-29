@@ -2,18 +2,17 @@
 #define VLK_HELLO_VK_H
 
 #include <android/native_window.h>
-
 #include <array>
+#include <memory> // unique_ptr
 #include <optional>
 
 #include "global.h"
 
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-pragmas"
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 #pragma ide diagnostic ignored "OCUnusedStructInspection"
 
-const int MAX_FRAMES_IN_FLIGHT = 2;
+static const int MAX_FRAMES_IN_FLIGHT = 2;
 
 struct UniformBufferObject {
     std::array<float, 16> mvp;

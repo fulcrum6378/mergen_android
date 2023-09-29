@@ -4,7 +4,6 @@
 #include "global.h"
 
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-pragmas"
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 #pragma ide diagnostic ignored "OCUnusedStructInspection"
 
@@ -18,7 +17,7 @@ struct Pixel {
 
 class ComputeVK {
 public:
-    void run(AAssetManager *assets);
+    [[maybe_unused]] void run(AAssetManager *assets);
 
 private:
     void createInstance();
@@ -50,7 +49,7 @@ private:
 
     uint32_t getComputeQueueFamilyIndex();
 
-    uint32_t findMemoryType(uint32_t memoryTypeBits, VkMemoryPropertyFlags properties);
+    uint32_t findMemoryType(uint32_t memoryTypeBits);
 
 
     bool enableValidationLayers = true;

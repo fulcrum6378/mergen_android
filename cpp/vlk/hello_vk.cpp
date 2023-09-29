@@ -1,3 +1,4 @@
+#include <cstring>
 #include <fstream>
 #include <map>
 #include <set>
@@ -7,8 +8,6 @@
 #include "hello_vk.h"
 
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-pragmas"
-#pragma ide diagnostic ignored "OCDFAInspection"
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 
 // PUBLIC:
@@ -946,7 +945,7 @@ void HelloVK::onOrientationChange() {
 /*
  * Finds the index of the memory heap which matches a particular buffer's memory
  * requirements. Vulkan manages these requirements as a bitset, in this case
- * expressed through a uint32_t.
+ * expressed through a uInt32_t.
  */
 uint32_t HelloVK::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
     VkPhysicalDeviceMemoryProperties memProperties;

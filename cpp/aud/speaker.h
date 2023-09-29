@@ -7,6 +7,9 @@
 #include "../global.h"
 #include "commons.h"
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+
 class Speaker {
     // buffer queue player interfaces
     SLObjectItf outputMixObjectItf_{};
@@ -35,5 +38,7 @@ public:
 
     void ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq);
 };
+
+#pragma clang diagnostic pop
 
 #endif  // AUD_SPEAKER_H

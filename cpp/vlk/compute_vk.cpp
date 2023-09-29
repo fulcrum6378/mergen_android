@@ -1,13 +1,16 @@
+#include <cmath>
+#include <cstring>
+
 #include "compute_vk.h"
 
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma ide diagnostic ignored "UnreachableCode"
 #pragma ide diagnostic ignored "OCDFAInspection"
 #pragma ide diagnostic ignored "ConstantConditionsOC"
 
 // PUBLIC:
 
-void ComputeVK::run(AAssetManager *assets) {
+[[maybe_unused]] void ComputeVK::run(AAssetManager *assets) {
     // Buffer size of the storage buffer that will contain the rendered mandelbrot set.
     bufferSize = sizeof(Pixel) * WIDTH * HEIGHT;
 
@@ -126,8 +129,7 @@ void ComputeVK::createBuffer() {
     allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocateInfo.allocationSize = memoryRequirements.size; // specify required memory.
     allocateInfo.memoryTypeIndex = findMemoryType(
-            memoryRequirements.memoryTypeBits,
-            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+            memoryRequirements.memoryTypeBits);
     VK_CHECK(vkAllocateMemory(device, &allocateInfo, nullptr, &bufferMemory));
 
     VK_CHECK(vkBindBufferMemory(device, buffer, bufferMemory, 0));
@@ -368,13 +370,13 @@ uint32_t ComputeVK::getComputeQueueFamilyIndex() {
 }
 
 /** Find memory type with desired properties. */
-uint32_t ComputeVK::findMemoryType(uint32_t memoryTypeBits, VkMemoryPropertyFlags properties) {
+uint32_t ComputeVK::findMemoryType(uint32_t memoryTypeBits) {
     VkPhysicalDeviceMemoryProperties memoryProperties;
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
 
     for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i)
         if ((memoryTypeBits & (1 << i)) &&
-            ((memoryProperties.memoryTypes[i].propertyFlags & properties) == properties))
+            ((memoryProperties.memoryTypes[i].propertyFlags & 6) == 6))
             return i;
     return -1;
 }

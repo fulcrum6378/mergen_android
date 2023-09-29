@@ -1,16 +1,19 @@
+#include <cstring>
+
 #include "speaker.h"
 
-#include <cstdlib>
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 
 /*
  * Called by OpenSL SimpleBufferQueue for every audio buffer played
- * directly pass thru to our handler.
+ * directly pass through to our handler.
  * The regularity of this callback from openSL/Android System affects
- * playback continuity. If it does not callback in the regular time
+ * playback continuity. If it does not call back in the regular time
  * slot, you are under big pressure for audio processing[here we do
  * not do any filtering/mixing]. Callback from fast audio path are
  * much more regular than other audio paths by my observation. If it
- * very regular, you could buffer much less audio samples between
+ * is very regular, you could buffer much less audio samples between
  * recorder and player, hence lower latency.
  */
 void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *ctx) {
@@ -197,3 +200,4 @@ void Speaker::Stop() {
     (*playBufferQueueItf_)->Clear(playBufferQueueItf_);
 }
 
+#pragma clang diagnostic pop

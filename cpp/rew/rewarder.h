@@ -8,9 +8,9 @@
 
 struct Criterion {
     uint16_t id;
-    int8_t interaction_id;
+    [[maybe_unused]] int8_t interaction_id;
     float weight;
-    char const *desc;
+    [[maybe_unused]] char const *desc;
 };
 
 /**

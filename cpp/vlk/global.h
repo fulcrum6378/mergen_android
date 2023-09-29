@@ -2,10 +2,9 @@
 #define VLK_GLOBAL_H
 
 #include <android/asset_manager.h>
-#include <vulkan/vulkan.h>
-
 #include <cassert>
 #include <vector>
+#include <vulkan/vulkan.h>
 
 #include "../global.h"
 
