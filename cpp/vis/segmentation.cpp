@@ -189,8 +189,8 @@ void Segmentation::Process(AImage *image) {
         for (uint32_t &p: seg.p) {
             y = (p >> 16) & 0xFFFF;
             x = p & 0xFFFF;
-            if (((status[y][x] >> 30) & 1) == 0) CheckIfBorder(&seg, y, x);
-            if ((status[y][x] >> 31) == 1) break;
+            if (((arr[y][x] >> 24) & 0xFF) == static_cast<int8_t>(0)) CheckIfBorder(&seg, y, x);
+            if (((arr[y][x] >> 24) & 0xFF) == static_cast<int8_t>(1)) break;
         }
 
         // then start collecting all border pixels using that checkpoint
@@ -295,25 +295,23 @@ uint32_t Segmentation::FindASegmentToDissolveIn(Segment *seg) {
 }
 
 void Segmentation::CheckIfBorder(Segment *seg, uint16_t y, uint16_t x) {
-    status[y][x] |= (1 << 30); // resembling a non-null value
-    if ((x < (w - 1) && seg->id != ((status[y][x + 1] << 2) >> 2)) ||  // right
-        (y < (h - 1) && seg->id != ((status[y + 1][x] << 2) >> 2)) ||  // bottom
-        (x > 0 && seg->id != ((status[y][x - 1] << 2) >> 2)) ||        // left
-        (y > 0 && seg->id != ((status[y - 1][x] << 2) >> 2))) {        // top
-        status[y][x] |= (1 << 31);
+    if ((x < (w - 1) && seg->id != status[y][x + 1]) ||  // right
+        (y < (h - 1) && seg->id != status[y + 1][x]) ||  // bottom
+        (x > 0 && seg->id != status[y][x - 1]) ||        // left
+        (y > 0 && seg->id != status[y - 1][x])) {        // top
+        arr[y][x] |= (static_cast<int8_t>(1) << 24);
         seg->border.push_back(pair(
                 (100.0 / seg->w) * (seg->min_x - x), // fractional X
                 (100.0 / seg->h) * (seg->min_y - y)  // fractional Y
         ));
-    }
+    } else arr[y][x] |= (static_cast<int8_t>(2) << 24);
 }
 
 bool Segmentation::IsNextB(Segment *org_s, uint16_t y, uint16_t x) {
-    uint32_t s_ = (status[y][x] << 2) >> 2;
-    if (s_ == org_s->id) return false;
-    if (((status[y][x] >> 30) & 1) == 0) {
-        CheckIfBorder(s_index[s_], y, x); // no repeated work was detected!
-        return (status[y][x] >> 31) == 1;
+    if (status[y][x] == org_s->id) return false;
+    if (((arr[y][x] >> 24) & 0xFF) == static_cast<int8_t>(-1)) {
+        CheckIfBorder(s_index[status[y][x]], y, x); // no repeated work was detected!
+        return ((arr[y][x] >> 24) & 0xFF) == static_cast<int8_t>(1);
     }
     return false;
 }

@@ -39,9 +39,9 @@ private:
     // minimum allowed number of pixels for a segment to contain
     const uint32_t min_seg = 30;
 
-    // multidimensional array of pixels
-    uint32_t arr[1088][1088];
-    // maps pixels to their Segment IDs + the first 2 bits indicate whether it is a border pixel or not.
+    // multidimensional array of pixels + last byte indicates whether it is a border pixel or not.
+    int32_t arr[1088][1088]; // b(2=false,1=true,0=null), Y, U, V
+    // maps pixels to their Segment IDs
     uint32_t status[1088][1088];
     // vector of all Segments
     std::vector<Segment> segments;
