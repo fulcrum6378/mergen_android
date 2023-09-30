@@ -197,6 +197,7 @@ void Segmentation::Process(AImage *image) {
         stack.push_back(new uint16_t[3]{y, x, 0});
         while ((last = stack.size() - 1) != -1) {
             y = stack[last][0], x = stack[last][1], avoidDr = stack[last][2];
+            stack.pop_back();
             ny = y, nx = x;
             if (avoidDr != 1 && y > 0) { // northern
                 ny = y - 1;
@@ -242,7 +243,6 @@ void Segmentation::Process(AImage *image) {
                 if (IsNextB(&seg, ny, nx))
                     stack.push_back(new uint16_t[3]{ny, nx, 8});
             }
-            stack.pop_back();
         }
     }
     auto delta5 = chrono::duration_cast<chrono::milliseconds>(
@@ -296,7 +296,7 @@ uint32_t Segmentation::FindPixelOfASegmentToDissolveIn(Segment *seg) {
 }
 
 void Segmentation::CheckIfBorder(Segment *seg, uint16_t y, uint16_t x) {
-    if ( // do NOT use "&&"!
+    if ( // do NOT use "&&" for straight neighbours!
             (y == 0 || seg->id != status[y - 1][x]) || // northern
             ((y > 0 && x < (w - 1)) && status[y - 1][x + 1]) || // north-eastern
             (x == (w - 1) || seg->id != status[y][x + 1]) ||  // eastern
@@ -315,6 +315,7 @@ void Segmentation::CheckIfBorder(Segment *seg, uint16_t y, uint16_t x) {
 }
 
 bool Segmentation::IsNextB(Segment *org_s, uint16_t y, uint16_t x) {
+    if (status[y][x] == org_s->id) return false;
     if (((arr[y][x] >> 24) & 0xFF) == 0) {
         CheckIfBorder(s_index[status[y][x]], y, x);
         return ((arr[y][x] >> 24) & 0xFF) == 1;

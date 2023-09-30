@@ -45,7 +45,7 @@ private:
     uint32_t status[1088][1088];
     // vector of all Segments
     std::vector<Segment> segments;
-    // simulates recursive programming (vector is always better for it than list!)
+    // simulates recursive programming TODO (vector is always better for it than list!)
     std::vector<uint16_t *> stack;
     // maps IDs of Segments to themselves
     std::unordered_map<uint32_t, Segment *> s_index;
