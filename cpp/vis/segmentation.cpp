@@ -119,10 +119,10 @@ void Segmentation::Process(AImage *image) {
             if (segments[seg].p.size() < min_seg) {
                 absorber_i = FindPixelOfASegmentToDissolveIn(&segments[seg]);
                 if (absorber_i == 0xFFFFFFFF) continue;
-                absorber = &segments[status[(absorber_i >> 16) & 0xFFFF][absorber_i & 0xFFFF] - 1];
+                absorber = &segments[status[absorber_i >> 16][absorber_i & 0xFFFF] - 1];
                 for (uint32_t &p: segments[seg].p) {
                     absorber->p.push_back(p); // merge()
-                    status[(p >> 16) & 0xFFFF][p & 0xFFFF] = absorber->id;
+                    status[p >> 16][p & 0xFFFF] = absorber->id;
                 }
                 swap(segments[seg], segments[size_bef - removal]);
                 removal++;
@@ -141,10 +141,10 @@ void Segmentation::Process(AImage *image) {
     bool isFirst;
     uint16_t y, x;
     for (Segment &seg: segments) {
-        // average colours of each segment
+        // average colours of each segment FIXME something is wrong here!
         aa = 0, bb = 0, cc = 0;
         for (uint32_t &p: seg.p) {
-            col = arr[(p >> 16) & 0xFF][p & 0xFF];
+            col = arr[p >> 16][p & 0xFFFF];
             aa += (col >> 16) & 0xFF;
             bb += (col >> 8) & 0xFF;
             cc += col & 0xFF;
@@ -157,7 +157,7 @@ void Segmentation::Process(AImage *image) {
         // detect boundaries (min_y, min_x, max_y, max_x)
         isFirst = true;
         for (uint32_t &p: seg.p) {
-            y = (p >> 16) & 0xFFFF;
+            y = p >> 16;
             x = p & 0xFFFF;
             if (isFirst) {
                 seg.min_y = y;
@@ -207,7 +207,6 @@ void Segmentation::Process(AImage *image) {
     t0 = chrono::system_clock::now();
     sort(segments.begin(), segments.end(),
          [](const Segment &a, const Segment &b) { return (a.p.size() > b.p.size()); });
-    // LOGI("Biggest borders of biggest segment: %zu", segments[0].border.size());
     for (uint16_t seg = 0; seg < 20; seg++) // Segment &seg: segments
         shortTermMemory.Insert(segments[seg].m, segments[seg].w, segments[seg].h,
                                segments[seg].border);
@@ -236,13 +235,13 @@ bool Segmentation::CompareColours(uint32_t a, uint32_t b) {
 
 uint32_t Segmentation::FindPixelOfASegmentToDissolveIn(Segment *seg) {
     uint32_t cor = seg->p.front();
-    uint16_t a = (cor >> 16) & 0xFFFF, b = cor & 0xFFFF;
+    uint16_t a = cor >> 16, b = cor & 0xFFFF;
     if (a > 0)
         return (static_cast<uint16_t>(a - 1) << 16) | b;
     if (b > 0)
         return (a << 16) | static_cast<uint16_t>(b - 1);
     cor = seg->p.back();
-    a = (cor >> 16) & 0xFFFF, b = cor & 0xFFFF;
+    a = cor >> 16, b = cor & 0xFFFF;
     if (a < h - 1)
         return (static_cast<uint16_t>(a + 1) << 16) | b;
     if (b < w - 1)

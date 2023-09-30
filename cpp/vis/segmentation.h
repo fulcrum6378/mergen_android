@@ -37,7 +37,7 @@ private:
     // configurations
     const uint16_t h = 1088, w = 1088;  // width, height
     // minimum allowed number of pixels for a segment to contain
-    const uint32_t min_seg = 30;
+    const uint32_t min_seg = 40;
 
     // multidimensional array of pixels + last byte indicates whether it is a border pixel or not.
     uint32_t arr[1088][1088]; // b(2=false,1=true,0=null), Y, U, V
