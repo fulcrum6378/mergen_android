@@ -40,7 +40,7 @@ private:
     const uint32_t min_seg = 30;
 
     // multidimensional array of pixels + last byte indicates whether it is a border pixel or not.
-    int32_t arr[1088][1088]; // b(2=false,1=true,0=null), Y, U, V
+    uint32_t arr[1088][1088]; // b(2=false,1=true,0=null), Y, U, V
     // maps pixels to their Segment IDs
     uint32_t status[1088][1088];
     // vector of all Segments
@@ -54,7 +54,7 @@ private:
 
     bool CompareColours(uint32_t a, uint32_t b);
 
-    uint32_t FindASegmentToDissolveIn(Segment *seg);
+    uint32_t FindPixelOfASegmentToDissolveIn(Segment *seg);
 
     // Checks if this pixel is in border.
     void CheckIfBorder(Segment *seg, uint16_t y, uint16_t x);

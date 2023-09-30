@@ -49,11 +49,12 @@ void Segmentation::Process(AImage *image) {
     // 2. segmentation
     t0 = chrono::system_clock::now();
     uint16_t thisY = 0, thisX = 0;
+    int64_t last; // must be signed
     bool foundSthToAnalyse = true;
     while (foundSthToAnalyse) {
         foundSthToAnalyse = false;
-        for (int16_t y = thisY; y < h; y++) {
-            for (int16_t x = (y == thisY) ? thisX : 0; x < w; x++)
+        for (uint16_t y = thisY; y < h; y++) {
+            for (uint16_t x = (y == thisY) ? thisX : 0; x < w; x++)
                 if (status[y][x] == 0) {
                     foundSthToAnalyse = true;
                     thisY = y;
@@ -66,7 +67,6 @@ void Segmentation::Process(AImage *image) {
 
         Segment seg{static_cast<uint32_t>(segments.size() + 1)};
         stack.push_back(new uint16_t[3]{thisY, thisX, 0});
-        uint32_t last;
         uint16_t y, x, dr;
         while ((last = stack.size() - 1) != -1) {
             y = stack[last][0], x = stack[last][1], dr = stack[last][2];
@@ -117,7 +117,7 @@ void Segmentation::Process(AImage *image) {
         Segment *absorber;
         for (int32_t seg = size_bef - 1; seg > -1; seg--)
             if (segments[seg].p.size() < min_seg) {
-                absorber_i = FindASegmentToDissolveIn(&segments[seg]);
+                absorber_i = FindPixelOfASegmentToDissolveIn(&segments[seg]);
                 if (absorber_i == 0xFFFFFFFF) continue;
                 absorber = &segments[status[(absorber_i >> 16) & 0xFFFF][absorber_i & 0xFFFF] - 1];
                 for (uint32_t &p: segments[seg].p) {
@@ -189,14 +189,14 @@ void Segmentation::Process(AImage *image) {
         for (uint32_t &p: seg.p) {
             y = (p >> 16) & 0xFFFF;
             x = p & 0xFFFF;
-            if (((arr[y][x] >> 24) & 0xFF) == static_cast<int8_t>(0)) CheckIfBorder(&seg, y, x);
-            if (((arr[y][x] >> 24) & 0xFF) == static_cast<int8_t>(1)) break;
+            if (((arr[y][x] >> 24) & 0xFF) == 0) CheckIfBorder(&seg, y, x);
+            if (((arr[y][x] >> 24) & 0xFF) == 1) break;
         }
 
         // then start collecting all border pixels using that checkpoint
         stack.push_back(new uint16_t[3]{y, x, 0});
-        while (stack.size() != 0) {
-            y = stack[0][0], x = stack[0][1], avoidDr = stack[0][2];
+        while ((last = stack.size() - 1) != -1) {
+            y = stack[last][0], x = stack[last][1], avoidDr = stack[last][2];
             ny = y, nx = x;
             if (avoidDr != 1 && y > 0) { // northern
                 ny = y - 1;
@@ -252,6 +252,7 @@ void Segmentation::Process(AImage *image) {
     t0 = chrono::system_clock::now();
     sort(segments.begin(), segments.end(),
          [](const Segment &a, const Segment &b) { return (a.p.size() > b.p.size()); });
+    LOGI("Biggest borders of biggest segment: %zu", segments[0].border.size());
     for (uint16_t seg = 0; seg < 20; seg++) // Segment &seg: segments
         shortTermMemory.Insert(segments[seg].m, segments[seg].w, segments[seg].h,
                                segments[seg].border);
@@ -278,7 +279,7 @@ bool Segmentation::CompareColours(uint32_t a, uint32_t b) {
     // abs() is much more efficient than `256 - static_cast<uint8_t>(a - b)`!
 }
 
-uint32_t Segmentation::FindASegmentToDissolveIn(Segment *seg) {
+uint32_t Segmentation::FindPixelOfASegmentToDissolveIn(Segment *seg) {
     uint32_t cor = seg->p.front();
     uint16_t a = (cor >> 16) & 0xFFFF, b = cor & 0xFFFF;
     if (a > 0)
@@ -295,29 +296,33 @@ uint32_t Segmentation::FindASegmentToDissolveIn(Segment *seg) {
 }
 
 void Segmentation::CheckIfBorder(Segment *seg, uint16_t y, uint16_t x) {
-    if ((x < (w - 1) && seg->id != status[y][x + 1]) ||  // right
-        (y < (h - 1) && seg->id != status[y + 1][x]) ||  // bottom
-        (x > 0 && seg->id != status[y][x - 1]) ||        // left
-        (y > 0 && seg->id != status[y - 1][x])) {        // top
-        arr[y][x] |= (static_cast<int8_t>(1) << 24);
+    if ( // do NOT use "&&"!
+            (y == 0 || seg->id != status[y - 1][x]) || // northern
+            ((y > 0 && x < (w - 1)) && status[y - 1][x + 1]) || // north-eastern
+            (x == (w - 1) || seg->id != status[y][x + 1]) ||  // eastern
+            ((y < (h - 1) && x < (w - 1)) && seg->id != status[y + 1][x + 1]) || // north-eastern
+            (y == (h - 1) || seg->id != status[y + 1][x]) ||  // southern
+            ((y < (h - 1) && x > 0) && seg->id != status[y + 1][x - 1]) || // south-western
+            (x == 0 || seg->id != status[y][x - 1]) || // western
+            ((y > 0 && x > 0) && seg->id != status[y - 1][x - 1]) // north-western
+            ) {
+        arr[y][x] |= 1 << 24;
         seg->border.push_back(pair(
                 (100.0 / seg->w) * (seg->min_x - x), // fractional X
                 (100.0 / seg->h) * (seg->min_y - y)  // fractional Y
         ));
-    } else arr[y][x] |= (static_cast<int8_t>(2) << 24);
+    } else arr[y][x] |= 2 << 24;
 }
 
 bool Segmentation::IsNextB(Segment *org_s, uint16_t y, uint16_t x) {
-    if (status[y][x] == org_s->id) return false;
-    if (((arr[y][x] >> 24) & 0xFF) == static_cast<int8_t>(-1)) {
-        CheckIfBorder(s_index[status[y][x]], y, x); // no repeated work was detected!
-        return ((arr[y][x] >> 24) & 0xFF) == static_cast<int8_t>(1);
+    if (((arr[y][x] >> 24) & 0xFF) == 0) {
+        CheckIfBorder(s_index[status[y][x]], y, x);
+        return ((arr[y][x] >> 24) & 0xFF) == 1;
     }
     return false;
 }
 
 void Segmentation::Reset() {
-    // zeroing `arr` is not necessary.
     memset(status, 0, sizeof(status));
     s_index.clear();
     segments.clear();
