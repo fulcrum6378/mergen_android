@@ -183,67 +183,22 @@ void Segmentation::Process(AImage *image) {
 
     // 5. trace border pixels
     t0 = chrono::system_clock::now();
-    uint16_t ny, nx, avoidDr;
-    for (Segment &seg: segments) {
-        // find the first encountering border pixel as a checkpoint...
-        for (uint32_t &p: seg.p) {
-            y = (p >> 16) & 0xFFFF;
-            x = p & 0xFFFF;
-            if (((arr[y][x] >> 24) & 0xFF) == 0) CheckIfBorder(&seg, y, x);
-            if (((arr[y][x] >> 24) & 0xFF) == 1) break;
-        }
-
-        // then start collecting all border pixels using that checkpoint
-        stack.push_back(new uint16_t[3]{y, x, 0});
-        while ((last = stack.size() - 1) != -1) {
-            y = stack[last][0], x = stack[last][1], avoidDr = stack[last][2];
-            stack.pop_back();
-            ny = y, nx = x;
-            if (avoidDr != 1 && y > 0) { // northern
-                ny = y - 1;
-                if (IsNextB(&seg, ny, nx))
-                    stack.push_back(new uint16_t[3]{ny, nx, 1});
+    for (y = 0; y < h; y++) {
+        if (y == 0 || y == h - 1)
+            for (x = 0; x < w; x++)
+                SetAsBorder(y, x);
+        else
+            for (x = 0; x < w; x++) {
+                if (x == 0 or x == w - 1) {
+                    SetAsBorder(y, x);
+                    continue;
+                }
+                if (((arr[y][x] >> 24) & 0xFF) == 1) continue;
+                CheckIfBorder(y, x, y, x + 1); //     eastern
+                CheckIfBorder(y, x, y + 1, x + 1); // south-eastern
+                CheckIfBorder(y, x, y + 1, x); //     southern
+                CheckIfBorder(y, x, y + 1, x - 1); // south-western
             }
-            if (avoidDr != 2 && y > 0 && x < (w - 1)) { // north-eastern
-                ny = y - 1;
-                nx = x + 1;
-                if (IsNextB(&seg, ny, nx))
-                    stack.push_back(new uint16_t[3]{ny, nx, 2});
-            }
-            if (avoidDr != 3 && x < (w - 1)) { // eastern
-                nx = x + 1;
-                if (IsNextB(&seg, ny, nx))
-                    stack.push_back(new uint16_t[3]{ny, nx, 3});
-            }
-            if (avoidDr != 4 && y < (h - 1) && x < (w - 1)) { // south-eastern
-                ny = y + 1;
-                nx = x + 1;
-                if (IsNextB(&seg, ny, nx))
-                    stack.push_back(new uint16_t[3]{ny, nx, 4});
-            }
-            if (avoidDr != 5 && y < (h - 1)) { // southern
-                ny = y + 1;
-                if (IsNextB(&seg, ny, nx))
-                    stack.push_back(new uint16_t[3]{ny, nx, 5});
-            }
-            if (avoidDr != 6 && y < (h - 1) && x > 0) { // south-western
-                ny = y + 1;
-                nx = x - 1;
-                if (IsNextB(&seg, ny, nx))
-                    stack.push_back(new uint16_t[3]{ny, nx, 6});
-            }
-            if (avoidDr != 7 && x > 0) { // western
-                nx = x - 1;
-                if (IsNextB(&seg, ny, nx))
-                    stack.push_back(new uint16_t[3]{ny, nx, 7});
-            }
-            if (avoidDr != 8 && y > 0 && x > 0) { // north-western
-                ny = y - 1;
-                nx = x - 1;
-                if (IsNextB(&seg, ny, nx))
-                    stack.push_back(new uint16_t[3]{ny, nx, 8});
-            }
-        }
     }
     auto delta5 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
@@ -252,7 +207,7 @@ void Segmentation::Process(AImage *image) {
     t0 = chrono::system_clock::now();
     sort(segments.begin(), segments.end(),
          [](const Segment &a, const Segment &b) { return (a.p.size() > b.p.size()); });
-    LOGI("Biggest borders of biggest segment: %zu", segments[0].border.size());
+    // LOGI("Biggest borders of biggest segment: %zu", segments[0].border.size());
     for (uint16_t seg = 0; seg < 20; seg++) // Segment &seg: segments
         shortTermMemory.Insert(segments[seg].m, segments[seg].w, segments[seg].h,
                                segments[seg].border);
@@ -295,32 +250,20 @@ uint32_t Segmentation::FindPixelOfASegmentToDissolveIn(Segment *seg) {
     return 0xFFFFFFFF;
 }
 
-void Segmentation::CheckIfBorder(Segment *seg, uint16_t y, uint16_t x) {
-    if ( // do NOT use "&&" for straight neighbours!
-            (y == 0 || seg->id != status[y - 1][x]) || // northern
-            ((y > 0 && x < (w - 1)) && status[y - 1][x + 1]) || // north-eastern
-            (x == (w - 1) || seg->id != status[y][x + 1]) ||  // eastern
-            ((y < (h - 1) && x < (w - 1)) && seg->id != status[y + 1][x + 1]) || // north-eastern
-            (y == (h - 1) || seg->id != status[y + 1][x]) ||  // southern
-            ((y < (h - 1) && x > 0) && seg->id != status[y + 1][x - 1]) || // south-western
-            (x == 0 || seg->id != status[y][x - 1]) || // western
-            ((y > 0 && x > 0) && seg->id != status[y - 1][x - 1]) // north-western
-            ) {
-        arr[y][x] |= 1 << 24;
-        seg->border.push_back(pair(
-                (100.0 / seg->w) * (seg->min_x - x), // fractional X
-                (100.0 / seg->h) * (seg->min_y - y)  // fractional Y
-        ));
-    } else arr[y][x] |= 2 << 24;
+void Segmentation::CheckIfBorder(uint16_t y1, uint16_t x1, uint16_t y2, uint16_t x2) {
+    if (status[y1][x1] != status[y2][x2]) {
+        SetAsBorder(y1, x1);
+        SetAsBorder(y2, x2);
+    }
 }
 
-bool Segmentation::IsNextB(Segment *org_s, uint16_t y, uint16_t x) {
-    if (status[y][x] == org_s->id) return false;
-    if (((arr[y][x] >> 24) & 0xFF) == 0) {
-        CheckIfBorder(s_index[status[y][x]], y, x);
-        return ((arr[y][x] >> 24) & 0xFF) == 1;
-    }
-    return false;
+void Segmentation::SetAsBorder(uint16_t y, uint16_t x) {
+    arr[y][x] |= 1 << 24;
+    Segment *seg = s_index[status[y][x]];
+    seg->border.push_back(pair(
+            (100.0 / seg->w) * (seg->min_x - x), // fractional X
+            (100.0 / seg->h) * (seg->min_y - y)  // fractional Y
+    ));
 }
 
 void Segmentation::Reset() {

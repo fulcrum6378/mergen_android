@@ -45,7 +45,7 @@ private:
     uint32_t status[1088][1088];
     // vector of all Segments
     std::vector<Segment> segments;
-    // simulates recursive programming TODO (vector is always better for it than list!)
+    // simulates recursive programming (vector is always better for it than list!)
     std::vector<uint16_t *> stack;
     // maps IDs of Segments to themselves
     std::unordered_map<uint32_t, Segment *> s_index;
@@ -57,10 +57,10 @@ private:
     uint32_t FindPixelOfASegmentToDissolveIn(Segment *seg);
 
     // Checks if this pixel is in border.
-    void CheckIfBorder(Segment *seg, uint16_t y, uint16_t x);
+    void CheckIfBorder(uint16_t y1, uint16_t x1, uint16_t y2, uint16_t x2);
 
-    // Checks if this is a border pixel and not detected before.
-    bool IsNextB(Segment *org_s, uint16_t y, uint16_t x);
+    // Recognises this pixel as border.
+    void SetAsBorder(uint16_t y, uint16_t x);
 
     void Reset();
 
