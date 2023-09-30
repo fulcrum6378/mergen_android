@@ -250,7 +250,8 @@ void Segmentation::Process(AImage *image) {
 
     // 6. store the segments
     t0 = chrono::system_clock::now();
-    sort(segments.begin(), segments.end(), SegmentSorter());
+    sort(segments.begin(), segments.end(),
+         [](const Segment &a, const Segment &b) { return (a.p.size() > b.p.size()); });
     for (uint16_t seg = 0; seg < 20; seg++) // Segment &seg: segments
         shortTermMemory.Insert(segments[seg].m, segments[seg].w, segments[seg].h,
                                segments[seg].border);

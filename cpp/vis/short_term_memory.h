@@ -53,10 +53,11 @@ public:
     ) {
         // write the shape file
         std::ofstream shf(dirShapes + std::to_string(nextId), std::ios::binary);
-        for (int8_t mm = 0; mm < 3; mm++) shf.put(m[mm]);
+        shf.put(m[0]);
+        shf.put(m[1]);
+        shf.put(m[2]);
         shf.write((char *) &w, sizeof(w));
         shf.write((char *) &h, sizeof(h));
-        //LOGI("%d", int(shf.tellp()));
         for (std::pair p: path) {
             shf.write((char *) &p.first, sizeof(p.first));
             shf.write((char *) &p.second, sizeof(p.second));
