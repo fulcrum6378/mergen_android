@@ -143,7 +143,7 @@ void Segmentation::Process(AImage *image) {
     for (Segment &seg: segments) {
         // average colours of each segment FIXME something is wrong here!
         aa = 0, bb = 0, cc = 0;
-        for (uint32_t &p: seg.p) {
+        for (uint32_t p: seg.p) {
             col = arr[p >> 16][p & 0xFFFF];
             aa += (col >> 16) & 0xFF;
             bb += (col >> 8) & 0xFF;
@@ -207,9 +207,12 @@ void Segmentation::Process(AImage *image) {
     t0 = chrono::system_clock::now();
     sort(segments.begin(), segments.end(),
          [](const Segment &a, const Segment &b) { return (a.p.size() > b.p.size()); });
-    for (uint16_t seg = 0; seg < 20; seg++) // Segment &seg: segments
+    l_ = segments.size();
+    for (uint16_t seg = 0; seg < 20; seg++) {// Segment &seg: segments
+        if (seg >= l_) break;
         shortTermMemory.Insert(segments[seg].m, segments[seg].w, segments[seg].h,
                                segments[seg].border);
+    }
     shortTermMemory.SaveState();
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
