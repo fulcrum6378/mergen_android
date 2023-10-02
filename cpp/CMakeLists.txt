@@ -19,7 +19,6 @@ add_library(main SHARED
         hpt/touchscreen.cpp
         hpt/touchscreen.h
 
-        mem/manifest.cpp
         mem/manifest.h
 
         mov/vibrator.cpp

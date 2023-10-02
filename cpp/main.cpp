@@ -19,12 +19,12 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     jmethodID mCaptured = env->GetMethodID(
             env->FindClass("ir/mahdiparastesh/mergen/Main"), "captured", "()V");
 
+    Manifest::init();
+    rew = new Rewarder(env, gMain); // must be declared before the rest
+
     vis = new Camera(jvm, gMain, mCaptured);
     aud = new Microphone();
     hpt = new Touchscreen(rew);
-
-    Manifest::init();
-    rew = new Rewarder(env, gMain);
 
     // ComputeVK().run(state->activity->assetManager);
 
@@ -59,11 +59,11 @@ Java_ir_mahdiparastesh_mergen_Main_stop(JNIEnv *, jobject) {
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
-    delete rew;
-    rew = nullptr;
-
     delete aud;
     aud = nullptr;
+
+    delete rew;
+    rew = nullptr;
 }
 
 

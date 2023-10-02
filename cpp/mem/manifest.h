@@ -30,9 +30,6 @@ public:
 
     // Interaction ID `0` is reserved for Normality.
     static void init() {
-        interactions[0] = Interaction{ // reward system
-                0, ActType::VIS, 0, 0, 0, 0, 0, 0
-        };
         interactions[1] = Interaction{ // back camera
                 1, ActType::VIS, .7, .75, -1, 30, 80, 6
         };

@@ -5,7 +5,7 @@
 #include "../rew/expression.h"
 
 struct Criterion {
-    uint16_t id;
+    uint8_t id;
     [[maybe_unused]] int8_t interaction_id;
     float weight;
     [[maybe_unused]] char const *desc;
@@ -22,7 +22,7 @@ private:
 
     std::unordered_map<uint8_t, Criterion> criteria;
     std::unordered_map<uint8_t, double> scores;
-    std::unordered_map<uint16_t, Expression *> expressions;
+    std::unordered_map<uint8_t, Expression *> expressions;
 
     void AddCriterion(Criterion criterion);
 

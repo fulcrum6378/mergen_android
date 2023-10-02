@@ -12,7 +12,7 @@ protected:
     jobject main_;
 
 public:
-    uint16_t id;
+    uint8_t id;
     [[maybe_unused]] int8_t interaction_id;
 
     Expression(uint16_t _id, [[maybe_unused]] int8_t interaction_id, JNIEnv *env, jobject main) :

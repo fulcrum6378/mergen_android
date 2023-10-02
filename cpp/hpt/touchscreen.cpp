@@ -48,8 +48,11 @@ void Touchscreen::CheckForRewards() {
         double distance = sqrt(pow(x_ - xM, 2) + pow(y_ - yM, 2));
         if (distance < 150.0) inRange = true;
     }
-    if (inRange) rew_->SetScore(0, -1.0);
-    else rew_->SetScore(0, 0.0);
+    if (inRange) {
+        score -= 0.03;
+        if (score < -1.0) score = -1.0;
+    } else score = 0.0;
+    rew_->SetScore(0, score);
 }
 
 Touchscreen::~Touchscreen() {}

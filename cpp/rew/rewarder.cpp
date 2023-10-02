@@ -16,7 +16,7 @@ Rewarder::Rewarder(JNIEnv *env, jobject main) {
 }
 
 void Rewarder::AddCriterion(Criterion criterion) {
-    criteria[criteria.size()] = criterion;
+    criteria[criterion.id] = criterion;
     scores[criterion.id] = 0.0;
 }
 
@@ -27,6 +27,7 @@ void Rewarder::AddExpression(Expression *expression) {
 /** An interface for any sense to declare its score. */
 void Rewarder::SetScore(uint8_t criterionId, double score) {
     // ASSERT(score >= -1.0 && score <= 1.0, "Invalid reward score!")
+    if (scores[criterionId] == score) return;
     scores[criterionId] = score;
     Compute();
 }
