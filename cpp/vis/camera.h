@@ -4,6 +4,7 @@
 #include <camera/NdkCameraDevice.h>
 #include <camera/NdkCameraManager.h>
 #include <camera/NdkCameraMetadataTags.h>
+#include <jni.h>
 #include <map>
 #include <media/NdkImageReader.h>
 #include <string>
@@ -41,6 +42,8 @@ private:
     AImageReader *reader_{};
     bool recording_{false};
     BitmapStream *bmp_stream_{};
+    JNIEnv *env_;
+    jobject main_;
 
     // Managing cameras
     ACameraManager *cameraMgr_;
@@ -83,7 +86,7 @@ private:
 public:
     std::pair<int16_t, int16_t> dimensions;
 
-    Camera();
+    Camera(JNIEnv *env, jobject main);
 
     void CreateSession(ANativeWindow *displayWindow);
 

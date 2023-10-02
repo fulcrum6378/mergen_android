@@ -1,6 +1,9 @@
 package ir.mahdiparastesh.mergen;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -29,10 +32,12 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     private boolean isRecording = false;
     private Toast toast;
     private Shaker shaker;
+    private ObjectAnimator captureAnimation;
 
     private RelativeLayout root;
     private View colouring;
     private TextureView preview;
+    private View capture;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +46,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         root = findViewById(R.id.root);
         colouring = findViewById(R.id.colouring);
         preview = findViewById(R.id.preview);
+        capture = findViewById(R.id.capture);
 
         // ask for camera and microphone permissions
         String[] requiredPerms =
@@ -159,6 +165,21 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     @SuppressWarnings("unused")
     void vibrate(int amplitude) {
         shaker.amplitude = amplitude;
+    }
+
+    /** Called by vis/Camera whenever a new frame is captured for analysis or mere saving. */
+    @SuppressWarnings("unused")
+    void captured() {
+        capture.setAlpha(.9f);
+        captureAnimation = ObjectAnimator.ofFloat(capture, View.ALPHA, .9f, 0f)
+                .setDuration(200);
+        captureAnimation.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                captureAnimation = null;
+            }
+        });
+        captureAnimation.start();
     }
 
     @SuppressWarnings("unused")

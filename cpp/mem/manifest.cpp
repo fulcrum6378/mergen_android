@@ -14,9 +14,6 @@ std::map<int8_t, Interaction> *Manifest::output;
 
 void Manifest::create() {
     input = new std::map<int8_t, Interaction>{};
-    (*input)[0] = Interaction{ // reward system
-            0, ActType::REW, 0, 0, 0, 0, 0, 0
-    };
     (*input)[1] = Interaction{ // back camera
             1, ActType::VIS, .7, .75, -1, 30, 80, 6
     };

@@ -8,7 +8,8 @@
  * its return value will be needed for Main::getCameraDimensions, then we should have some
  * configurations done and then we'll create a camera session.
  */
-Camera::Camera() : captureSessionState_(CaptureSessionState::MAX_STATE) {
+Camera::Camera(JNIEnv *env, jobject main) :
+        env_(env), main_(main), captureSessionState_(CaptureSessionState::MAX_STATE) {
 
     // initialise ACameraManager and get ACameraDevice instances
     cameraMgr_ = ACameraManager_create();
@@ -130,7 +131,7 @@ void Camera::DetermineCaptureDimensions() {
         int32_t format = entry.data.i32[i + 0];
         if (input || format != VIS_IMAGE_FORMAT) continue;
 
-        std::pair<int32_t, int32_t> ent(entry.data.i32[i + 1], entry.data.i32[i + 2]);
+        std::pair <int32_t, int32_t> ent(entry.data.i32[i + 1], entry.data.i32[i + 2]);
         //if (ent.first == ent.second) continue; // discard square dimensions
 
         if (abs(ent.second - VIS_IMAGE_NEAREST_HEIGHT) <
@@ -233,6 +234,14 @@ void Camera::ImageCallback(AImageReader *reader) {
             used = bmp_stream_->HandleImage(image);
     }
     if (!used) AImage_delete(image);
+    else {
+        JavaVM *jvm = nullptr;
+        env_->GetJavaVM(&jvm);
+        jvm->AttachCurrentThread(&env_, nullptr);
+        env_->CallVoidMethod(main_, env_->GetMethodID(
+                env_->FindClass("ir/mahdiparastesh/mergen/Main"), "captured", "()V"));
+    }
+    // FIXME https://stackoverflow.com/questions/13263340/findclass-from-any-thread-in-android-jni
 }
 
 Camera::~Camera() {

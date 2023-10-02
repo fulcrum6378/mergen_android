@@ -18,7 +18,7 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     Manifest::create();
     rew = new Rewarder(env, gMain);
 
-    vis = new Camera();
+    vis = new Camera(env, gMain);
     aud = new Microphone();
     hpt = new Touchscreen(rew);
 
