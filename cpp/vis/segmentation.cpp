@@ -149,19 +149,11 @@ void Segmentation::Process(AImage *image) {
             aa += (col >> 16) & 0xFF;
             bb += (col >> 8) & 0xFF;
             cc += col & 0xFF;
-            /*aa += pow((col >> 16) & 0xFF, 2);
-            bb += pow((col >> 8) & 0xFF, 2);
-            cc += pow(col & 0xFF, 2);*/
-            // https://stackoverflow.com/questions/649454/what-is-the-best-way-to-average-two-
-            // colors-that-define-a-linear-gradient
         }
         l_ = seg.p.size();
         seg.m = new uint8_t[3]{static_cast<uint8_t>(aa / l_),
                                static_cast<uint8_t>(bb / l_),
                                static_cast<uint8_t>(cc / l_)};
-        /*seg.m = new uint8_t[3]{static_cast<uint8_t>(sqrt(aa / l_)),
-                               static_cast<uint8_t>(sqrt(bb / l_)),
-                               static_cast<uint8_t>(sqrt(cc / l_))};*/
 
         // detect boundaries (min_y, min_x, max_y, max_x)
         isFirst = true;
@@ -242,6 +234,9 @@ bool Segmentation::CompareColours(uint32_t a, uint32_t b) {
     return abs(static_cast<int16_t>(((a >> 16) & 0xFF) - ((b >> 16) & 0xFF))) <= 4 &&
            abs(static_cast<int16_t>(((a >> 8) & 0xFF) - ((b >> 8) & 0xFF))) <= 4 &&
            abs(static_cast<int16_t>((a & 0xFF) - (b & 0xFF))) <= 4;
+    /*return abs(static_cast<int16_t>((a >> 16) & 0xFF) - static_cast<int16_t>((b >> 16) & 0xFF)) <= 4 &&
+           abs(static_cast<int16_t>((a >> 8) & 0xFF) - static_cast<int16_t>((b >> 8) & 0xFF)) <= 4 &&
+           abs(static_cast<int16_t>(a & 0xFF) - static_cast<int16_t>(b & 0xFF)) <= 4;*/
     // abs() is much more efficient than `256 - static_cast<uint8_t>(a - b)`!
 }
 
@@ -272,8 +267,8 @@ void Segmentation::SetAsBorder(uint16_t y, uint16_t x) {
     arr[y][x] |= 1 << 24;
     Segment *seg = s_index[status[y][x]];
     seg->border.push_back(pair(
-            (100.0 / seg->w) * (seg->min_x - x), // fractional X
-            (100.0 / seg->h) * (seg->min_y - y)  // fractional Y
+            (100.0 / seg->w) * (x - seg->min_x), // fractional X
+            (100.0 / seg->h) * (y - seg->min_y)  // fractional Y
     ));
 }
 
