@@ -21,7 +21,7 @@ void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *ctx) {
 }
 
 void Speaker::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq) {
-    std::lock_guard<std::mutex> lock(stopMutex_);
+    std::lock_guard <std::mutex> lock(stopMutex_);
 
     // retrieve the finished device buf and put onto the free queue so recorder could re-use it
     sample_buf *buf;
@@ -128,7 +128,7 @@ Speaker::Speaker(SampleFormat *sampleFormat, SLEngineItf slEngine)
 }
 
 Speaker::~Speaker() {
-    std::lock_guard<std::mutex> lock(stopMutex_);
+    std::lock_guard <std::mutex> lock(stopMutex_);
 
     // destroy buffer queue audio player object, and invalidate all associated
     // interfaces
@@ -165,12 +165,8 @@ void Speaker::SetBufQueue(
 SLresult Speaker::Start() {
     SLuint32 state;
     SLresult result = (*playItf_)->GetPlayState(playItf_, &state);
-    if (result != SL_RESULT_SUCCESS) {
-        return SL_BOOLEAN_FALSE;
-    }
-    if (state == SL_PLAYSTATE_PLAYING) {
-        return SL_BOOLEAN_TRUE;
-    }
+    if (result != SL_RESULT_SUCCESS) return SL_BOOLEAN_FALSE;
+    if (state == SL_PLAYSTATE_PLAYING) return SL_BOOLEAN_TRUE;
 
     result = (*playItf_)->SetPlayState(playItf_, SL_PLAYSTATE_STOPPED);
     SLASSERT(result);
@@ -193,7 +189,7 @@ void Speaker::Stop() {
 
     if (state == SL_PLAYSTATE_STOPPED) return;
 
-    std::lock_guard<std::mutex> lock(stopMutex_);
+    std::lock_guard <std::mutex> lock(stopMutex_);
 
     result = (*playItf_)->SetPlayState(playItf_, SL_PLAYSTATE_STOPPED);
     SLASSERT(result);

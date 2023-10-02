@@ -10,9 +10,9 @@ public:
     Colouring(JNIEnv *env, jobject main) :
             Expression(EXPRESSION_ID_SCREEN_1, OUTPUT_ID_SCREEN, env, main) {}
 
-    void OnReward(double fortuna);
+    void OnReward(double fortuna) override;
 
-    ~Colouring() {}
+    ~Colouring() override = default;
 };
 
 #endif //VIS_COLOURING_H

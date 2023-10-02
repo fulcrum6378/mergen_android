@@ -50,7 +50,7 @@ private:
     // maps IDs of Segments to themselves
     std::unordered_map<uint32_t, Segment *> s_index;
 
-    ShortTermMemory shortTermMemory;
+    ShortTermMemory* shortTermMemory;
 
     bool CompareColours(uint32_t a, uint32_t b);
 

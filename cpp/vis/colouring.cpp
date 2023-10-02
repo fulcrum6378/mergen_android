@@ -1,4 +1,4 @@
-#include <complex>
+#include <cmath>
 
 #include "colouring.h"
 

@@ -1,8 +1,6 @@
 #ifndef REW_REWARDER_H
 #define REW_REWARDER_H
 
-#include <vector>
-
 #include "../mem/manifest.h"
 #include "../rew/expression.h"
 
@@ -22,9 +20,9 @@ private:
     /** Range -1..+1 */
     double fortuna{0.0};
 
-    std::map<uint8_t, Criterion> *criteria;
-    std::map<uint8_t, double> *scores;
-    std::map<uint16_t, Expression *> *expressions;
+    std::unordered_map<uint8_t, Criterion> criteria;
+    std::unordered_map<uint8_t, double> scores;
+    std::unordered_map<uint16_t, Expression *> expressions;
 
     void AddCriterion(Criterion criterion);
 

@@ -18,7 +18,7 @@ public:
     Expression(uint16_t _id, [[maybe_unused]] int8_t interaction_id, JNIEnv *env, jobject main) :
             env_(env), main_(main), id(_id), interaction_id() {}
 
-    virtual void OnReward(double fortuna) = 0;
+    virtual void OnReward(double fortuna) {}
 
     virtual ~Expression() {}
 };

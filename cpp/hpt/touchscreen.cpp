@@ -3,9 +3,7 @@
 #include "../global.h"
 #include "touchscreen.h"
 
-Touchscreen::Touchscreen(Rewarder *rew) : rew_(rew) {
-    on = new std::map<int16_t, bool>();
-}
+Touchscreen::Touchscreen(Rewarder *rew) : rew_(rew) {}
 
 /** Device ID (dev) is always 3 in my phone. */
 void Touchscreen::OnTouchEvent(int16_t /*dev*/, int8_t act, int16_t id, float x, float y,
@@ -15,7 +13,7 @@ void Touchscreen::OnTouchEvent(int16_t /*dev*/, int8_t act, int16_t id, float x,
     switch (act) {
         case 0: // ACTION_DOWN
         case 5: // ACTION_POINTER_1_DOWN
-            (*on)[id] = true;
+            on[id] = true;
             //ss << "CREATE";
             break;
         case 1: // ACTION_UP
@@ -23,7 +21,7 @@ void Touchscreen::OnTouchEvent(int16_t /*dev*/, int8_t act, int16_t id, float x,
         case 4: // ACTION_OUTSIDE
         case 6: // ACTION_POINTER_1_UP
             //ss << "DELETE";
-            (*on)[id] = false;
+            on[id] = false;
             break;
         case 2:
             //ss << "UPDATE";
@@ -42,8 +40,8 @@ void Touchscreen::OnTouchEvent(int16_t /*dev*/, int8_t act, int16_t id, float x,
 
 void Touchscreen::CheckForRewards() {
     bool anyOn = false;
-    for (auto o: *on) if (o.second) anyOn = true;
-    auto screen = (*Manifest::input)[INPUT_ID_TOUCH];
+    for (auto o: on) if (o.second) anyOn = true;
+    auto screen = Manifest::interactions[INPUT_ID_TOUCH];
     bool inRange = false;
     if (anyOn) {
         double xM = (double) screen.width / 2.0, yM = 10.0 * ((double) screen.height / 100.0);
@@ -54,7 +52,4 @@ void Touchscreen::CheckForRewards() {
     else rew_->SetScore(0, 0.0);
 }
 
-Touchscreen::~Touchscreen() {
-    delete on;
-    on = nullptr;
-}
+Touchscreen::~Touchscreen() {}

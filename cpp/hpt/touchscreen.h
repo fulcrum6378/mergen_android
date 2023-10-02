@@ -8,7 +8,7 @@
 class Touchscreen {
 private:
     Rewarder *rew_;
-    std::map<int16_t, bool> *on;
+    std::unordered_map<int16_t, bool> on;
     float x_{0.0};
     float y_{0.0};
 

@@ -23,7 +23,7 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     aud = new Microphone();
     hpt = new Touchscreen(rew);
 
-    Manifest::create();
+    Manifest::init();
     rew = new Rewarder(env, gMain);
 
     // ComputeVK().run(state->activity->assetManager);
@@ -59,9 +59,8 @@ Java_ir_mahdiparastesh_mergen_Main_stop(JNIEnv *, jobject) {
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
-    delete &rew;
+    delete rew;
     rew = nullptr;
-    Manifest::destroy();
 
     delete aud;
     aud = nullptr;
@@ -101,5 +100,5 @@ extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onTouch(
         JNIEnv *, jobject, jint dev, jint act, jint id, jfloat x, jfloat y, jfloat size) {
     if (!hpt) return;
-    hpt->OnTouchEvent(dev, act, id, x, y, size); // NOLINT(cppcoreguidelines-narrowing-conversions)
+    hpt->OnTouchEvent(dev, act, id, x, y, size);
 }
