@@ -1,4 +1,5 @@
 #include <algorithm> // std::sort
+#include <cmath>
 #include <cstring>
 
 #include "segmentation.h"
@@ -25,8 +26,8 @@ void Segmentation::Process(AImage *image) {
     AImage_getPlaneRowStride(image, 0, &yStride);
     AImage_getPlaneRowStride(image, 1, &uvStride);
     AImage_getPlaneData(image, 0, &yPixel, &yLen);
-    AImage_getPlaneData(image, 1, &vPixel, &vLen);
-    AImage_getPlaneData(image, 2, &uPixel, &uLen);
+    AImage_getPlaneData(image, 1, &uPixel, &uLen);
+    AImage_getPlaneData(image, 2, &vPixel, &vLen);
     int32_t uvPixelStride;
     AImage_getPlanePixelStride(image, 1, &uvPixelStride);
 
@@ -141,18 +142,26 @@ void Segmentation::Process(AImage *image) {
     bool isFirst;
     uint16_t y, x;
     for (Segment &seg: segments) {
-        // average colours of each segment FIXME something is wrong here!
+        // average colours of each segment
         aa = 0, bb = 0, cc = 0;
         for (uint32_t p: seg.p) {
             col = arr[p >> 16][p & 0xFFFF];
             aa += (col >> 16) & 0xFF;
             bb += (col >> 8) & 0xFF;
             cc += col & 0xFF;
+            /*aa += pow((col >> 16) & 0xFF, 2);
+            bb += pow((col >> 8) & 0xFF, 2);
+            cc += pow(col & 0xFF, 2);*/
+            // https://stackoverflow.com/questions/649454/what-is-the-best-way-to-average-two-
+            // colors-that-define-a-linear-gradient
         }
         l_ = seg.p.size();
         seg.m = new uint8_t[3]{static_cast<uint8_t>(aa / l_),
                                static_cast<uint8_t>(bb / l_),
                                static_cast<uint8_t>(cc / l_)};
+        /*seg.m = new uint8_t[3]{static_cast<uint8_t>(sqrt(aa / l_)),
+                               static_cast<uint8_t>(sqrt(bb / l_)),
+                               static_cast<uint8_t>(sqrt(cc / l_))};*/
 
         // detect boundaries (min_y, min_x, max_y, max_x)
         isFirst = true;

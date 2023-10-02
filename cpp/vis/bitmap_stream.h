@@ -112,7 +112,7 @@ public:
         AImage_getPlaneRowStride(image, 1, &uvStride);
         AImage_getPlaneData(image, 0, &yPixel, &yLen);
         AImage_getPlaneData(image, 1, &vPixel, &vLen);
-        AImage_getPlaneData(image, 2, &uPixel, &uLen);
+        AImage_getPlaneData(image, 2, &uPixel, &uLen); // IT'S "YVU" NOT YUV!!!
         int32_t uvPixelStride;
         AImage_getPlanePixelStride(image, 1, &uvPixelStride);
         /*AImage_getWidth(image, &width);

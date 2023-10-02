@@ -79,8 +79,8 @@ The first version of *Mergen*, started at **13 December 2020**, was intended to 
 [natural language processing (NLP)](https://en.wikipedia.org/wiki/Natural_language_processing) bot,
 something like ChatGPT today. In other words, it was going to simulate brain of a **mature human being**.
 
-It was intended to process **only digital texts** in a server using pure Python, and the server had to communicate with
-an Android client app.
+It was intended to process **only digital texts** in a server using pure Python, and the server had to
+communicate with an Android client app.
 But I concluded that such kind of robot has little "actual" use to human beings;
 therefore I cancelled its development and pursued a better method in Mergen II, see below.
 
@@ -132,7 +132,7 @@ After its successful image processing, I started translating it to C++ since 24 
 ## Timeline of development
 
 This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
-(updated as of 2023.09.28)
+(updated as of 2023.10.02)
 
 | # | Starting date          | Duration | Active days | %  |   Version   |
 |---|:-----------------------|:---------|:-----------:|:--:|:-----------:|
@@ -143,13 +143,13 @@ This table shows how much I've worked on Mergen and when. The timeline is divide
 | 5 | 2022/07/26, 6401/05/04 | 109 days |     7+8     | 14 |     0.4     |
 | 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    | 32 |     0.4     |
 | 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     | 2  |      -      |
-| 8 | 2023/04/29, 6402/02/09 | 152 days |    40+11    | 34 | 0.4 (+mycv) |
+| 8 | 2023/04/29, 6402/02/09 | 156 days |    44+11    | 35 | 0.4 (+mycv) |
 
 - Periods 1, 2 and 3 include days of researches which are not recorded.
-- Period 5 includes a few days of researching/practicing about/on a new programming language for Mergen (4 days),
-  JNI+NDK (3 days) and OCR (1 day).
-- Periods 6, 7 and 8 include a few days when I was learning/evaluating Vulkan (18-0-0 days), OpenBSD (2-0-0 days),
-  FreeBSD (1-0-2 days), TensorFlow (3-0-0 days), PyTorch (3-1-0/5 days),
+- Period 5 includes a few days of researching/practicing about/on a new programming language
+  for Mergen (4 days), JNI+NDK (3 days) and OCR (1 day).
+- Periods 6, 7 and 8 include a few days when I was learning/evaluating Vulkan (18-0-0 days),
+  OpenBSD (2-0-0 days), FreeBSD (1-0-2 days), TensorFlow (3-0-0 days), PyTorch (3-1-0/5 days),
   Statistics (Data Science, 0-0-3/5 days) and Machine Learning (0-0-5 days).
 
 ## License
