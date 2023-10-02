@@ -11,6 +11,9 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.os.SystemClock;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -30,6 +33,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     private long ndkCamera;
     private Surface surface = null;
     private boolean isRecording = false;
+    private static Handler handler;
     private Toast toast;
     private Shaker shaker;
     private ObjectAnimator captureAnimation;
@@ -54,6 +58,28 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         if (Arrays.stream(requiredPerms).anyMatch(s -> checkSelfPermission(s) < 0))
             requestPermissions(requiredPerms, 1);
         else permitted();
+
+        // handler
+        handler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(Message msg) {
+                //noinspection SwitchStatementWithTooFewBranches
+                switch (msg.what) {
+                    case 0:
+                        capture.setAlpha(.9f);
+                        captureAnimation = ObjectAnimator.ofFloat(capture, View.ALPHA, .9f, 0f)
+                                .setDuration(200);
+                        captureAnimation.addListener(new AnimatorListenerAdapter() {
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                captureAnimation = null;
+                            }
+                        });
+                        captureAnimation.start();
+                        break;
+                }
+            }
+        };
 
         // miscellaneus jobs
         shaker = new Shaker();
@@ -161,25 +187,16 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         });
     }
 
+    /** Called by vis/Camera whenever a new frame is captured for analysis or mere saving. */
+    @SuppressWarnings("unused")
+    void captured() {
+        handler.obtainMessage(0).sendToTarget();
+    }
+
     /** @param amplitude must be in range 1..255 */
     @SuppressWarnings("unused")
     void vibrate(int amplitude) {
         shaker.amplitude = amplitude;
-    }
-
-    /** Called by vis/Camera whenever a new frame is captured for analysis or mere saving. */
-    @SuppressWarnings("unused")
-    void captured() {
-        capture.setAlpha(.9f);
-        captureAnimation = ObjectAnimator.ofFloat(capture, View.ALPHA, .9f, 0f)
-                .setDuration(200);
-        captureAnimation.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                captureAnimation = null;
-            }
-        });
-        captureAnimation.start();
     }
 
     @SuppressWarnings("unused")

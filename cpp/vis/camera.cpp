@@ -9,7 +9,8 @@
  * configurations done and then we'll create a camera session.
  */
 Camera::Camera(JavaVM *jvm, jobject main, jmethodID mCaptured) :
-        jvm_(jvm), main_(main), mCaptured_(mCaptured), captureSessionState_(CaptureSessionState::MAX_STATE) {
+        jvm_(jvm), main_(main), mCaptured_(mCaptured),
+        captureSessionState_(CaptureSessionState::MAX_STATE) {
 
     // initialise ACameraManager and get ACameraDevice instances
     cameraMgr_ = ACameraManager_create();
@@ -240,7 +241,6 @@ void Camera::ImageCallback(AImageReader *reader) {
         jvm_->AttachCurrentThread(&env, nullptr);
         env->CallVoidMethod(main_, mCaptured_);
     }
-    // FIXME https://stackoverflow.com/questions/13263340/findclass-from-any-thread-in-android-jni
 }
 
 Camera::~Camera() {

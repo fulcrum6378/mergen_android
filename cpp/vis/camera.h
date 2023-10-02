@@ -13,12 +13,14 @@
 #include "bitmap_stream.h"
 #include "segmentation.h"
 
-// together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone!
+/** Together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone!
+ * @see <a href="https://developer.android.com/reference/android/graphics/ImageFormat#YUV_420_888">
+ * YUV_420_888</a> */
 #define VIS_IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
 /** Let's make it a sqaure for less trouble, at least for now!
  * it would result in 2336x1080 in Galaxy A50. */
 #define VIS_IMAGE_NEAREST_HEIGHT 1088
-#define MAX_BUF_COUNT 4 // max image buffers
+#define MAX_BUF_COUNT 4 // maximum image buffers
 
 static bool VIS_SAVE = false;
 

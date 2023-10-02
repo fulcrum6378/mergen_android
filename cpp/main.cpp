@@ -5,20 +5,16 @@
 #include "rew/rewarder.h"
 #include "vis/camera.h"
 
-static Rewarder *rew = nullptr;
-
 static Camera *vis = nullptr;
 static Microphone *aud = nullptr;
 static Touchscreen *hpt = nullptr;
-JavaVM *jvm = nullptr;
 
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm_, void */*reserved*/) {
-    jvm = jvm_;
-    return JNI_VERSION_1_6;
-}
+static Rewarder *rew = nullptr;
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
+    JavaVM *jvm = nullptr;
+    env->GetJavaVM(&jvm);
     jobject gMain = env->NewGlobalRef(main);
     jmethodID mCaptured = env->GetMethodID(
             env->FindClass("ir/mahdiparastesh/mergen/Main"), "captured", "()V");
@@ -63,12 +59,12 @@ Java_ir_mahdiparastesh_mergen_Main_stop(JNIEnv *, jobject) {
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
-    delete aud;
-    aud = nullptr;
-
     delete &rew;
     rew = nullptr;
     Manifest::destroy();
+
+    delete aud;
+    aud = nullptr;
 }
 
 
@@ -81,9 +77,8 @@ extern "C" JNIEXPORT jobject JNICALL
 Java_ir_mahdiparastesh_mergen_Main_getCameraDimensions(
         JNIEnv *env, jobject, jlong cameraObj) {
     if (!cameraObj) return nullptr;
-    auto *cam = reinterpret_cast<Camera *>(cameraObj);
     jclass cls = env->FindClass("android/util/Size");
-    auto dim = cam->dimensions;
+    auto dim = reinterpret_cast<Camera *>(cameraObj)->dimensions;
     jobject previewSize = env->NewObject(
             cls, env->GetMethodID(cls, "<init>", "(II)V"),
             dim.first, dim.second);
