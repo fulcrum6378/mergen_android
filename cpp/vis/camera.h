@@ -42,8 +42,9 @@ private:
     AImageReader *reader_{};
     bool recording_{false};
     BitmapStream *bmp_stream_{};
-    JNIEnv *env_;
+    JavaVM *jvm_;
     jobject main_;
+    jmethodID mCaptured_;
 
     // Managing cameras
     ACameraManager *cameraMgr_;
@@ -86,7 +87,7 @@ private:
 public:
     std::pair<int16_t, int16_t> dimensions;
 
-    Camera(JNIEnv *env, jobject main);
+    Camera(JavaVM *jvm, jobject main, jmethodID mCaptured);
 
     void CreateSession(ANativeWindow *displayWindow);
 

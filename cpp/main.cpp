@@ -10,17 +10,25 @@ static Rewarder *rew = nullptr;
 static Camera *vis = nullptr;
 static Microphone *aud = nullptr;
 static Touchscreen *hpt = nullptr;
+JavaVM *jvm = nullptr;
+
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm_, void */*reserved*/) {
+    jvm = jvm_;
+    return JNI_VERSION_1_6;
+}
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     jobject gMain = env->NewGlobalRef(main);
+    jmethodID mCaptured = env->GetMethodID(
+            env->FindClass("ir/mahdiparastesh/mergen/Main"), "captured", "()V");
+
+    vis = new Camera(jvm, gMain, mCaptured);
+    aud = new Microphone();
+    hpt = new Touchscreen(rew);
 
     Manifest::create();
     rew = new Rewarder(env, gMain);
-
-    vis = new Camera(env, gMain);
-    aud = new Microphone();
-    hpt = new Touchscreen(rew);
 
     // ComputeVK().run(state->activity->assetManager);
 
