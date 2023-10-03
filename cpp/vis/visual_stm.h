@@ -1,14 +1,15 @@
-#ifndef VIS_SHORT_TERM_MEMORY_H
-#define VIS_SHORT_TERM_MEMORY_H
+#ifndef VIS_VISUAL_STM_H
+#define VIS_VISUAL_STM_H
 
 #include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <sys/stat.h>
 
-#include "global.h"
+#include "../global.h"
 
-class ShortTermMemory {
+/** Visual Short-Term Memory */
+class VisualSTM {
 private:
     std::string visDirPath = "/data/data/ir.mahdiparastesh.mergen/files/vis/",
             dirShapes = "shapes", dirY = "y", dirU = "u", dirV = "v", dirRt = "r",
@@ -16,7 +17,7 @@ private:
     uint16_t nextId;
 
 public:
-    ShortTermMemory() {
+    VisualSTM() {
         // create directories if they don't exist and resolves their path variables
         struct stat sb;
         std::string root("");
@@ -96,4 +97,4 @@ public:
     }
 };
 
-#endif //VIS_SHORT_TERM_MEMORY_H
+#endif //VIS_VISUAL_STM_H

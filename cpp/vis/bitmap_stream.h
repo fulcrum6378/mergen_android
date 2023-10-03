@@ -5,7 +5,10 @@
 #include <media/NdkImage.h>
 #include <thread>
 
-#include "global.h"
+#include "../global.h"
+
+#define MAX(a, b) ({__typeof__(a) _a = (a); __typeof__(b) _b = (b); _a > _b ? _a : _b; })
+#define MIN(a, b) ({__typeof__(a) _a = (a); __typeof__(b) _b = (b); _a < _b ? _a : _b; })
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
@@ -38,9 +41,18 @@ struct bmpfile_dib_info {
 
 #pragma clang diagnostic pop
 
+/**
+ * Writes image frames consecutively into a single file called `vis.rgb`,
+ * which can be divided into multiple *.BMP images by MyCV subproject.
+ * <p>
+ * A few lines were copied from <a href="https://github.com/kbuffardi/Bitmap">Bitmap by kbuffardi</a>.
+ *
+ * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/vis/rgb_to_bitmap.py">
+ * RGB to Bitmap</a>
+ */
 class BitmapStream {
 private:
-    std::ofstream *store{nullptr};
+    std::ofstream store;
     std::mutex store_mutex;
     int skipped_count = 0;
     std::pair<int16_t, int16_t> dimensions_;
@@ -48,9 +60,7 @@ private:
 
 public:
     BitmapStream(std::pair<int16_t, int16_t> dimensions) {
-        store = new std::ofstream(
-                (cacheDirPath + std::string("vis.rgb")).c_str(),
-                std::ios::out | std::ios::binary);
+        store.open((cacheDirPath + std::string("vis.rgb")).c_str(), std::ios::binary);
         dimensions_ = dimensions;
     }
 
@@ -149,11 +159,11 @@ public:
                 nG = (nG >> 10) & 0xff;
                 nB = (nB >> 10) & 0xff;
 
-                store->put((char) nR);
-                store->put((char) nG);
-                store->put((char) nB);
+                store.put((char) nR);
+                store.put((char) nG);
+                store.put((char) nB);
             }
-            for (int i = 0; i < width % 4; i++) store->put(0);
+            for (int i = 0; i < width % 4; i++) store.put(0);
         }
         /*LOGE("%s", (std::to_string(store->tellp()) +
                     " bytes - dimensions: " + std::to_string(width) + "x" + std::to_string(height)
@@ -163,8 +173,7 @@ public:
     }
 
     ~BitmapStream() {
-        delete store;
-        store = nullptr;
+        store.close();
     }
 };
 

@@ -1,7 +1,7 @@
 #include <thread>
 
+#include "../global.h"
 #include "camera.h"
-#include "global.h"
 
 /**
  * This should be invoked before the first Main::onSurfaceTextureAvailable;
@@ -222,6 +222,9 @@ bool Camera::SetRecording(bool b) {
  * You should always call acquireNextImage() and delete() even if you don't wanna save it!
  *
  * AImage_getTimestamp sucks! e.g. gives "1968167967185224" for 2023.06.28!
+ *
+ * This function is executed in a separate thread.
+ * TODO Should we avoid creating a third thread?
  */
 void Camera::ImageCallback(AImageReader *reader) {
     AImage *image = nullptr;

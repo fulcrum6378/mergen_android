@@ -32,10 +32,9 @@ add_library(main SHARED
         vis/camera.cpp
         vis/camera.h
         vis/colouring.h
-        vis/global.h
         vis/segmentation.cpp
         vis/segmentation.h
-        vis/short_term_memory.h
+        vis/visual_stm.h
 
         vlk/hello_vk.cpp
         vlk/hello_vk.h

@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-#include "short_term_memory.h"
+#include "visual_stm.h"
 
 struct Segment {
     // starting from 1
@@ -16,7 +16,7 @@ struct Segment {
     std::list<uint32_t> p;
     // average colour
     uint8_t *m;
-    // dimensions
+    // boundaries and dimensions
     uint16_t min_y, min_x, max_y, max_x, w, h;
     // border pixels
     std::list<std::pair<float, float>> border;
@@ -27,30 +27,30 @@ struct Segment {
  *
  * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/segmentation/region_growing_4.py">
  * Region Growing 4 (image segmentation)</a>
- * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/tracing/surrounder_rg3.py">
- * Surrounder (image tracing)</a>
+ * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/tracing/comprehensive_rg4.py">
+ * Comprehensive (image tracing)</a>
  *
  * Dimensions are defined explicitly in order to avoid type-casting complications.
  */
 class Segmentation {
 private:
-    // configurations
-    const uint16_t h = 1088, w = 1088;  // width, height
+    // width, height
+    const uint16_t h = 1088, w = 1088;
     // minimum allowed number of pixels for a segment to contain
     const uint32_t min_seg = 40;
 
     // multidimensional array of pixels + last byte indicates whether it is a border pixel or not.
-    uint32_t arr[1088][1088]; // b(2=false,1=true,0=null), Y, U, V
+    uint32_t arr[1088][1088]; // four bytes: b(1=true,0=false), Y, U, V
     // maps pixels to their Segment IDs
     uint32_t status[1088][1088];
-    // vector of all Segments
+    // a vector containing all Segments
     std::vector<Segment> segments;
     // simulates recursive programming (vector is always better for it than list!)
     std::vector<uint16_t *> stack;
-    // maps IDs of Segments to themselves
+    // maps IDs of Segments to their pointers
     std::unordered_map<uint32_t, Segment *> s_index;
-
-    ShortTermMemory* shortTermMemory;
+    // visual short-term memory (output)
+    VisualSTM *stm;
 
     bool CompareColours(uint32_t a, uint32_t b);
 

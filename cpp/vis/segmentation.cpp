@@ -6,7 +6,7 @@
 
 using namespace std;
 
-Segmentation::Segmentation() : shortTermMemory(new ShortTermMemory()) {}
+Segmentation::Segmentation() : stm(new VisualSTM()) {}
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "ConstantConditionsOC"
@@ -211,10 +211,10 @@ void Segmentation::Process(AImage *image) {
     l_ = segments.size();
     for (uint16_t seg = 0; seg < 20; seg++) {// Segment &seg: segments
         if (seg >= l_) break;
-        shortTermMemory->Insert(segments[seg].m, segments[seg].w, segments[seg].h,
-                               segments[seg].border);
+        stm->Insert(segments[seg].m, segments[seg].w, segments[seg].h,
+                    segments[seg].border);
     }
-    shortTermMemory->SaveState();
+    stm->SaveState();
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
@@ -282,6 +282,6 @@ void Segmentation::Reset() {
 }
 
 Segmentation::~Segmentation() {
-    delete shortTermMemory;
-    shortTermMemory = nullptr;
+    delete stm;
+    stm = nullptr;
 }
