@@ -31,7 +31,6 @@ add_library(main SHARED
         vis/bitmap_stream.h
         vis/camera.cpp
         vis/camera.h
-        vis/colouring.cpp
         vis/colouring.h
         vis/global.h
         vis/segmentation.cpp

@@ -10,14 +10,10 @@
 
 class ShortTermMemory {
 private:
-    std::string visDirPath = "/data/data/ir.mahdiparastesh.mergen/files/vis/";
-    std::string dirShapes = "shapes";
-    std::string dirY = "y";
-    std::string dirU = "u";
-    std::string dirV = "v";
-    std::string dirRt = "r";
+    std::string visDirPath = "/data/data/ir.mahdiparastesh.mergen/files/vis/",
+            dirShapes = "shapes", dirY = "y", dirU = "u", dirV = "v", dirRt = "r",
+            nextIdFName = "next_shape_id";
     uint16_t nextId;
-    const char *nextIdPath;
 
 public:
     ShortTermMemory() {
@@ -35,7 +31,7 @@ public:
         }
 
         // find ID of the latest shape
-        nextIdPath = (visDirPath + "next_shape_id").c_str();
+        const char *nextIdPath = (visDirPath + nextIdFName).c_str();
         if (stat(nextIdPath, &sb) >= 2) {
             std::ifstream ssf(nextIdPath, std::ios::binary);
             char buf[2];
@@ -93,9 +89,8 @@ public:
         if (nextId > 65535) nextId = 0;
     }
 
-    void SaveState() { // FIXME Segmentation::Process cannot write, but the main thread can!!?!
-        std::ofstream ssf(nextIdPath, std::ios::binary);
-        // LOGI("%d %d", ssf.is_open(), ssf.good());
+    void SaveState() {
+        std::ofstream ssf((visDirPath + nextIdFName).c_str(), std::ios::binary);
         ssf.write((char *) &nextId, sizeof(nextId));
         ssf.close();
     }
