@@ -1,5 +1,4 @@
 #include <algorithm> // std::sort
-#include <cmath>
 #include <cstring>
 
 #include "segmentation.h"

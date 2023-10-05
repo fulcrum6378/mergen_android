@@ -70,8 +70,9 @@ Camera::Camera(JavaVM *jvm, jobject main, jmethodID mCaptured) :
     };
     AImageReader_setImageListener(reader_, &listener);
 
-    // prepare the image analysis objects
+    // prepare for image analysis
     segmentation_ = new Segmentation();
+
 }
 
 /**
@@ -220,11 +221,9 @@ bool Camera::SetRecording(bool b) {
  * Called when a frame is captured.
  * Beware that AImageReader_acquireLatestImage deletes the previous images.
  * You should always call acquireNextImage() and delete() even if you don't wanna save it!
+ * Make sure you create a separate thread for any kind of heavy work, or they'll make the preview lag!
  *
  * AImage_getTimestamp sucks! e.g. gives "1968167967185224" for 2023.06.28!
- *
- * This function is executed in a separate thread.
- * TODO Should we avoid creating a third thread?
  */
 void Camera::ImageCallback(AImageReader *reader) {
     AImage *image = nullptr;
@@ -250,7 +249,7 @@ Camera::~Camera() {
     Preview(false);
     ACameraCaptureSession_close(captureSession_);
 
-    // destroy the image analysis objects
+    // destroy objects related to image analysis
     delete segmentation_;
     segmentation_ = nullptr;
 
