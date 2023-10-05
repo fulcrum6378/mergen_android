@@ -8,6 +8,7 @@ add_definitions(-DVK_USE_PLATFORM_ANDROID_KHR=1)
 add_library(main SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         global.h
+        manifest.h
 
         aud/commons.cpp
         aud/commons.h
@@ -19,9 +20,6 @@ add_library(main SHARED
         hpt/touchscreen.cpp
         hpt/touchscreen.h
 
-        mem/manifest.h
-
-        mov/vibrator.cpp
         mov/vibrator.h
 
         rew/expression.h
@@ -45,7 +43,7 @@ add_library(main SHARED
 
 target_include_directories(main PUBLIC
         D:/Programming/android/ndk/26.0.10792818/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include
-) # for CLion to recognise the NDK headers
+) # for CLion to index the Android NDK headers
 
 target_link_libraries(main
         android      # for ANativeWindow

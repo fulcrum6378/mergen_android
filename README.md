@@ -42,17 +42,17 @@ Mergen is intended to have 2 aspects:
 
 ## Parts
 
-|      Codename      | Description                                                           |
-|:------------------:|:----------------------------------------------------------------------|
-| [**AUD**](cpp/aud) | everything related to **Auditory** inputs and outputs.                |
-| [**HPT**](cpp/hpt) | everything related to **Touch** (haptic) inputs.                      |
-| [**MOV**](cpp/mov) | everything related to **Movements**.                                  |
-| [**REW**](cpp/rew) | everything related to the **Reward System** (reinforcement learning). |
-| [**VIS**](cpp/vis) | everything related to **Visual** inputs and outputs.                  |
+|      Codename      | Description                                 |
+|:------------------:|:--------------------------------------------|
+| [**AUD**](cpp/aud) | controlling **Auditory** inputs and outputs |
+| [**HPT**](cpp/hpt) | controlling **Touch** (haptic) inputs       |
+| [**MOV**](cpp/mov) | controlling **Movements**                   |
+| [**REW**](cpp/rew) | **Reward System** (reinforcement learning)  |
+| [**SCM**](cpp/scm) | Simulation of the **Subconscious Mind**     |
+| [**VIS**](cpp/vis) | controlling **Visual** inputs and outputs   |
 
 Deprecated parts:
 
-- [MEM](cpp/mem) : everything related to *Memory*.
 - [VLK](cpp/vlk) : contains two practices of the *Vulkan* API.
 
 ## History
@@ -155,85 +155,5 @@ This table shows how much I've worked on Mergen and when. The timeline is divide
 ## License
 
 ```
-VIM LICENSE
-
-I)  There are no restrictions on distributing unmodified copies of Mergen
-    except that they must include this license text.  You can also distribute
-    unmodified parts of Mergen, likewise unrestricted except that they must
-    include this license text.  You are also allowed to include executables
-    that you made from the unmodified Mergen sources, plus your own usage
-    examples.
-
-II) It is allowed to distribute a modified (or extended) version of Mergen,
-    including executables and/or source code, when the following four
-    conditions are met:
-    1) This license text must be included unmodified.
-    2) The modified Mergen must be distributed in one of the following five
-       ways:
-       a) If you make changes to Mergen yourself, you must clearly describe
-          in the distribution how to contact you.  When the maintainer asks
-          you (in any way) for a copy of the modified Mergen you
-          distributed, you must make your changes, including source code,
-          available to the maintainer without fee.  The maintainer reserves
-          the right to include your changes in the official version of
-          Mergen.  What the maintainer will do with your changes and under
-          what license they will be distributed is negotiable.  If there has
-          been no negotiation then this license, or a later version, also
-          applies to your changes. The current maintainer is Mahdi Parastesh
-          <fulcrum1378@gmail.com>.  If this changes it will be announced in
-          appropriate places (most likely mahdiparastesh.ir).  When it is
-          completely impossible to contact the maintainer, the obligation to
-          send him your changes ceases.  Once the maintainer has confirmed
-          that he has received your changes they will not have to be sent
-          again.
-       b) If you have received a modified Mergen that was distributed as
-          mentioned under a) you are allowed to further distribute it
-          unmodified, as mentioned at I).  If you make additional changes the
-          text under a) applies to those changes.
-       c) Provide all the changes, including source code, with every copy of
-          the modified Mergen you distribute.  This may be done in the form
-          of a context diff.  You can choose what license to use for new code
-          you add.  The changes and their license must not restrict others
-          from making their own changes to the official version of Mergen.
-       d) When you have a modified Mergen which includes changes as
-          mentioned under c), you can distribute it without the source code
-          for the changes if the following three conditions are met:
-          - The license that applies to the changes permits you to distribute
-            the changes to the Mergen maintainer without fee or restriction,
-            and permits the Mergen maintainer to include the changes in the
-            official version of Mergen without fee or restriction.
-          - You keep the changes for at least three years after last
-            distributing the corresponding modified Mergen.  When the
-            maintainer or someone who you distributed the modified Mergen
-            to asks you (in any way) for the changes within this period, you
-            must make them available to him.
-          - You clearly describe in the distribution how to contact you.  This
-            contact information must remain valid for at least three years
-            after last distributing the corresponding modified Mergen, or
-            as long as possible.
-       e) When the GNU General Public License (GPL) applies to the changes,
-          you can distribute the modified Mergen under the GNU GPL version
-          2 or any later version.
-    3) A message must be added, at least in the intro screen, such that the
-       user of the modified Mergen is able to see that it was modified.
-       When distributing as mentioned under 2)e) adding the message is only
-       required for as far as this does not conflict with the license used
-       for the changes.
-    4) The contact information as required under 2)a) and 2)d) must not be
-       removed or changed, except that the person himself can make
-       corrections.
-
-III) If you distribute a modified version of Mergen, you are encouraged to
-     use the Vim license for your changes and make them available to the
-     maintainer, including the source code.  The preferred way to do this is
-     by e-mail or by uploading the files to a server and e-mailing the URL. If
-     the number of changes is small (e.g., a modified Makefile) e-mailing a
-     context diff will do.  The e-mail address to be used is
-     <fulcrum1378@gmail.com>
-
-IV)  It is not allowed to remove this license from the distribution of the
-     Mergen sources, parts of it or from a modified version.  You may use
-     this license for previous Mergen releases instead of the license that
-     they came with, at your option.
-
+Copyright © Mahdi Parastesh - All Rights Reserved.
 ```
