@@ -41,9 +41,10 @@ add_library(main SHARED
         vlk/compute_vk.h
 )
 
+# For CLion to index the Android NDK headers
 target_include_directories(main PUBLIC
-        D:/Programming/android/ndk/26.0.10792818/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include
-) # for CLion to index the Android NDK headers
+        $ENV{ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include
+)
 
 target_link_libraries(main
         android      # for ANativeWindow

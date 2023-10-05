@@ -1,7 +1,7 @@
 #ifndef REW_REWARDER_H
 #define REW_REWARDER_H
 
-#include "../mem/manifest.h"
+#include "../manifest.h"
 #include "../rew/expression.h"
 
 struct Criterion {
