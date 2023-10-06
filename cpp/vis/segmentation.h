@@ -37,7 +37,9 @@ private:
     // width, height
     const uint16_t h = 1088, w = 1088;
     // minimum allowed number of pixels for a segment to contain
-    const uint32_t min_seg = 40;
+    const uint32_t min_seg_size = 40;
+    // maximum allowed segments to be stored in the short-term memory
+    const uint16_t max_segs = 10;
 
     // multidimensional array of pixels + last byte indicates whether it is a border pixel or not.
     uint32_t arr[1088][1088]; // four bytes: b(1=true,0=false), Y, U, V

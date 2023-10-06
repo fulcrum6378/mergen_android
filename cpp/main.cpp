@@ -1,4 +1,6 @@
 #include <android/native_window_jni.h>
+#include <filesystem>
+#include <sys/stat.h>
 
 #include "aud/microphone.h"
 #include "hpt/touchscreen.h"
@@ -13,20 +15,25 @@ static Rewarder *rew = nullptr;
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
+    // retrieve necessary JNI references
     JavaVM *jvm = nullptr;
     env->GetJavaVM(&jvm);
     jobject gMain = env->NewGlobalRef(main);
     jmethodID mCaptured = env->GetMethodID(
             env->FindClass("ir/mahdiparastesh/mergen/Main"), "captured", "()V");
 
+    // ensure that /files/ dir exists
+    const char *filesDir = "/data/data/ir.mahdiparastesh.mergen/files/";
+    struct stat sb;
+    if (stat(filesDir, &sb) != 0) mkdir(filesDir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
     Manifest::init();
     rew = new Rewarder(env, gMain); // must be declared before the rest
+    // ComputeVK().run(state->activity->assetManager);
 
     vis = new Camera(jvm, gMain, mCaptured);
     aud = new Microphone();
     hpt = new Touchscreen(rew);
-
-    // ComputeVK().run(state->activity->assetManager);
 
     return reinterpret_cast<jlong>(vis);
 }
