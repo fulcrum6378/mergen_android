@@ -10,7 +10,7 @@ Segmentation::Segmentation() : stm(new VisualSTM()) {}
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "ConstantConditionsOC"
 
-void Segmentation::Process(AImage *image) {
+void Segmentation::Process(AImage *image, bool *recording) {
     locked = true;
     /*#include <fstream> #include <ios>
     ofstream test("/data/data/ir.mahdiparastesh.mergen/cache/test.yuv", ios::binary);*/
@@ -213,7 +213,8 @@ void Segmentation::Process(AImage *image) {
         stm->Insert(segments[seg].m, segments[seg].w, segments[seg].h,
                     segments[seg].border);
     }
-    stm->SaveState();
+    stm->OnFrameFinished();
+    if (*recording) stm->SaveState();
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
@@ -223,7 +224,10 @@ void Segmentation::Process(AImage *image) {
          delta1 + delta2 + delta3 + delta4 + delta5 + delta6);
     LOGI("----------------------------------");
 
-    Reset();
+    // clear data and unlock the frame
+    memset(status, 0, sizeof(status));
+    s_index.clear();
+    segments.clear();
     locked = false;
 }
 
@@ -272,12 +276,6 @@ void Segmentation::SetAsBorder(uint16_t y, uint16_t x) {
             (100.0 / seg->w) * (x - seg->min_x), // fractional X
             (100.0 / seg->h) * (y - seg->min_y)  // fractional Y
     ));
-}
-
-void Segmentation::Reset() {
-    memset(status, 0, sizeof(status));
-    s_index.clear();
-    segments.clear();
 }
 
 Segmentation::~Segmentation() {

@@ -232,7 +232,7 @@ void Camera::ImageCallback(AImageReader *reader) {
     if (recording_) {
         if (!VIS_SAVE) {
             used = !segmentation_->locked;
-            if (used) std::thread(&Segmentation::Process, segmentation_, image).detach();
+            if (used) std::thread(&Segmentation::Process, segmentation_, image, &recording_).detach();
         } else
             used = bmp_stream_->HandleImage(image);
     }

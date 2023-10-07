@@ -1,5 +1,4 @@
 #include <android/native_window_jni.h>
-#include <filesystem>
 #include <sys/stat.h>
 
 #include "aud/microphone.h"

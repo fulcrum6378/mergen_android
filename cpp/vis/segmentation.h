@@ -64,14 +64,12 @@ private:
     // Recognises this pixel as border.
     void SetAsBorder(uint16_t y, uint16_t x);
 
-    void Reset();
-
 public:
     bool locked = false;
 
     Segmentation();
 
-    void Process(AImage *image);
+    void Process(AImage *image, bool *recording);
 
     ~Segmentation();
 };

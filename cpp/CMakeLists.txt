@@ -52,5 +52,5 @@ target_link_libraries(main
         log          # for <android/log.h>
         mediandk     # for AImageReader
         OpenSLES
-        vulkan
+        #vulkan
 )

@@ -13,10 +13,10 @@ class VisualSTM {
 private:
     std::string visDirPath = "/data/data/ir.mahdiparastesh.mergen/files/vis/",
             dirShapes = "shapes", dirFrame = "f", dirY = "y", dirU = "u", dirV = "v", dirRt = "r",
-            nextFrameIdFile = "next_frame_id", nextShapeIdFile = "next_shape_id";
+            savedStateFile = "saved_state";
     uint64_t nextFrameId;
     uint16_t nextShapeId;
-    std::list <uint16_t> shapesInFrame;
+    std::list<uint16_t> shapesInFrame;
 
 public:
     VisualSTM() {
@@ -33,36 +33,26 @@ public:
             if (stat(path, &sb) != 0) mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
         }
 
-        // find ID of the latest shape
-        const char *nextShapeIdPath = (visDirPath + nextShapeIdFile).c_str();
-        if (std::filesystem::exists(nextShapeIdPath)) {
-            std::ifstream nsf(nextShapeIdPath, std::ios::binary);
-            char buf[2];
-            nsf.read(buf, 2);
-            nextShapeId = (buf[1] << 8) | buf[0];
-            nsf.close();
-        }
-
-        // find ID of the latest frame
-        const char *nextFrameIdPath = (visDirPath + nextFrameIdFile).c_str();
-        if (std::filesystem::exists(nextFrameIdPath)) {
-            std::ifstream nff(nextFrameIdPath, std::ios::binary);
-            char buf[8];
-            nff.read(buf, 8);
+        // load saved state: { nextFrameId, nextShapeId }
+        const char *savedStatePath = (visDirPath + savedStateFile).c_str();
+        if (std::filesystem::exists(savedStatePath)) {
+            std::ifstream ssf(savedStatePath, std::ios::binary);
+            char buf[10];
+            ssf.read(buf, 10);
             nextFrameId = ((uint64_t) buf[7] << 56) | ((uint64_t) buf[6] << 48) |
                           ((uint64_t) buf[5] << 40) | ((uint64_t) buf[4] << 32) |
                           (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0];
-            nff.close();
+            nextShapeId = (buf[1] << 9) | buf[8];
+            ssf.close();
         }
     }
 
     void Insert(
             uint8_t *m,
-            uint16_t w,
-            uint16_t h,
+            uint16_t w, uint16_t h,
             std::list<std::pair<float, float>> path
     ) {
-        // write the shape file
+        // write shape file
         std::ofstream shf(dirShapes + std::to_string(nextShapeId), std::ios::binary);
         shf.write((char *) &nextFrameId, 8);
         shf.put(m[0]);
@@ -101,6 +91,7 @@ public:
         rtf.write((char *) &nextShapeId, 2);
         rtf.close();
 
+        // save and increment shape ID
         shapesInFrame.push_back(nextShapeId);
         nextShapeId++;
         if (nextShapeId > 65535) nextShapeId = 0;
@@ -108,8 +99,8 @@ public:
 
     /** Anything that needs to be done at the end.
      * Don't save paths in variables in the constructor! */
-    void SaveState() {
-        // save the Frame Index
+    void OnFrameFinished() {
+        // save Frame Index
         std::ofstream f_f((dirFrame + std::to_string(nextFrameId)).c_str(), std::ios::binary);
         for (uint16_t sid: shapesInFrame)
             f_f.write((char *) &sid, 2);
@@ -117,16 +108,14 @@ public:
         shapesInFrame.clear();
         nextFrameId++;
         // if (nextFrameId > 18446744073709552000) nextShapeId = 0;
+    }
 
-        // save the `nextFrameId`
-        std::ofstream nff((visDirPath + nextFrameIdFile).c_str(), std::ios::binary);
-        nff.write((char *) &nextFrameId, 8);
-        nff.close();
-
-        // save the `nextShapeId`
-        std::ofstream nsf((visDirPath + nextShapeIdFile).c_str(), std::ios::binary);
-        nsf.write((char *) &nextShapeId, 2);
-        nsf.close();
+    /** Saves current state: { nextFrameId, nextShapeId } */
+    void SaveState() {
+        std::ofstream ssf((visDirPath + savedStateFile).c_str(), std::ios::binary);
+        ssf.write((char *) &nextFrameId, 8);
+        ssf.write((char *) &nextShapeId, 2);
+        ssf.close();
     }
 };
 
