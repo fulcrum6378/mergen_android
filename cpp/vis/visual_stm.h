@@ -171,32 +171,35 @@ public:
                     stm->IterateIndex(to_string(y).c_str(),
                                       [](VisualSTM *stm, uint16_t sid) -> void { l.push_back(sid); });
                     stm->ym[y] = l;
+                    //LOGW("%u %u %zu", l.front(), l.back(), l.size());
                 }
                 if (!stm->um.contains(u)) {
                     static list<uint16_t> l;
                     stm->IterateIndex(to_string(u).c_str(),
                                       [](VisualSTM *stm, uint16_t sid) -> void { l.push_back(sid); });
                     stm->um[u] = l;
+                    //LOGW("%u %u %zu", l.front(), l.back(), l.size());
                 }
                 if (!stm->vm.contains(v)) {
                     static list<uint16_t> l;
                     stm->IterateIndex(to_string(v).c_str(),
                                       [](VisualSTM *stm, uint16_t sid) -> void { l.push_back(sid); });
                     stm->vm[v] = l;
+                    //LOGW("%u %u %zu", l.front(), l.back(), l.size());
                 }
                 if (!stm->rm.contains(r)) {
                     static list<uint16_t> l;
                     stm->IterateIndex(to_string(r).c_str(),
                                       [](VisualSTM *stm, uint16_t sid) -> void { l.push_back(sid); });
                     stm->rm[r] = l;
+                    //LOGW("%u %u %zu", l.front(), l.back(), l.size());
                 }
 
-                // remove this shape ID from all indexes FIXME problem is here
-                stm->ym[y].remove(sid);
-                stm->um[u].remove(sid);
-                stm->vm[v].remove(sid);
-                stm->rm[r].remove(sid);
-                // FIXME implement a method that when a value was found, it breaks the loop
+                // remove this shape ID from all indexes
+                stm->RemoveFromIndex(stm->ym[y], sid);
+                stm->RemoveFromIndex(stm->um[u], sid);
+                stm->RemoveFromIndex(stm->vm[v], sid);
+                stm->RemoveFromIndex(stm->rm[r], sid);
             });
             remove(fPath);
         }
@@ -211,13 +214,23 @@ public:
                 chrono::system_clock::now() - t).count());
     }
 
+    void RemoveFromIndex(list<uint16_t> l, uint16_t id) {
+        for (auto sid = begin(l); sid != end(l); ++sid)
+            if (*sid == id) {
+                l.erase(sid);
+                break;
+            }
+    }
+
     /** Reads a Sequence File. */
     void IterateIndex(const char *path, void onEach(VisualSTM *, uint16_t)) {
         char buf[2];
         stat(path, &sb);
         ifstream sff(path, ios::binary);
-        for (uint32_t _ = 0; _ < sb.st_size; _ += 2) {
+        for (off_t _ = 0; _ < sb.st_size; _ += 2) { // FIXME problem is here
             sff.read(buf, 2);
+            uint16_t t = (buf[1] << 8) | buf[0];
+            LOGW("%u", t);
             onEach(this, (buf[1] << 8) | buf[0]);
         }
         sff.close();
