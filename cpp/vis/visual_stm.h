@@ -4,6 +4,7 @@
 #include <cmath>
 #include <filesystem>
 #include <fstream>
+#include <iterator>
 #include <sys/stat.h>
 
 #include "../global.h"
@@ -15,18 +16,18 @@ class VisualSTM {
 private:
     const string visDirPath = "/data/data/ir.mahdiparastesh.mergen/files/vis/";
     // maximum frames allowed to be present in memory at a time
-    const uint16_t max_frames_stored = 5;
+    const uint16_t max_frames_stored = 3;
     // forget N frames whenever hit the maximum
     const uint64_t forget_n_frames = 1;
 
     string dirShapes = "shapes", dirFrame = "f", dirY = "y", dirU = "u", dirV = "v", dirRt = "r",
             savedStateFile = "saved_state";
-    uint64_t nextFrameId;
-    uint16_t nextShapeId;
+    uint64_t nextFrameId = 0;
+    uint16_t nextShapeId = 0;
     // ID of earliest frame which is still available in memory
-    uint64_t earliestFrameId;
+    uint64_t earliestFrameId = 0;
     // total number of frames available in memory
-    uint16_t framesStored;
+    uint16_t framesStored = 0;
     // IDs of shapes inside current frame
     list<uint16_t> shapesInFrame;
     // container for file statistics
@@ -95,25 +96,25 @@ public:
 
         // update Y indexes
         ofstream y_f((dirY + to_string(m[0])).c_str(),
-                          ios::app | ios::binary);
+                     ios::app | ios::binary);
         y_f.write((char *) &nextShapeId, 2);
         y_f.close();
 
         // update U indexes
         ofstream u_f((dirU + to_string(m[1])).c_str(),
-                          ios::app | ios::binary);
+                     ios::app | ios::binary);
         u_f.write((char *) &nextShapeId, 2);
         u_f.close();
 
         // update V indexes
         ofstream v_f((dirV + to_string(m[2])).c_str(),
-                          ios::app | ios::binary);
+                     ios::app | ios::binary);
         v_f.write((char *) &nextShapeId, 2);
         v_f.close();
 
         // update Ratio indexes
         ofstream rtf((dirRt + to_string(ratio)).c_str(),
-                          ios::app | ios::binary);
+                     ios::app | ios::binary);
         rtf.write((char *) &nextShapeId, 2);
         rtf.close();
 
@@ -142,21 +143,23 @@ public:
 
     /** Forgets some of oldest frames. */
     void Forget() {
+        LOGI("Forgetting started...");
         auto t = chrono::system_clock::now();
         const char *fPath;
+        //LOGE("%u .. %u", earliestFrameId, earliestFrameId + forget_n_frames);
         for (uint64_t f = earliestFrameId; f < earliestFrameId + forget_n_frames; f++) {
             fPath = (dirFrame + to_string(f)).c_str();
             IterateIndex(fPath, [](VisualSTM *stm, uint16_t sid) -> void {
-                char buf[2];
-                uint16_t r;
                 uint8_t y, u, v;
-                const char *sPath = (stm->dirShapes + to_string(sid)).c_str();
+                uint16_t r;
 
                 // open shape file, read its necessary details and then remove it
+                const char *sPath = (stm->dirShapes + to_string(sid)).c_str();
                 ifstream shf(sPath, ios::binary);
                 shf.read(reinterpret_cast<char *>(&y), 1);
                 shf.read(reinterpret_cast<char *>(&u), 1);
                 shf.read(reinterpret_cast<char *>(&v), 1);
+                char buf[2];
                 shf.read(buf, 2);
                 r = (buf[1] << 8) | buf[0];
                 shf.close();
@@ -181,19 +184,19 @@ public:
                                       [](VisualSTM *stm, uint16_t sid) -> void { l.push_back(sid); });
                     stm->vm[v] = l;
                 }
-                if (!stm->rm.contains(v)) {
+                if (!stm->rm.contains(r)) {
                     static list<uint16_t> l;
                     stm->IterateIndex(to_string(r).c_str(),
                                       [](VisualSTM *stm, uint16_t sid) -> void { l.push_back(sid); });
                     stm->rm[r] = l;
                 }
 
-                // remove shape ID from indexes
-                static uint16_t SID = sid;
-                stm->ym[y].remove_if([](const int &i) -> bool { return i == SID; });
-                stm->um[u].remove_if([](const int &i) -> bool { return i == SID; });
-                stm->vm[v].remove_if([](const int &i) -> bool { return i == SID; });
-                stm->rm[r].remove_if([](const int &i) -> bool { return i == SID; });
+                // remove this shape ID from all indexes FIXME problem is here
+                stm->ym[y].remove(sid);
+                stm->um[u].remove(sid);
+                stm->vm[v].remove(sid);
+                stm->rm[r].remove(sid);
+                // FIXME implement a method that when a value was found, it breaks the loop
             });
             remove(fPath);
         }
@@ -201,6 +204,9 @@ public:
         SaveIndexes<uint8_t>(&um, &dirU);
         SaveIndexes<uint8_t>(&vm, &dirV);
         SaveIndexes<uint16_t>(&rm, &dirRt);
+
+        earliestFrameId += forget_n_frames;
+        framesStored -= forget_n_frames;
         LOGI("Forgetting time: %lld", chrono::duration_cast<chrono::milliseconds>(
                 chrono::system_clock::now() - t).count());
     }
@@ -221,10 +227,15 @@ public:
     template<class INT>
     void SaveIndexes(unordered_map<INT, list<uint16_t>> *indexes, string *dir) {
         for (pair<const INT, list<uint16_t>> &index: (*indexes)) {
-            ofstream sff(((*dir) + to_string(index.first)).c_str(), ios::binary);
-            for (uint16_t sid: index.second)
-                sff.write((char *) &sid, 2);
-            sff.close();
+            const char *path = ((*dir) + to_string(index.first)).c_str();
+            if (!index.second.empty()) {
+                ofstream sff(path, ios::binary);
+                for (uint16_t sid: index.second)
+                    sff.write((char *) &sid, 2);
+                /*for(auto sid = begin(index.second); sid != end(index.second); ++sid)
+                    sff.write((char *) &sid, 2);*/
+                sff.close();
+            } else remove(path);
         }
         indexes->clear();
     }

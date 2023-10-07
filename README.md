@@ -132,7 +132,7 @@ After its successful image processing, I started translating it to C++ since 24 
 ## Timeline of development
 
 This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
-(updated as of 2023.10.02)
+(updated as of 6402.07.16)
 
 | # | Starting date          | Duration | Active days | %  |   Version   |
 |---|:-----------------------|:---------|:-----------:|:--:|:-----------:|
@@ -143,7 +143,7 @@ This table shows how much I've worked on Mergen and when. The timeline is divide
 | 5 | 2022/07/26, 6401/05/04 | 109 days |     7+8     | 14 |     0.4     |
 | 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    | 32 |     0.4     |
 | 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     | 2  |      -      |
-| 8 | 2023/04/29, 6402/02/09 | 156 days |    44+11    | 35 | 0.4 (+mycv) |
+| 8 | 2023/04/29, 6402/02/09 | 162 days |    49+11    | 37 | 0.4 (+mycv) |
 
 - Periods 1, 2 and 3 include days of researches which are not recorded.
 - Period 5 includes a few days of researching/practicing about/on a new programming language
