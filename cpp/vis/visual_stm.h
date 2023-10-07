@@ -8,16 +8,18 @@
 
 #include "../global.h"
 
+using namespace std;
+
 /** Visual Short-Term Memory */
 class VisualSTM {
 private:
-    const std::string visDirPath = "/data/data/ir.mahdiparastesh.mergen/files/vis/";
+    const string visDirPath = "/data/data/ir.mahdiparastesh.mergen/files/vis/";
     // maximum frames allowed to be present in memory at a time
     const uint16_t max_frames_stored = 5;
     // forget N frames whenever hit the maximum
     const uint64_t forget_n_frames = 1;
 
-    std::string dirShapes = "shapes", dirFrame = "f", dirY = "y", dirU = "u", dirV = "v", dirRt = "r",
+    string dirShapes = "shapes", dirFrame = "f", dirY = "y", dirU = "u", dirV = "v", dirRt = "r",
             savedStateFile = "saved_state";
     uint64_t nextFrameId;
     uint16_t nextShapeId;
@@ -26,16 +28,20 @@ private:
     // total number of frames available in memory
     uint16_t framesStored;
     // IDs of shapes inside current frame
-    std::list<uint16_t> shapesInFrame;
+    list<uint16_t> shapesInFrame;
     // container for file statistics
     struct stat sb;
+    // helper maps for altering 'uint8_t' indexes
+    unordered_map<uint8_t, list<uint16_t>> ym, um, vm;
+    // helper maps for altering 'uint16_t' indexes
+    unordered_map<uint16_t, list<uint16_t>> rm;
 
 public:
     VisualSTM() {
         // create directories if they don't exist and resolves their path variables
-        std::string root("");
-        for (std::string *dir: {&root, &dirShapes, &dirFrame, &dirY, &dirU, &dirV, &dirRt}) {
-            std::string branch = (*dir);
+        string root("");
+        for (string *dir: {&root, &dirShapes, &dirFrame, &dirY, &dirU, &dirV, &dirRt}) {
+            string branch = (*dir);
             if (branch != "") {
                 dir->insert(0, visDirPath);
                 dir->append("/");
@@ -45,13 +51,13 @@ public:
         }
 
         // count frames that are stored in memory
-        for (auto &_: std::filesystem::directory_iterator(std::filesystem::path{dirFrame}))
+        for (auto &_: filesystem::directory_iterator(filesystem::path{dirFrame}))
             framesStored++;
 
         // load saved state: { nextFrameId, nextShapeId, earliestFrameId }
         const char *savedStatePath = (visDirPath + savedStateFile).c_str();
-        if (std::filesystem::exists(savedStatePath)) {
-            std::ifstream ssf(savedStatePath, std::ios::binary);
+        if (filesystem::exists(savedStatePath)) {
+            ifstream ssf(savedStatePath, ios::binary);
             char buf[18];
             ssf.read(buf, sizeof(buf));
             nextFrameId = ((uint64_t) buf[7] << 56) | ((uint64_t) buf[6] << 48) |
@@ -68,44 +74,46 @@ public:
     void Insert(
             uint8_t *m,
             uint16_t w, uint16_t h,
-            std::list<std::pair<float, float>> path
+            list<pair<float, float>> path
     ) {
+        uint16_t ratio = round(((float) w / (float) h) * 10);
+
         // write shape file
-        std::ofstream shf(dirShapes + std::to_string(nextShapeId), std::ios::binary);
-        shf.write((char *) &nextFrameId, 8);
+        ofstream shf(dirShapes + to_string(nextShapeId), ios::binary);
         shf.put(m[0]);
         shf.put(m[1]);
         shf.put(m[2]);
+        shf.write((char *) &ratio, 2);
+        shf.write((char *) &nextFrameId, 8);
         shf.write((char *) &w, 2);
         shf.write((char *) &h, 2);
-        for (std::pair p: path) {
+        for (pair p: path) {
             shf.write((char *) &p.first, 4);
             shf.write((char *) &p.second, 4);
         }
         shf.close();
 
         // update Y indexes
-        std::ofstream y_f((dirY + std::to_string(m[0])).c_str(),
-                          std::ios::app | std::ios::binary);
+        ofstream y_f((dirY + to_string(m[0])).c_str(),
+                          ios::app | ios::binary);
         y_f.write((char *) &nextShapeId, 2);
         y_f.close();
 
         // update U indexes
-        std::ofstream u_f((dirU + std::to_string(m[1])).c_str(),
-                          std::ios::app | std::ios::binary);
+        ofstream u_f((dirU + to_string(m[1])).c_str(),
+                          ios::app | ios::binary);
         u_f.write((char *) &nextShapeId, 2);
         u_f.close();
 
         // update V indexes
-        std::ofstream v_f((dirV + std::to_string(m[2])).c_str(),
-                          std::ios::app | std::ios::binary);
+        ofstream v_f((dirV + to_string(m[2])).c_str(),
+                          ios::app | ios::binary);
         v_f.write((char *) &nextShapeId, 2);
         v_f.close();
 
         // update Ratio indexes
-        int16_t ratio = round(((float) w / (float) h) * 10);
-        std::ofstream rtf((dirRt + std::to_string(ratio)).c_str(),
-                          std::ios::app | std::ios::binary);
+        ofstream rtf((dirRt + to_string(ratio)).c_str(),
+                          ios::app | ios::binary);
         rtf.write((char *) &nextShapeId, 2);
         rtf.close();
 
@@ -118,7 +126,7 @@ public:
     /** Anything that needs to be done at the end. */
     void OnFrameFinished() {
         // save Frame Index
-        std::ofstream f_f((dirFrame + std::to_string(nextFrameId)).c_str(), std::ios::binary);
+        ofstream f_f((dirFrame + to_string(nextFrameId)).c_str(), ios::binary);
         for (uint16_t sid: shapesInFrame)
             f_f.write((char *) &sid, 2);
         f_f.close();
@@ -134,41 +142,97 @@ public:
 
     /** Forgets some of oldest frames. */
     void Forget() {
-        auto t = std::chrono::system_clock::now();
-        char buf[2];
-        uint16_t sid;
-        uint8_t y, u, v;
-        const char *fPath, *sPath;
+        auto t = chrono::system_clock::now();
+        const char *fPath;
         for (uint64_t f = earliestFrameId; f < earliestFrameId + forget_n_frames; f++) {
-            fPath = (dirFrame + std::to_string(f)).c_str();
-            stat(fPath, &sb);
-            std::ifstream f_f(fPath, std::ios::binary);
-            for (uint32_t _ = 0; _ < sb.st_size; _ += 2) {
-                f_f.read(buf, 2);
-                sid = (buf[1] << 8) | buf[0];
-                sPath = (dirShapes + std::to_string(sid)).c_str();
-                std::ifstream shf(fPath, std::ios::binary);
-                shf.seekg(8);
+            fPath = (dirFrame + to_string(f)).c_str();
+            IterateIndex(fPath, [](VisualSTM *stm, uint16_t sid) -> void {
+                char buf[2];
+                uint16_t r;
+                uint8_t y, u, v;
+                const char *sPath = (stm->dirShapes + to_string(sid)).c_str();
+
+                // open shape file, read its necessary details and then remove it
+                ifstream shf(sPath, ios::binary);
                 shf.read(reinterpret_cast<char *>(&y), 1);
                 shf.read(reinterpret_cast<char *>(&u), 1);
                 shf.read(reinterpret_cast<char *>(&v), 1);
-                // TODO read ratio which should be calculated again!!
+                shf.read(buf, 2);
+                r = (buf[1] << 8) | buf[0];
                 shf.close();
-                std::remove(sPath);
+                remove(sPath);
 
-                // TODO remove from indices Y, U, V and R
-            }
-            f_f.close();
-            std::remove(fPath);
+                // read unread indices
+                if (!stm->ym.contains(y)) {
+                    static list<uint16_t> l;
+                    stm->IterateIndex(to_string(y).c_str(),
+                                      [](VisualSTM *stm, uint16_t sid) -> void { l.push_back(sid); });
+                    stm->ym[y] = l;
+                }
+                if (!stm->um.contains(u)) {
+                    static list<uint16_t> l;
+                    stm->IterateIndex(to_string(u).c_str(),
+                                      [](VisualSTM *stm, uint16_t sid) -> void { l.push_back(sid); });
+                    stm->um[u] = l;
+                }
+                if (!stm->vm.contains(v)) {
+                    static list<uint16_t> l;
+                    stm->IterateIndex(to_string(v).c_str(),
+                                      [](VisualSTM *stm, uint16_t sid) -> void { l.push_back(sid); });
+                    stm->vm[v] = l;
+                }
+                if (!stm->rm.contains(v)) {
+                    static list<uint16_t> l;
+                    stm->IterateIndex(to_string(r).c_str(),
+                                      [](VisualSTM *stm, uint16_t sid) -> void { l.push_back(sid); });
+                    stm->rm[r] = l;
+                }
+
+                // remove shape ID from indexes
+                static uint16_t SID = sid;
+                stm->ym[y].remove_if([](const int &i) -> bool { return i == SID; });
+                stm->um[u].remove_if([](const int &i) -> bool { return i == SID; });
+                stm->vm[v].remove_if([](const int &i) -> bool { return i == SID; });
+                stm->rm[r].remove_if([](const int &i) -> bool { return i == SID; });
+            });
+            remove(fPath);
         }
-        LOGI("Forgetting time: %lld", std::chrono::duration_cast<std::chrono::milliseconds>(
-                std::chrono::system_clock::now() - t).count());
+        SaveIndexes<uint8_t>(&ym, &dirY);
+        SaveIndexes<uint8_t>(&um, &dirU);
+        SaveIndexes<uint8_t>(&vm, &dirV);
+        SaveIndexes<uint16_t>(&rm, &dirRt);
+        LOGI("Forgetting time: %lld", chrono::duration_cast<chrono::milliseconds>(
+                chrono::system_clock::now() - t).count());
+    }
+
+    /** Reads a Sequence File. */
+    void IterateIndex(const char *path, void onEach(VisualSTM *, uint16_t)) {
+        char buf[2];
+        stat(path, &sb);
+        ifstream sff(path, ios::binary);
+        for (uint32_t _ = 0; _ < sb.st_size; _ += 2) {
+            sff.read(buf, 2);
+            onEach(this, (buf[1] << 8) | buf[0]);
+        }
+        sff.close();
+    }
+
+    /** Save index in non-volatile memory and clear its data from RAM. */
+    template<class INT>
+    void SaveIndexes(unordered_map<INT, list<uint16_t>> *indexes, string *dir) {
+        for (pair<const INT, list<uint16_t>> &index: (*indexes)) {
+            ofstream sff(((*dir) + to_string(index.first)).c_str(), ios::binary);
+            for (uint16_t sid: index.second)
+                sff.write((char *) &sid, 2);
+            sff.close();
+        }
+        indexes->clear();
     }
 
     /** Saves current state: { nextFrameId, nextShapeId, earliestFrameId }
      * Don't save paths in variables in the constructor! */
     void SaveState() {
-        std::ofstream ssf((visDirPath + savedStateFile).c_str(), std::ios::binary);
+        ofstream ssf((visDirPath + savedStateFile).c_str(), ios::binary);
         ssf.write((char *) &nextFrameId, 8);
         ssf.write((char *) &nextShapeId, 2);
         ssf.write((char *) &earliestFrameId, 8);
