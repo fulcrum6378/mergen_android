@@ -32,6 +32,7 @@ add_library(main SHARED
         vis/colouring.h
         vis/segmentation.cpp
         vis/segmentation.h
+        vis/visual_stm.cpp
         vis/visual_stm.h
 
         #vlk/hello_vk.cpp
