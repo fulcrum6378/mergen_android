@@ -56,9 +56,9 @@ public:
 
     /** Inserts a new shape into memory. */
     void Insert(
-            uint8_t *m,
-            uint16_t w, uint16_t h,
-            unordered_set<shape_point_t> path
+            uint8_t **m,
+            uint16_t *w, uint16_t *h,
+            unordered_set<shape_point_t> *path
     );
 
     /** Anything that needs to be done at the end. */

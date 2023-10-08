@@ -212,8 +212,8 @@ void Segmentation::Process(AImage *image, bool *recording) {
     l_ = segments.size();
     for (uint16_t seg = 0; seg < max_segs; seg++) {// Segment &seg: segments
         if (seg >= l_) break;
-        stm->Insert(segments[seg].m, segments[seg].w, segments[seg].h,
-                    segments[seg].border);
+        stm->Insert(&segments[seg].m, &segments[seg].w, &segments[seg].h,
+                    &segments[seg].border);
     }
     stm->OnFrameFinished();
     if (*recording) stm->SaveState();
