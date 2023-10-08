@@ -16,7 +16,7 @@ class VisualSTM {
 private:
     const string visDirPath = "/data/data/ir.mahdiparastesh.mergen/files/vis/";
     // maximum frames allowed to be present in memory at a time
-    const uint16_t max_frames_stored = 3;
+    const uint16_t max_frames_stored = 5;
     // forget N frames whenever hit the maximum
     const uint64_t forget_n_frames = 1;
 
@@ -30,8 +30,6 @@ private:
     uint16_t framesStored = 0;
     // IDs of shapes inside current frame
     list<uint16_t> shapesInFrame;
-    // container for file statistics
-    struct stat sb;
     // helper maps for altering 'uint8_t' indexes
     unordered_map<uint8_t, list<uint16_t>> ym, um, vm;
     // helper maps for altering 'uint16_t' indexes
@@ -40,6 +38,7 @@ private:
 public:
     VisualSTM() {
         // create directories if they don't exist and resolves their path variables
+        struct stat sb;
         string root("");
         for (string *dir: {&root, &dirShapes, &dirFrame, &dirY, &dirU, &dirV, &dirRt}) {
             string branch = (*dir);
@@ -52,7 +51,8 @@ public:
         }
 
         // count frames that are stored in memory
-        for (auto &_: filesystem::directory_iterator(filesystem::path{dirFrame}))
+        for ([[maybe_unused]] auto &_:
+                filesystem::directory_iterator(filesystem::path{dirFrame}))
             framesStored++;
 
         // load saved state: { nextFrameId, nextShapeId, earliestFrameId }
@@ -143,13 +143,9 @@ public:
 
     /** Forgets some of oldest frames. */
     void Forget() {
-        LOGI("Forgetting started...");
         auto t = chrono::system_clock::now();
-        const char *fPath;
-        //LOGE("%u .. %u", earliestFrameId, earliestFrameId + forget_n_frames);
         for (uint64_t f = earliestFrameId; f < earliestFrameId + forget_n_frames; f++) {
-            fPath = (dirFrame + to_string(f)).c_str();
-            IterateIndex(fPath, [](VisualSTM *stm, uint16_t sid) -> void {
+            IterateIndex((dirFrame + to_string(f)).c_str(), [](VisualSTM *stm, uint16_t sid) -> void {
                 uint8_t y, u, v;
                 uint16_t r;
 
@@ -163,45 +159,24 @@ public:
                 shf.read(buf, 2);
                 r = (buf[1] << 8) | buf[0];
                 shf.close();
-                remove(sPath);
 
                 // read unread indices
-                if (!stm->ym.contains(y)) {
-                    static list<uint16_t> l;
-                    stm->IterateIndex(to_string(y).c_str(),
-                                      [](VisualSTM *stm, uint16_t sid) -> void { l.push_back(sid); });
-                    stm->ym[y] = l;
-                    //LOGW("%u %u %zu", l.front(), l.back(), l.size());
-                }
-                if (!stm->um.contains(u)) {
-                    static list<uint16_t> l;
-                    stm->IterateIndex(to_string(u).c_str(),
-                                      [](VisualSTM *stm, uint16_t sid) -> void { l.push_back(sid); });
-                    stm->um[u] = l;
-                    //LOGW("%u %u %zu", l.front(), l.back(), l.size());
-                }
-                if (!stm->vm.contains(v)) {
-                    static list<uint16_t> l;
-                    stm->IterateIndex(to_string(v).c_str(),
-                                      [](VisualSTM *stm, uint16_t sid) -> void { l.push_back(sid); });
-                    stm->vm[v] = l;
-                    //LOGW("%u %u %zu", l.front(), l.back(), l.size());
-                }
-                if (!stm->rm.contains(r)) {
-                    static list<uint16_t> l;
-                    stm->IterateIndex(to_string(r).c_str(),
-                                      [](VisualSTM *stm, uint16_t sid) -> void { l.push_back(sid); });
-                    stm->rm[r] = l;
-                    //LOGW("%u %u %zu", l.front(), l.back(), l.size());
-                }
+                if (!stm->ym.contains(y))
+                    stm->ym[y] = stm->ReadIndex((stm->dirY + to_string(y)).c_str());
+                if (!stm->um.contains(u))
+                    stm->um[u] = stm->ReadIndex((stm->dirU + to_string(u)).c_str());
+                if (!stm->vm.contains(v))
+                    stm->vm[v] = stm->ReadIndex((stm->dirV + to_string(v)).c_str());
+                if (!stm->rm.contains(r))
+                    stm->rm[r] = stm->ReadIndex((stm->dirRt + to_string(r)).c_str());
 
                 // remove this shape ID from all indexes
-                stm->RemoveFromIndex(stm->ym[y], sid);
-                stm->RemoveFromIndex(stm->um[u], sid);
-                stm->RemoveFromIndex(stm->vm[v], sid);
-                stm->RemoveFromIndex(stm->rm[r], sid);
+                stm->RemoveFromIndex(&stm->ym[y], sid);
+                stm->RemoveFromIndex(&stm->um[u], sid);
+                stm->RemoveFromIndex(&stm->vm[v], sid);
+                stm->RemoveFromIndex(&stm->rm[r], sid);
             });
-            remove(fPath);
+            remove((dirFrame + to_string(f)).c_str()); // don't put in a variable
         }
         SaveIndexes<uint8_t>(&ym, &dirY);
         SaveIndexes<uint8_t>(&um, &dirU);
@@ -214,26 +189,39 @@ public:
                 chrono::system_clock::now() - t).count());
     }
 
-    void RemoveFromIndex(list<uint16_t> l, uint16_t id) {
-        for (auto sid = begin(l); sid != end(l); ++sid)
-            if (*sid == id) {
-                l.erase(sid);
-                break;
-            }
-    }
-
-    /** Reads a Sequence File. */
+    /** Iterates on every ID in a Sequence File. */
     void IterateIndex(const char *path, void onEach(VisualSTM *, uint16_t)) {
         char buf[2];
+        struct stat sb; // never make it a class member!
         stat(path, &sb);
         ifstream sff(path, ios::binary);
-        for (off_t _ = 0; _ < sb.st_size; _ += 2) { // FIXME problem is here
+        for (off_t _ = 0; _ < sb.st_size; _ += 2) {
             sff.read(buf, 2);
-            uint16_t t = (buf[1] << 8) | buf[0];
-            LOGW("%u", t);
             onEach(this, (buf[1] << 8) | buf[0]);
         }
         sff.close();
+    }
+
+    list<uint16_t> ReadIndex(const char *path) {
+        char buf[2];
+        struct stat sb;
+        stat(path, &sb);
+        ifstream sff(path, ios::binary);
+        list<uint16_t> l;
+        for (off_t _ = 0; _ < sb.st_size; _ += 2) {
+            sff.read(buf, 2);
+            l.push_back((buf[1] << 8) | buf[0]);
+        }
+        sff.close();
+        return l;
+    }
+
+    void RemoveFromIndex(list<uint16_t> *l, uint16_t id) {
+        for (list<uint16_t>::iterator sid = begin(*l); sid != end(*l); ++sid)
+            if (*sid == id) {
+                l->erase(sid);
+                break;
+            }
     }
 
     /** Save index in non-volatile memory and clear its data from RAM. */
@@ -242,11 +230,9 @@ public:
         for (pair<const INT, list<uint16_t>> &index: (*indexes)) {
             const char *path = ((*dir) + to_string(index.first)).c_str();
             if (!index.second.empty()) {
-                ofstream sff(path, ios::binary);
+                ofstream sff(path, ios::trunc | ios::binary);
                 for (uint16_t sid: index.second)
                     sff.write((char *) &sid, 2);
-                /*for(auto sid = begin(index.second); sid != end(index.second); ++sid)
-                    sff.write((char *) &sid, 2);*/
                 sff.close();
             } else remove(path);
         }
