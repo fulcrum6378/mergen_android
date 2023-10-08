@@ -67,7 +67,7 @@ void Segmentation::Process(AImage *image, bool *recording) {
         }
         if (!foundSthToAnalyse) break;
 
-        Segment seg{static_cast<uint32_t>(segments.size() + 1)};
+        Segment seg{(uint32_t) segments.size() + 1};
         stack.push_back(new uint16_t[3]{thisY, thisX, 0});
         uint16_t y, x, dr;
         while ((last = stack.size() - 1) != -1) {
@@ -208,11 +208,13 @@ void Segmentation::Process(AImage *image, bool *recording) {
     // 6. store the segments
     t0 = chrono::system_clock::now();
     sort(segments.begin(), segments.end(),
-         [](const Segment &a, const Segment &b) { return (a.p.size() > b.p.size()); });
+         [](const Segment &a, const Segment &b) { return a.p.size() > b.p.size(); });
     l_ = segments.size();
     for (uint16_t seg = 0; seg < max_segs; seg++) {// Segment &seg: segments
         if (seg >= l_) break;
         stm->Insert(&segments[seg].m, &segments[seg].w, &segments[seg].h,
+                    (segments[seg].min_x + segments[seg].max_x + 1) / 2, // central point X
+                    (segments[seg].min_y + segments[seg].max_y + 1) / 2, // central point Y
                     &segments[seg].border);
     }
     stm->OnFrameFinished();
@@ -252,17 +254,17 @@ uint32_t Segmentation::FindPixelOfASegmentToDissolveIn(Segment *seg) {
     uint32_t cor = seg->p.front();
     uint16_t a = cor >> 16, b = cor & 0xFFFF;
     if (a > 0)
-        return (static_cast<uint16_t>(a - 1) << 16) | b;
+        return ((a - 1) << 16) | b;
     if (b > 0)
-        return (a << 16) | static_cast<uint16_t>(b - 1);
+        return (a << 16) | (b - 1);
     cor = seg->p.back();
     a = cor >> 16, b = cor & 0xFFFF;
     if (a < h - 1)
-        return (static_cast<uint16_t>(a + 1) << 16) | b;
+        return ((a + 1) << 16) | b;
     if (b < w - 1)
-        return (a << 16) | static_cast<uint16_t>(b + 1);
+        return (a << 16) | (b + 1);
     return 0xFFFFFFFF;
-} // FIXME static_cast may not be necessary
+}
 
 void Segmentation::CheckIfBorder(uint16_t y1, uint16_t x1, uint16_t y2, uint16_t x2) {
     if (status[y1][x1] != status[y2][x2]) {

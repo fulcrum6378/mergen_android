@@ -15,7 +15,7 @@ VisualSTM::VisualSTM() {
     struct stat sb;
     string root("");
     for (string *dir: {&root, &dirShapes, &dirFrame, &dirY, &dirU, &dirV, &dirRt}) {
-        string branch = (*dir);
+        string branch = *dir;
         if (branch != "") {
             dir->insert(0, visDirPath);
             dir->append("/");
@@ -47,8 +47,9 @@ VisualSTM::VisualSTM() {
 }
 
 void VisualSTM::Insert(
-        uint8_t **m,
-        uint16_t *w, uint16_t *h,
+        uint8_t **m, // average colour
+        uint16_t *w, uint16_t *h,  // width and height
+        uint16_t cx, uint16_t cy, // central points
         unordered_set<shape_point_t> *path
 ) {
     uint16_t r = round(((float) *w / (float) *h) * 10);
@@ -62,9 +63,11 @@ void VisualSTM::Insert(
     shf.write((char *) &nextFrameId, 8); // Frame ID
     shf.write((char *) w, 2); // Width
     shf.write((char *) h, 2); // Height
+    shf.write((char *) &cx, 2); // Centre (X)
+    shf.write((char *) &cy, 2); // Centre (Y)
     for (shape_point_t p: *path)
         shf.write((char *) &p, shape_point_bytes); // Point {X, Y}
-    LOGW("%zu", (*path).size());
+    //LOGW("%zu", (*path).size());
     shf.close();
 
     // update Y indexes
