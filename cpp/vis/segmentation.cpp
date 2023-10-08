@@ -2,11 +2,12 @@
 #include <chrono>
 #include <cstring>
 
+#include "../global.h"
 #include "segmentation.h"
 
 using namespace std;
 
-Segmentation::Segmentation() : stm(new VisualSTM()) {}
+Segmentation::Segmentation(VisualSTM *stm) : stm(stm) {}
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "ConstantConditionsOC"
@@ -279,7 +280,4 @@ void Segmentation::SetAsBorder(uint16_t y, uint16_t x) {
     ));
 }
 
-Segmentation::~Segmentation() {
-    delete stm;
-    stm = nullptr;
-}
+Segmentation::~Segmentation() {}

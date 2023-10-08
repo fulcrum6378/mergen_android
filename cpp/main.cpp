@@ -4,13 +4,15 @@
 #include "aud/microphone.h"
 #include "hpt/touchscreen.h"
 #include "rew/rewarder.h"
+#include "scm/crawler.h"
 #include "vis/camera.h"
+
+static Crawler *scm = nullptr;
+static Rewarder *rew = nullptr;
 
 static Camera *vis = nullptr;
 static Microphone *aud = nullptr;
 static Touchscreen *hpt = nullptr;
-
-static Rewarder *rew = nullptr;
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
@@ -27,10 +29,11 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     if (stat(filesDir, &sb) != 0) mkdir(filesDir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
     Manifest::init();
+    scm = new Crawler();
     rew = new Rewarder(env, gMain); // must be declared before the rest
     // ComputeVK().run(state->activity->assetManager);
 
-    vis = new Camera(jvm, gMain, mCaptured);
+    vis = new Camera(jvm, gMain, mCaptured, scm->vis);
     aud = new Microphone();
     hpt = new Touchscreen(rew);
 
@@ -70,6 +73,8 @@ Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
 
     delete rew;
     rew = nullptr;
+    delete scm;
+    scm = nullptr;
 }
 
 

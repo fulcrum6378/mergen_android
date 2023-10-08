@@ -37,7 +37,7 @@ private:
     // width, height
     const uint16_t h = 1088, w = 1088;
     // minimum allowed number of pixels for a segment to contain
-    const uint32_t min_seg_size = 40;
+    const uint32_t min_seg_size = 20;
     // maximum allowed segments to be stored in the short-term memory
     const uint16_t max_segs = 10;
 
@@ -67,7 +67,7 @@ private:
 public:
     bool locked = false;
 
-    Segmentation();
+    Segmentation(VisualSTM *stm);
 
     void Process(AImage *image, bool *recording);
 

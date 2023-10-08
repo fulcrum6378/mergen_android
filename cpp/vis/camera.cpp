@@ -8,7 +8,7 @@
  * its return value will be needed for Main::getCameraDimensions, then we should have some
  * configurations done and then we'll create a camera session.
  */
-Camera::Camera(JavaVM *jvm, jobject main, jmethodID mCaptured) :
+Camera::Camera(JavaVM *jvm, jobject main, jmethodID mCaptured, VisualSTM *stm) :
         jvm_(jvm), main_(main), mCaptured_(mCaptured),
         captureSessionState_(CaptureSessionState::MAX_STATE) {
 
@@ -71,7 +71,7 @@ Camera::Camera(JavaVM *jvm, jobject main, jmethodID mCaptured) :
     AImageReader_setImageListener(reader_, &listener);
 
     // prepare for image analysis
-    segmentation_ = new Segmentation();
+    segmentation_ = new Segmentation(stm);
 
 }
 

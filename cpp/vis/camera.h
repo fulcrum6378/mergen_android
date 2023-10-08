@@ -89,7 +89,7 @@ private:
 public:
     std::pair<int16_t, int16_t> dimensions;
 
-    Camera(JavaVM *jvm, jobject main, jmethodID mCaptured);
+    Camera(JavaVM *jvm, jobject main, jmethodID mCaptured, VisualSTM *stm);
 
     void CreateSession(ANativeWindow *displayWindow);
 

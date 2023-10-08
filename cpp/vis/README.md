@@ -15,7 +15,7 @@ This part contains the following steps:
 
 3. [**VisualSTM**](cpp/vis/visual_stm.cpp) : *Visual Short-Term Memory*; it stores shapes (segments)
    temporarily on a non-volatile (persistent) memory for a later (as soon as possible) analysis by
-   [**SCM**](cpp/scm).
+   the [**Subconscious Mind (SCM)**](cpp/scm).
 
 #### Other classes
 

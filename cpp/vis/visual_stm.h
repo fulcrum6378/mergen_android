@@ -4,8 +4,6 @@
 #include <list>
 #include <unordered_map>
 
-#include "../global.h"
-
 using namespace std;
 
 /** Visual Short-Term Memory */
@@ -61,7 +59,7 @@ public:
     /** Anything that needs to be done at the end. */
     void OnFrameFinished();
 
-    /** Saves current state: { nextFrameId, nextShapeId, earliestFrameId }
+    /** Saves current state { nextFrameId, nextShapeId, earliestFrameId }
      * Don't save paths in variables in the constructor! */
     void SaveState();
 };

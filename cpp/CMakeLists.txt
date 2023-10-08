@@ -26,6 +26,8 @@ add_library(main SHARED
         rew/rewarder.cpp
         rew/rewarder.h
 
+        scm/crawler.h
+
         vis/bitmap_stream.h
         vis/camera.cpp
         vis/camera.h

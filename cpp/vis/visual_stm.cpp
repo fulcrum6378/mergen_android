@@ -5,6 +5,7 @@
 #include <iterator>
 #include <sys/stat.h>
 
+#include "../global.h"
 #include "visual_stm.h"
 
 using namespace std;
@@ -28,7 +29,7 @@ VisualSTM::VisualSTM() {
             filesystem::directory_iterator(filesystem::path{dirFrame}))
         framesStored++;
 
-    // load saved state: { nextFrameId, nextShapeId, earliestFrameId }
+    // load saved state { nextFrameId, nextShapeId, earliestFrameId }
     const char *savedStatePath = (visDirPath + savedStateFile).c_str();
     if (filesystem::exists(savedStatePath)) {
         ifstream ssf(savedStatePath, ios::binary);
@@ -110,7 +111,7 @@ void VisualSTM::OnFrameFinished() {
     if (framesStored > max_frames_stored) Forget();
 
     nextFrameId++;
-    // if (nextFrameId > 18446744073709552000) nextShapeId = 0;
+    // if (nextFrameId > 18446744073709552000) nextFrameId = 0;
 }
 
 void VisualSTM::Forget() {
@@ -130,6 +131,7 @@ void VisualSTM::Forget() {
             shf.read(buf, 2);
             r = (buf[1] << 8) | buf[0];
             shf.close();
+            remove(sPath);
 
             // read unread indices
             if (!stm->ym.contains(y))
@@ -147,7 +149,7 @@ void VisualSTM::Forget() {
             stm->RemoveFromIndex(&stm->vm[v], sid);
             stm->RemoveFromIndex(&stm->rm[r], sid);
         });
-        remove((dirFrame + to_string(f)).c_str()); // don't put in a variable
+        remove((dirFrame + to_string(f)).c_str()); // don't put it in a variable
     }
     SaveIndexes<uint8_t>(&ym, &dirY);
     SaveIndexes<uint8_t>(&um, &dirU);
