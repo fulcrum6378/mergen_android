@@ -3,8 +3,13 @@
 
 #include <list>
 #include <unordered_map>
+#include <unordered_set>
 
 using namespace std;
+using shape_point_t = uint16_t;           // uint16_t, uint32_t
+static int8_t shape_point_bytes = 2;      // 2,        4
+static uint8_t shape_point_each_bits = 8; // 8,        16
+static float shape_point_max = 256.0;     // 256.0,    65535.0
 
 /** Visual Short-Term Memory */
 class VisualSTM {
@@ -53,7 +58,7 @@ public:
     void Insert(
             uint8_t *m,
             uint16_t w, uint16_t h,
-            list<pair<float, float>> path
+            unordered_set<shape_point_t> path
     );
 
     /** Anything that needs to be done at the end. */

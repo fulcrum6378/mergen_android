@@ -49,46 +49,40 @@ VisualSTM::VisualSTM() {
 void VisualSTM::Insert(
         uint8_t *m,
         uint16_t w, uint16_t h,
-        list<pair<float, float>> path
+        unordered_set<shape_point_t> path
 ) {
-    uint16_t ratio = round(((float) w / (float) h) * 10);
+    uint16_t r = round(((float) w / (float) h) * 10);
 
     // write shape file
     ofstream shf(dirShapes + to_string(nextShapeId), ios::binary);
-    shf.put(m[0]);
-    shf.put(m[1]);
-    shf.put(m[2]);
-    shf.write((char *) &ratio, 2);
-    shf.write((char *) &nextFrameId, 8);
-    shf.write((char *) &w, 2);
-    shf.write((char *) &h, 2);
-    for (pair p: path) {
-        shf.write((char *) &p.first, 4);
-        shf.write((char *) &p.second, 4);
-    }
+    shf.put(m[0]); // Y
+    shf.put(m[1]); // U
+    shf.put(m[2]); // V
+    shf.write((char *) &r, 2); // Ratio
+    shf.write((char *) &nextFrameId, 8); // Frame ID
+    shf.write((char *) &w, 2); // Width
+    shf.write((char *) &h, 2); // Height
+    for (shape_point_t p: path)
+        shf.write((char *) &p, shape_point_bytes); // Point {X, Y}
     shf.close();
 
     // update Y indexes
-    ofstream y_f((dirY + to_string(m[0])).c_str(),
-                 ios::app | ios::binary);
+    ofstream y_f((dirY + to_string(m[0])).c_str(), ios::app | ios::binary);
     y_f.write((char *) &nextShapeId, 2);
     y_f.close();
 
     // update U indexes
-    ofstream u_f((dirU + to_string(m[1])).c_str(),
-                 ios::app | ios::binary);
+    ofstream u_f((dirU + to_string(m[1])).c_str(), ios::app | ios::binary);
     u_f.write((char *) &nextShapeId, 2);
     u_f.close();
 
     // update V indexes
-    ofstream v_f((dirV + to_string(m[2])).c_str(),
-                 ios::app | ios::binary);
+    ofstream v_f((dirV + to_string(m[2])).c_str(), ios::app | ios::binary);
     v_f.write((char *) &nextShapeId, 2);
     v_f.close();
 
     // update Ratio indexes
-    ofstream rtf((dirRt + to_string(ratio)).c_str(),
-                 ios::app | ios::binary);
+    ofstream rtf((dirRt + to_string(r)).c_str(), ios::app | ios::binary);
     rtf.write((char *) &nextShapeId, 2);
     rtf.close();
 

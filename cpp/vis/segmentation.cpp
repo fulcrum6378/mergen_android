@@ -262,7 +262,7 @@ uint32_t Segmentation::FindPixelOfASegmentToDissolveIn(Segment *seg) {
     if (b < w - 1)
         return (a << 16) | static_cast<uint16_t>(b + 1);
     return 0xFFFFFFFF;
-}
+} // FIXME static_cast may not be necessary
 
 void Segmentation::CheckIfBorder(uint16_t y1, uint16_t x1, uint16_t y2, uint16_t x2) {
     if (status[y1][x1] != status[y2][x2]) {
@@ -274,10 +274,11 @@ void Segmentation::CheckIfBorder(uint16_t y1, uint16_t x1, uint16_t y2, uint16_t
 void Segmentation::SetAsBorder(uint16_t y, uint16_t x) {
     arr[y][x] |= 1 << 24;
     Segment *seg = s_index[status[y][x]];
-    seg->border.push_back(pair(
-            (100.0 / seg->w) * (x - seg->min_x), // fractional X
-            (100.0 / seg->h) * (y - seg->min_y)  // fractional Y
-    ));
+    seg->border.insert(
+            (static_cast<shape_point_t>(shape_point_max / seg->w) * (x - seg->min_x) // fractional X
+                    << shape_point_each_bits) |
+            static_cast<shape_point_t>(shape_point_max / seg->h) * (y - seg->min_y)  // fractional Y
+    );
 }
 
 Segmentation::~Segmentation() {}

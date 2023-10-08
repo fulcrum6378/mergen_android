@@ -5,6 +5,7 @@
 #include <media/NdkImage.h>
 #include <unordered_map>
 #include <utility>
+#include <unordered_set>
 #include <vector>
 
 #include "visual_stm.h"
@@ -19,7 +20,7 @@ struct Segment {
     // boundaries and dimensions
     uint16_t min_y, min_x, max_y, max_x, w, h;
     // border pixels
-    std::list<std::pair<float, float>> border;
+    std::unordered_set<shape_point_t> border;
 };
 
 /**
