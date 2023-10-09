@@ -11,7 +11,7 @@ static Crawler *scm = nullptr;
 static Rewarder *rew = nullptr;
 
 static Camera *vis = nullptr;
-static Microphone *aud = nullptr;
+static Microphone *aud = nullptr; // temporarily disabled
 static Touchscreen *hpt = nullptr;
 
 extern "C" JNIEXPORT jlong JNICALL
@@ -43,9 +43,9 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
 extern "C" JNIEXPORT jbyte JNICALL
 Java_ir_mahdiparastesh_mergen_Main_start(JNIEnv *, jobject) {
     int8_t ret = 0;
-    if (aud) {
+    /*if (aud) {
         if (!aud->Start()) ret = 1;
-    } else ret = 2;
+    } else ret = 2;*/
     if (ret > 0) return ret;
     if (vis) {
         if (!vis->SetRecording(true)) ret = 3;
@@ -56,9 +56,9 @@ Java_ir_mahdiparastesh_mergen_Main_start(JNIEnv *, jobject) {
 extern "C" JNIEXPORT jbyte JNICALL
 Java_ir_mahdiparastesh_mergen_Main_stop(JNIEnv *, jobject) {
     int8_t ret = 0;
-    if (aud) {
+    /*if (aud) {
         if (!aud->Stop()) ret = 1;
-    } else ret = 2;
+    } else ret = 2;*/
     if (ret > 0) return ret;
     if (vis) {
         if (!vis->SetRecording(false)) ret = 3;

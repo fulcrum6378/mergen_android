@@ -49,11 +49,9 @@ Mergen is intended to have 2 aspects:
 | [**MOV**](cpp/mov) | controlling **Movements**                   |
 | [**REW**](cpp/rew) | **Reward System** (reinforcement learning)  |
 | [**SCM**](cpp/scm) | Simulation of the **Subconscious Mind**     |
-| [**VIS**](cpp/vis) | controlling **Visual** inputs and outputs   |
+| [**VIS**](cpp/vis) | controlling **Visual** inputs               |
 
-Deprecated parts:
-
-- [VLK](cpp/vlk) : contains two practices of the *Vulkan* API.
+- [VLK](cpp/vlk) : contains two practices of the *Vulkan* API and might be removed later.
 
 ## History
 

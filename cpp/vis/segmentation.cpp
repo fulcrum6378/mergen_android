@@ -218,7 +218,7 @@ void Segmentation::Process(AImage *image, bool *recording) {
                     &segments[seg].border);
     }
     stm->OnFrameFinished();
-    if (*recording) stm->SaveState();
+    if (!*recording) stm->SaveState();
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 

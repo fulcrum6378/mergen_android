@@ -190,8 +190,9 @@ void VisualSTM::RemoveFromIndex(list<uint16_t> *l, uint16_t id) {
     for (list<uint16_t>::iterator sid = begin(*l); sid != end(*l); ++sid)
         if (*sid == id) {
             l->erase(sid);
-            break;
+            return;
         }
+    LOGE("Shape %u was not found!", id);
 }
 
 template<class INT>
