@@ -1,4 +1,5 @@
 #include <android/native_window_jni.h>
+#include <jni.h>
 #include <sys/stat.h>
 
 #include "aud/microphone.h"
@@ -20,20 +21,20 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     JavaVM *jvm = nullptr;
     env->GetJavaVM(&jvm);
     jobject gMain = env->NewGlobalRef(main);
-    jmethodID mCaptured = env->GetMethodID(
-            env->FindClass("ir/mahdiparastesh/mergen/Main"), "captured", "()V");
 
     // ensure that /files/ dir exists
     const char *filesDir = "/data/data/ir.mahdiparastesh.mergen/files/";
     struct stat sb;
     if (stat(filesDir, &sb) != 0) mkdir(filesDir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
+    // initialise high-level parts
     Manifest::init();
     scm = new Crawler();
     rew = new Rewarder(env, gMain); // must be declared before the rest
     // ComputeVK().run(state->activity->assetManager);
 
-    vis = new Camera(jvm, gMain, mCaptured, scm->vis);
+    // initialise low-level parts
+    vis = new Camera(scm->vis, jvm, gMain);
     aud = new Microphone();
     hpt = new Touchscreen(rew);
 
@@ -45,8 +46,8 @@ Java_ir_mahdiparastesh_mergen_Main_start(JNIEnv *, jobject) {
     int8_t ret = 0;
     /*if (aud) {
         if (!aud->Start()) ret = 1;
-    } else ret = 2;*/
-    if (ret > 0) return ret;
+    } else ret = 2;
+    if (ret > 0) return ret;*/
     if (vis) {
         if (!vis->SetRecording(true)) ret = 3;
     } else ret = 4;
@@ -58,8 +59,8 @@ Java_ir_mahdiparastesh_mergen_Main_stop(JNIEnv *, jobject) {
     int8_t ret = 0;
     /*if (aud) {
         if (!aud->Stop()) ret = 1;
-    } else ret = 2;*/
-    if (ret > 0) return ret;
+    } else ret = 2;
+    if (ret > 0) return ret;*/
     if (vis) {
         if (!vis->SetRecording(false)) ret = 3;
     } else ret = 4;

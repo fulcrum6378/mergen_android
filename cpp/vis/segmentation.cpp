@@ -7,7 +7,8 @@
 
 using namespace std;
 
-Segmentation::Segmentation(VisualSTM *stm) : stm(stm) {}
+Segmentation::Segmentation(VisualSTM *stm, JavaVM *jvm, jobject main, jmethodID jmFinished) :
+        stm(stm), jvm_(jvm), main_(main), jmFinished_(jmFinished) {}
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "ConstantConditionsOC"
@@ -218,7 +219,6 @@ void Segmentation::Process(AImage *image, bool *recording) {
                     &segments[seg].border);
     }
     stm->OnFrameFinished();
-    if (!*recording) stm->SaveState();
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
@@ -233,6 +233,16 @@ void Segmentation::Process(AImage *image, bool *recording) {
     s_index.clear();
     segments.clear();
     locked = false;
+
+    // if recording is over, save state and inform the user when they can close the app safely
+    if (!*recording) {
+        stm->SaveState();
+
+        JNIEnv *env;
+        jvm_->GetEnv((void **) &env, JNI_VERSION_1_6);
+        jvm_->AttachCurrentThread(&env, nullptr);
+        env->CallVoidMethod(main_, jmFinished_);
+    }
 }
 
 #pragma clang diagnostic pop

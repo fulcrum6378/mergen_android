@@ -8,9 +8,8 @@
  * its return value will be needed for Main::getCameraDimensions, then we should have some
  * configurations done and then we'll create a camera session.
  */
-Camera::Camera(JavaVM *jvm, jobject main, jmethodID mCaptured, VisualSTM *stm) :
-        jvm_(jvm), main_(main), mCaptured_(mCaptured),
-        captureSessionState_(CaptureSessionState::MAX_STATE) {
+Camera::Camera(VisualSTM *stm, JavaVM *jvm, jobject main) :
+        jvm_(jvm), main_(main), captureSessionState_(CaptureSessionState::MAX_STATE) {
 
     // initialise ACameraManager and get ACameraDevice instances
     cameraMgr_ = ACameraManager_create();
@@ -71,8 +70,12 @@ Camera::Camera(JavaVM *jvm, jobject main, jmethodID mCaptured, VisualSTM *stm) :
     AImageReader_setImageListener(reader_, &listener);
 
     // prepare for image analysis
-    segmentation_ = new Segmentation(stm);
-
+    JNIEnv *env;
+    jvm_->GetEnv((void **) &env, JNI_VERSION_1_6);
+    jmCaptured_ = env->GetMethodID(
+            env->FindClass("ir/mahdiparastesh/mergen/Main"), "captured", "()V");
+    segmentation_ = new Segmentation(stm, jvm, main, env->GetMethodID(
+            env->FindClass("ir/mahdiparastesh/mergen/Main"), "finished", "()V"));
 }
 
 /**
@@ -237,11 +240,11 @@ void Camera::ImageCallback(AImageReader *reader) {
             used = bmp_stream_->HandleImage(image);
     }
     if (!used) AImage_delete(image);
-    else {
+    else { // don't move this to Segmentation thread. (for performance)
         JNIEnv *env;
         jvm_->GetEnv((void **) &env, JNI_VERSION_1_6);
         jvm_->AttachCurrentThread(&env, nullptr);
-        env->CallVoidMethod(main_, mCaptured_);
+        env->CallVoidMethod(main_, jmCaptured_);
     }
 }
 

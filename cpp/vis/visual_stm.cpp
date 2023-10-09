@@ -200,7 +200,7 @@ void VisualSTM::SaveIndexes(unordered_map<INT, list<uint16_t>> *indexes, string 
     for (pair<const INT, list<uint16_t>> &index: (*indexes)) {
         const char *path = ((*dir) + to_string(index.first)).c_str();
         if (!index.second.empty()) {
-            ofstream sff(path, ios::trunc | ios::binary);
+            ofstream sff(path, ios::binary); // ios::trunc |
             for (uint16_t sid: index.second)
                 sff.write((char *) &sid, 2);
             sff.close();

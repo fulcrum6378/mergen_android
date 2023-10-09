@@ -32,7 +32,7 @@ import java.util.Arrays;
 public class Main extends Activity implements TextureView.SurfaceTextureListener {
     private long ndkCamera;
     private Surface surface = null;
-    private boolean isRecording = false;
+    private boolean isRecording = false, isFinished = true;
     private static Handler handler;
     private Toast toast;
     private Shaker shaker;
@@ -63,7 +63,6 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
-                //noinspection SwitchStatementWithTooFewBranches
                 switch (msg.what) {
                     case 0:
                         capture.setAlpha(.9f);
@@ -76,6 +75,11 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
                             }
                         });
                         captureAnimation.start();
+                        break;
+                    case 1:
+                        isFinished = true;
+                        Toast.makeText(Main.this, "You can now close the app safely.",
+                                Toast.LENGTH_SHORT).show();
                         break;
                 }
             }
@@ -175,6 +179,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
                     ev.getRawX(index), ev.getRawY(index), ev.getSize(index));
             return true;
         });
+        isFinished = false;
     }
 
     private void onRecordingStopped() {
@@ -204,13 +209,22 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         colouring.setBackgroundColor(colour);
     }
 
+    /** Called by vis/Segmentation when it's done saving data. */
+    @SuppressWarnings("unused")
+    void finished() {
+        handler.obtainMessage(1).sendToTarget();
+    }
+
     @Override
     public void onBackPressed() {
         if (isRecording) {
             recording(false);
             return;
         }
-        super.onBackPressed();
+        if (!isFinished) return;
+        moveTaskToBack(true);
+        android.os.Process.killProcess(android.os.Process.myPid());
+        System.exit(0);
     }
 
     @Override

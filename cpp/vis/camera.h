@@ -46,7 +46,7 @@ private:
     BitmapStream *bmp_stream_{};
     JavaVM *jvm_;
     jobject main_;
-    jmethodID mCaptured_;
+    jmethodID jmCaptured_;
 
     // Managing cameras
     ACameraManager *cameraMgr_;
@@ -89,7 +89,7 @@ private:
 public:
     std::pair<int16_t, int16_t> dimensions;
 
-    Camera(JavaVM *jvm, jobject main, jmethodID mCaptured, VisualSTM *stm);
+    Camera(VisualSTM *stm, JavaVM *jvm, jobject main);
 
     void CreateSession(ANativeWindow *displayWindow);
 

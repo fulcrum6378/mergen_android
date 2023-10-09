@@ -1,6 +1,7 @@
 #ifndef VIS_SEGMENTATION_H
 #define VIS_SEGMENTATION_H
 
+#include <jni.h>
 #include <list>
 #include <media/NdkImage.h>
 #include <unordered_map>
@@ -55,6 +56,10 @@ private:
     // visual short-term memory (output)
     VisualSTM *stm;
 
+    JavaVM *jvm_;
+    jobject main_;
+    jmethodID jmFinished_;
+
     bool CompareColours(uint32_t a, uint32_t b);
 
     uint32_t FindPixelOfASegmentToDissolveIn(Segment *seg);
@@ -68,7 +73,7 @@ private:
 public:
     bool locked = false;
 
-    Segmentation(VisualSTM *stm);
+    Segmentation(VisualSTM *stm, JavaVM *jvm, jobject main, jmethodID jmFinished);
 
     void Process(AImage *image, bool *recording);
 
