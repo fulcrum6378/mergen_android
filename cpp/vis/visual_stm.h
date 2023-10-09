@@ -6,11 +6,10 @@
 #include <unordered_set>
 
 // don't use namespace `std::`; it'll ruin indexing in CLion!
-using shape_point_t = uint32_t;            // uint16_t, uint32_t
-static int8_t shape_point_bytes = 4;       // 2,        4
-static uint8_t shape_point_each_bits = 16; // 8,        16
-static float shape_point_max = 65535.0;    // 256.0,    65535.0
-// FIXME 8-bit shape coordinates cause first (and second) shapes in a frame to have only 1 point!
+using shape_point_t = uint16_t;            // uint16_t, uint32_t
+static int8_t shape_point_bytes = 2;       // 2,        4
+static uint8_t shape_point_each_bits = 8;  // 8,        16
+static float shape_point_max = 256.0;      // 256.0,    65535.0
 
 /** Visual Short-Term Memory */
 class VisualSTM {

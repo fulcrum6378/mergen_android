@@ -67,7 +67,7 @@ void VisualSTM::Insert(
     shf.write((char *) &cy, 2); // Centre (Y)
     for (shape_point_t p: *path)
         shf.write((char *) &p, shape_point_bytes); // Point {X, Y}
-    //LOGW("%zu", (*path).size());
+    LOGW("%zu", (*path).size());
     shf.close();
 
     // update Y indexes
@@ -200,7 +200,7 @@ void VisualSTM::SaveIndexes(unordered_map<INT, list<uint16_t>> *indexes, string 
     for (pair<const INT, list<uint16_t>> &index: (*indexes)) {
         const char *path = ((*dir) + to_string(index.first)).c_str();
         if (!index.second.empty()) {
-            ofstream sff(path, ios::binary); // ios::trunc |
+            ofstream sff(path, ios::binary);
             for (uint16_t sid: index.second)
                 sff.write((char *) &sid, 2);
             sff.close();

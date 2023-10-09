@@ -8,7 +8,30 @@
 using namespace std;
 
 Segmentation::Segmentation(VisualSTM *stm, JavaVM *jvm, jobject main, jmethodID jmFinished) :
-        stm(stm), jvm_(jvm), main_(main), jmFinished_(jmFinished) {}
+        stm(stm), jvm_(jvm), main_(main), jmFinished_(jmFinished) {
+
+    /*unordered_set<uint32_t> s1;
+    s1.insert(
+            (static_cast<uint32_t>((65535.0 / 500.0) * (500.0 - 250.0)) << 16) |
+            static_cast<uint32_t>((65535.0 / 500.0) * (500.0 - 250.0))
+    );
+    for (uint32_t p: s1) LOGW("A: %u x %u", p >> 16, p & 0xFFFF);
+
+    unordered_set<uint16_t> s2;
+    s2.insert(
+            (static_cast<uint16_t>((256.0 / 500.0) * (500.0 - 250.0)) << 8) |
+            static_cast<uint16_t>((256.0 / 500.0) * (500.0 - 250.0))
+    );
+    for (uint16_t p: s2) LOGW("B: %u x %u", p >> 8, p & 0xFF);*/
+
+    // was
+    // A: 32750 x 32750
+    // B: 0 x 0
+
+    // now
+    // A: 32767 x 32767
+    // B: 128 x 128
+}
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "ConstantConditionsOC"
@@ -287,9 +310,11 @@ void Segmentation::SetAsBorder(uint16_t y, uint16_t x) {
     arr[y][x] |= 1 << 24;
     Segment *seg = s_index[status[y][x]];
     seg->border.insert(
-            (static_cast<shape_point_t>(shape_point_max / seg->w) * (x - seg->min_x) // fractional X
+            (static_cast<shape_point_t>((shape_point_max / (float) seg->w) *
+                                        (float) (x - seg->min_x)) // fractional X
                     << shape_point_each_bits) |
-            static_cast<shape_point_t>(shape_point_max / seg->h) * (y - seg->min_y)  // fractional Y
+            static_cast<shape_point_t>((shape_point_max / (float) seg->h) *
+                                       (float) (y - seg->min_y))  // fractional Y
     );
 }
 
