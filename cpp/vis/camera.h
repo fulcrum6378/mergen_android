@@ -76,7 +76,7 @@ private:
     Segmentation *segmentation_;
 
 
-    void EnumerateCamera(void);
+    void EnumerateCamera();
 
     void DetermineCaptureDimensions();
 
@@ -108,7 +108,7 @@ public:
         id_ = id;
     }
 
-    explicit CameraId(void) { CameraId(""); }
+    explicit CameraId() : CameraId("") {}
 };
 
 #endif //VIS_CAMERA_H

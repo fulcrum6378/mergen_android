@@ -7,9 +7,7 @@ class Crawler {
 public:
     VisualSTM *vis;
 
-    Crawler() {
-        vis = new VisualSTM();
-    }
+    Crawler() : vis(new VisualSTM()) {}
 
     ~Crawler() {
         delete vis;

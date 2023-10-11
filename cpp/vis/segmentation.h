@@ -29,8 +29,8 @@ struct Segment {
  *
  * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/segmentation/region_growing_4.py">
  * Region Growing 4 (image segmentation)</a>
- * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/tracing/comprehensive_rg4.py">
- * Comprehensive (image tracing)</a>
+ * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/tracing/comprehender_rg4.py">
+ * Comprehender (image tracing)</a>
  *
  * Dimensions are defined explicitly in order to avoid type-casting complications.
  */
@@ -44,9 +44,9 @@ private:
     const uint16_t max_segs = 10;
 
     // multidimensional array of pixels + last byte indicates whether it is a border pixel or not.
-    uint32_t arr[1088][1088]; // four bytes: b(1=true,0=false), Y, U, V
+    uint32_t arr[1088][1088]{}; // four bytes: b(1=true,0=false), Y, U, V
     // maps pixels to their Segment IDs
-    uint32_t status[1088][1088];
+    uint32_t status[1088][1088]{};
     // a vector containing all Segments
     std::vector<Segment> segments;
     // simulates recursive programming (vector is always better for it than list!)
@@ -60,9 +60,9 @@ private:
     jobject main_;
     jmethodID jmFinished_;
 
-    bool CompareColours(uint32_t a, uint32_t b);
+    static bool CompareColours(uint32_t a, uint32_t b);
 
-    uint32_t FindPixelOfASegmentToDissolveIn(Segment *seg);
+    uint32_t FindPixelOfASegmentToDissolveIn(Segment *seg) const;
 
     // Checks if this pixel is in border.
     void CheckIfBorder(uint16_t y1, uint16_t x1, uint16_t y2, uint16_t x2);

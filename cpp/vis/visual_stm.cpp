@@ -12,11 +12,11 @@ using namespace std;
 
 VisualSTM::VisualSTM() {
     // create directories if they don't exist and resolves their path variables
-    struct stat sb;
-    string root("");
+    struct stat sb{};
+    string root;
     for (string *dir: {&root, &dirShapes, &dirFrame, &dirY, &dirU, &dirV, &dirRt}) {
         string branch = *dir;
-        if (branch != "") {
+        if (!branch.empty()) {
             dir->insert(0, visDirPath);
             dir->append("/");
         }
@@ -52,13 +52,13 @@ void VisualSTM::Insert(
         uint16_t cx, uint16_t cy, // central points
         unordered_set<shape_point_t> *path
 ) {
-    uint16_t r = round(((float) *w / (float) *h) * 10);
+    auto r = (uint16_t) round(((float) *w / (float) *h) * 10.0);
 
     // write shape file
     ofstream shf(dirShapes + to_string(nextShapeId), ios::binary);
-    shf.put((*m)[0]); // Y
-    shf.put((*m)[1]); // U
-    shf.put((*m)[2]); // V
+    shf.write((char *) &(*m)[0], 1); // Y
+    shf.write((char *) &(*m)[1], 1); // U
+    shf.write((char *) &(*m)[2], 1); // V TODO
     shf.write((char *) &r, 2); // Ratio
     shf.write((char *) &nextFrameId, 8); // Frame ID
     shf.write((char *) w, 2); // Width
@@ -67,7 +67,6 @@ void VisualSTM::Insert(
     shf.write((char *) &cy, 2); // Centre (Y)
     for (shape_point_t p: *path)
         shf.write((char *) &p, shape_point_bytes); // Point {X, Y}
-    LOGW("%zu", (*path).size());
     shf.close();
 
     // update Y indexes
@@ -133,19 +132,19 @@ void VisualSTM::Forget() {
 
             // read unread indices
             if (!stm->ym.contains(y))
-                stm->ym[y] = stm->ReadIndex((stm->dirY + to_string(y)).c_str());
+                stm->ym[y] = VisualSTM::ReadIndex((stm->dirY + to_string(y)).c_str());
             if (!stm->um.contains(u))
-                stm->um[u] = stm->ReadIndex((stm->dirU + to_string(u)).c_str());
+                stm->um[u] = VisualSTM::ReadIndex((stm->dirU + to_string(u)).c_str());
             if (!stm->vm.contains(v))
-                stm->vm[v] = stm->ReadIndex((stm->dirV + to_string(v)).c_str());
+                stm->vm[v] = VisualSTM::ReadIndex((stm->dirV + to_string(v)).c_str());
             if (!stm->rm.contains(r))
-                stm->rm[r] = stm->ReadIndex((stm->dirRt + to_string(r)).c_str());
+                stm->rm[r] = VisualSTM::ReadIndex((stm->dirRt + to_string(r)).c_str());
 
             // remove this shape ID from all indexes
-            stm->RemoveFromIndex(&stm->ym[y], sid);
-            stm->RemoveFromIndex(&stm->um[u], sid);
-            stm->RemoveFromIndex(&stm->vm[v], sid);
-            stm->RemoveFromIndex(&stm->rm[r], sid);
+            VisualSTM::RemoveFromIndex(&stm->ym[y], sid);
+            VisualSTM::RemoveFromIndex(&stm->um[u], sid);
+            VisualSTM::RemoveFromIndex(&stm->vm[v], sid);
+            VisualSTM::RemoveFromIndex(&stm->rm[r], sid);
         });
         remove((dirFrame + to_string(f)).c_str()); // don't put it in a variable
     }
@@ -162,7 +161,7 @@ void VisualSTM::Forget() {
 
 void VisualSTM::IterateIndex(const char *path, void onEach(VisualSTM *, uint16_t)) {
     char buf[2];
-    struct stat sb; // never make it a class member!
+    struct stat sb{}; // never make it a class member!
     stat(path, &sb);
     ifstream sff(path, ios::binary);
     for (off_t _ = 0; _ < sb.st_size; _ += 2) {
@@ -174,7 +173,7 @@ void VisualSTM::IterateIndex(const char *path, void onEach(VisualSTM *, uint16_t
 
 list<uint16_t> VisualSTM::ReadIndex(const char *path) {
     char buf[2];
-    struct stat sb;
+    struct stat sb{};
     stat(path, &sb);
     ifstream sff(path, ios::binary);
     list<uint16_t> l;
@@ -187,7 +186,7 @@ list<uint16_t> VisualSTM::ReadIndex(const char *path) {
 }
 
 void VisualSTM::RemoveFromIndex(list<uint16_t> *l, uint16_t id) {
-    for (list<uint16_t>::iterator sid = begin(*l); sid != end(*l); ++sid)
+    for (auto sid = begin(*l); sid != end(*l); ++sid)
         if (*sid == id) {
             l->erase(sid);
             return;

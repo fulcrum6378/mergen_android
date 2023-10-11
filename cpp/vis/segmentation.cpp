@@ -8,33 +8,10 @@
 using namespace std;
 
 Segmentation::Segmentation(VisualSTM *stm, JavaVM *jvm, jobject main, jmethodID jmFinished) :
-        stm(stm), jvm_(jvm), main_(main), jmFinished_(jmFinished) {
-
-    /*unordered_set<uint32_t> s1;
-    s1.insert(
-            (static_cast<uint32_t>((65535.0 / 500.0) * (500.0 - 250.0)) << 16) |
-            static_cast<uint32_t>((65535.0 / 500.0) * (500.0 - 250.0))
-    );
-    for (uint32_t p: s1) LOGW("A: %u x %u", p >> 16, p & 0xFFFF);
-
-    unordered_set<uint16_t> s2;
-    s2.insert(
-            (static_cast<uint16_t>((256.0 / 500.0) * (500.0 - 250.0)) << 8) |
-            static_cast<uint16_t>((256.0 / 500.0) * (500.0 - 250.0))
-    );
-    for (uint16_t p: s2) LOGW("B: %u x %u", p >> 8, p & 0xFF);*/
-
-    // was
-    // A: 32750 x 32750
-    // B: 0 x 0
-
-    // now
-    // A: 32767 x 32767
-    // B: 128 x 128
-}
+        stm(stm), jvm_(jvm), main_(main), jmFinished_(jmFinished) {}
 
 #pragma clang diagnostic push
-#pragma ide diagnostic ignored "ConstantConditionsOC"
+#pragma ide diagnostic ignored "readability-non-const-parameter"
 
 void Segmentation::Process(AImage *image, bool *recording) {
     locked = true;
@@ -94,7 +71,7 @@ void Segmentation::Process(AImage *image, bool *recording) {
         Segment seg{(uint32_t) segments.size() + 1};
         stack.push_back(new uint16_t[3]{thisY, thisX, 0});
         uint16_t y, x, dr;
-        while ((last = stack.size() - 1) != -1) {
+        while ((last = ((int64_t) stack.size()) - 1) != -1) {
             y = stack[last][0], x = stack[last][1], dr = stack[last][2];
             if (dr == 0) {
                 seg.p.push_back((y << 16) | x);
@@ -141,7 +118,7 @@ void Segmentation::Process(AImage *image, bool *recording) {
     if (min_seg_size > 1) {
         uint32_t absorber_i, size_bef = segments.size(), removal = 1;
         Segment *absorber;
-        for (int32_t seg = size_bef - 1; seg > -1; seg--)
+        for (int32_t seg = ((int32_t) size_bef) - 1; seg > -1; seg--)
             if (segments[seg].p.size() < min_seg_size) {
                 absorber_i = FindPixelOfASegmentToDissolveIn(&segments[seg]);
                 if (absorber_i == 0xFFFFFFFF) continue;
@@ -283,7 +260,7 @@ bool Segmentation::CompareColours(uint32_t a, uint32_t b) {
            abs((int16_t) (a & 0xFF) - (int16_t) (b & 0xFF)) <= 4;
 }
 
-uint32_t Segmentation::FindPixelOfASegmentToDissolveIn(Segment *seg) {
+uint32_t Segmentation::FindPixelOfASegmentToDissolveIn(Segment *seg) const {
     uint32_t cor = seg->p.front();
     uint16_t a = cor >> 16, b = cor & 0xFFFF;
     if (a > 0)
@@ -318,4 +295,4 @@ void Segmentation::SetAsBorder(uint16_t y, uint16_t x) {
     );
 }
 
-Segmentation::~Segmentation() {}
+Segmentation::~Segmentation() = default;

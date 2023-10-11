@@ -16,7 +16,7 @@ class VisualSTM {
 private:
     const std::string visDirPath = "/data/data/ir.mahdiparastesh.mergen/files/vis/";
     // maximum frames allowed to be present in memory at a time
-    const uint16_t max_frames_stored = 3;
+    const uint16_t max_frames_stored = 10;
     // forget N frames whenever hit the maximum
     const uint64_t forget_n_frames = 1;
 
@@ -24,7 +24,7 @@ private:
             savedStateFile = "saved_state";
     uint64_t nextFrameId = 0;
     uint16_t nextShapeId = 0;
-    // ID of earliest frame which is still available in memory
+    // ID of earliest frame which is STILL available in memory
     uint64_t earliestFrameId = 0;
     // total number of frames available in memory
     uint16_t framesStored = 0;
@@ -35,17 +35,17 @@ private:
     // helper maps for altering 'uint16_t' indexes
     std::unordered_map<uint16_t, std::list<uint16_t>> rm;
 
-    /** Forgets some of oldest frames. */
+    /** Forgets N of oldest frames. */
     void Forget();
 
     /** Iterates on every ID in a Sequence File. */
     void IterateIndex(const char *path, void onEach(VisualSTM *, uint16_t));
 
     /** Reads an entire Sequence File. */
-    std::list<uint16_t> ReadIndex(const char *path);
+    static std::list<uint16_t> ReadIndex(const char *path);
 
     /** Removes an ID from a list (index/sequence file). */
-    void RemoveFromIndex(std::list<uint16_t> *l, uint16_t id);
+    static void RemoveFromIndex(std::list<uint16_t> *l, uint16_t id);
 
     /** Save index in non-volatile memory and clear its data from RAM. */
     template<class INT>
@@ -66,7 +66,7 @@ public:
     void OnFrameFinished();
 
     /** Saves current state { nextFrameId, nextShapeId, earliestFrameId }
-     * Don't save paths in variables in the constructor! */
+     * Don't save paths as variables in the constructor! */
     void SaveState();
 };
 
