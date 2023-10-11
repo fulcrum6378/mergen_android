@@ -23,16 +23,25 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @SuppressLint("ClickableViewAccessibility")
-public class Main extends Activity implements TextureView.SurfaceTextureListener {
+public class Main extends Activity implements TextureView.SurfaceTextureListener,
+        View.OnLongClickListener {
     private long ndkCamera;
     private Surface surface = null;
-    private boolean isRecording = false, isFinished = true;
+    private boolean isRecording = false, isDebugging = false, isFinished = true;
     private static Handler handler;
     private Toast toast;
     private Shaker shaker;
@@ -41,7 +50,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     private RelativeLayout root;
     private View colouring;
     private TextureView preview;
-    private View capture;
+    private View capture, popupAnchor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +60,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         colouring = findViewById(R.id.colouring);
         preview = findViewById(R.id.preview);
         capture = findViewById(R.id.capture);
+        popupAnchor = findViewById(R.id.popupAnchor);
 
         // ask for camera and microphone permissions
         String[] requiredPerms =
@@ -64,6 +74,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.what) {
+                    // Called by vis/Camera whenever a new frame is captured for analysis or mere saving.
                     case 0:
                         capture.setAlpha(.9f);
                         captureAnimation = ObjectAnimator.ofFloat(capture, View.ALPHA, .9f, 0f)
@@ -76,6 +87,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
                         });
                         captureAnimation.start();
                         break;
+                    // Called by vis/Segmentation when it's done saving data.
                     case 1:
                         isFinished = true;
                         Toast.makeText(Main.this, "You can now close the app safely.",
@@ -87,6 +99,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
 
         // miscellaneus jobs
         shaker = new Shaker();
+        root.setOnLongClickListener(this);
 
         // toast any test string values
         String tested = test();
@@ -142,6 +155,58 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         return true;
     }
 
+    @Override
+    public boolean onLongClick(View v) {
+        PopupMenu popup = new PopupMenu(this, popupAnchor);
+        popup.inflate(R.menu.main);
+        popup.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.debug) {
+                isDebugging = !isDebugging;
+                // TODO
+                return true;
+            }
+            if (item.getItemId() == R.id.export) try {
+                FileOutputStream fos = new FileOutputStream(new File(getCacheDir(), "memory.zip"));
+                ZipOutputStream zos = new ZipOutputStream(fos);
+                addDirToZip(zos, getFilesDir(), null);
+                zos.flush();
+                fos.flush();
+                zos.close();
+                fos.close();
+                return true;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return false;
+        });
+        popup.getMenu().findItem(R.id.debug).setChecked(isDebugging);
+        popup.show();
+        return true;
+    }
+
+    public static void addDirToZip(ZipOutputStream zos, File fileToZip, String parentDirName)
+            throws IOException {
+        if (fileToZip == null || !fileToZip.exists()) return;
+
+        String zipEntryName = fileToZip.getName();
+        if (parentDirName != null && !parentDirName.isEmpty())
+            zipEntryName = parentDirName + "/" + fileToZip.getName();
+
+        if (fileToZip.isDirectory()) {
+            for (File file : Objects.requireNonNull(fileToZip.listFiles()))
+                addDirToZip(zos, file, zipEntryName);
+        } else {
+            byte[] buffer = new byte[1024];
+            FileInputStream fis = new FileInputStream(fileToZip);
+            zos.putNextEntry(new ZipEntry(zipEntryName));
+            int length;
+            while ((length = fis.read(buffer)) > 0)
+                zos.write(buffer, 0, length);
+            zos.closeEntry();
+            fis.close();
+        }
+    }
+
     private void recording(boolean bb) {
         if (bb == isRecording) return;
         byte res;
@@ -159,7 +224,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     }
 
     /**
-     * In my phonem pressure is always 1.0 and orientation is always 0!
+     * In my phone, `pressure` is always 1.0 and `orientation` always 0!
      * <p>
      * As long as the previous pointers (pointers with smaller indices) haven't got UP,
      * ANY ACTION_MOVE WILL BE COUNTED ON THE SMALLEST INDEX!
@@ -180,6 +245,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
             return true;
         });
         isFinished = false;
+        root.setLongClickable(false);
     }
 
     private void onRecordingStopped() {
@@ -190,12 +256,13 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
                 recording(true);
             }
         });
+        root.setLongClickable(true);
     }
 
-    /** Called by vis/Camera whenever a new frame is captured for analysis or mere saving. */
+    /** Transfers a signal from non-main threads of native codes to the main thread. */
     @SuppressWarnings("unused")
-    void captured() {
-        handler.obtainMessage(0).sendToTarget();
+    void signal(byte id) {
+        handler.obtainMessage(id).sendToTarget();
     }
 
     /** @param amplitude must be in range 1..255 */
@@ -207,12 +274,6 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     @SuppressWarnings("unused")
     void colouring(int colour) {
         colouring.setBackgroundColor(colour);
-    }
-
-    /** Called by vis/Segmentation when it's done saving data. */
-    @SuppressWarnings("unused")
-    void finished() {
-        handler.obtainMessage(1).sendToTarget();
     }
 
     @Override
@@ -247,7 +308,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         public abstract void onDoubleClick();
     }
 
-    private class Shaker extends Thread {
+    private class Shaker extends Thread { // FIXME THIS SUCKS
         public int amplitude = 0;
         private boolean active = true;
         private final Vibrator vib = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) ?
