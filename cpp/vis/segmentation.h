@@ -58,7 +58,7 @@ private:
 
     JavaVM *jvm_;
     jobject main_;
-    jmethodID jmFinished_;
+    jmethodID *jmSignal_;
 
     static bool CompareColours(uint32_t a, uint32_t b);
 
@@ -73,7 +73,7 @@ private:
 public:
     bool locked = false;
 
-    Segmentation(VisualSTM *stm, JavaVM *jvm, jobject main, jmethodID jmFinished);
+    Segmentation(VisualSTM *stm, JavaVM *jvm, jobject main, jmethodID *jmSignal);
 
     void Process(AImage *image, bool *recording);
 

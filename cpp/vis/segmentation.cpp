@@ -7,8 +7,8 @@
 
 using namespace std;
 
-Segmentation::Segmentation(VisualSTM *stm, JavaVM *jvm, jobject main, jmethodID jmFinished) :
-        stm(stm), jvm_(jvm), main_(main), jmFinished_(jmFinished) {}
+Segmentation::Segmentation(VisualSTM *stm, JavaVM *jvm, jobject main, jmethodID *jmSignal) :
+        stm(stm), jvm_(jvm), main_(main), jmSignal_(jmSignal) {}
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "readability-non-const-parameter"
@@ -241,7 +241,7 @@ void Segmentation::Process(AImage *image, bool *recording) {
         JNIEnv *env;
         jvm_->GetEnv((void **) &env, JNI_VERSION_1_6);
         jvm_->AttachCurrentThread(&env, nullptr);
-        env->CallVoidMethod(main_, jmFinished_);
+        env->CallVoidMethod(main_, *jmSignal_, 1);
     }
 }
 

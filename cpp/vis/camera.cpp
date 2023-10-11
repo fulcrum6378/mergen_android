@@ -72,10 +72,9 @@ Camera::Camera(VisualSTM *stm, JavaVM *jvm, jobject main) :
     // prepare for image analysis
     JNIEnv *env;
     jvm_->GetEnv((void **) &env, JNI_VERSION_1_6);
-    jmCaptured_ = env->GetMethodID(
-            env->FindClass("ir/mahdiparastesh/mergen/Main"), "captured", "()V");
-    segmentation_ = new Segmentation(stm, jvm, main, env->GetMethodID(
-            env->FindClass("ir/mahdiparastesh/mergen/Main"), "finished", "()V"));
+    jmSignal_ = env->GetMethodID(
+            env->FindClass("ir/mahdiparastesh/mergen/Main"), "signal", "(B)V");
+    segmentation_ = new Segmentation(stm, jvm, main, &jmSignal_);
 }
 
 /**
@@ -244,7 +243,7 @@ void Camera::ImageCallback(AImageReader *reader) {
         JNIEnv *env;
         jvm_->GetEnv((void **) &env, JNI_VERSION_1_6);
         jvm_->AttachCurrentThread(&env, nullptr);
-        env->CallVoidMethod(main_, jmCaptured_);
+        env->CallVoidMethod(main_, jmSignal_, 0);
     }
 }
 

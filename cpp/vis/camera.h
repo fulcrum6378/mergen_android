@@ -46,7 +46,7 @@ private:
     BitmapStream *bmp_stream_{};
     JavaVM *jvm_;
     jobject main_;
-    jmethodID jmCaptured_;
+    jmethodID jmSignal_;
 
     // Managing cameras
     ACameraManager *cameraMgr_;
