@@ -23,34 +23,27 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.Objects;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 @SuppressLint("ClickableViewAccessibility")
-public class Main extends Activity implements TextureView.SurfaceTextureListener,
-        View.OnLongClickListener {
+public class Main extends Activity implements TextureView.SurfaceTextureListener {
+    private RelativeLayout root;
+    private View colouring, capture;
+    private TextureView preview;
+
+    private static Handler handler;
+    private Vibrator vib;
+    private Debug debug;
     private long ndkCamera;
     private Surface surface = null;
-    private boolean isRecording = false, isDebugging = false, isFinished = true;
-    private static Handler handler;
+    private boolean isRecording = false, isFinished = true;
     private Toast toast;
-    private Shaker shaker;
     private ObjectAnimator captureAnimation;
-
-    private RelativeLayout root;
-    private View colouring;
-    private TextureView preview;
-    private View capture, popupAnchor;
+    private Thread shaker = null;
+    private int shakeAmplitude = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,16 +53,25 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         colouring = findViewById(R.id.colouring);
         preview = findViewById(R.id.preview);
         capture = findViewById(R.id.capture);
-        popupAnchor = findViewById(R.id.popupAnchor);
 
         // ask for camera and microphone permissions
         String[] requiredPerms =
                 new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO};
         if (Arrays.stream(requiredPerms).anyMatch(s -> checkSelfPermission(s) < 0))
             requestPermissions(requiredPerms, 1);
-        else permitted();
+        // FIXME else permitted();
+    }
 
-        // handler
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (Arrays.stream(grantResults).sum() == 0) prepare();
+        else onBackPressed();
+    }
+
+
+    private void prepare() {
+        // JNI-related jobs
         handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
@@ -90,31 +92,21 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
                     // Called by vis/Segmentation when it's done saving data.
                     case 1:
                         isFinished = true;
-                        Toast.makeText(Main.this, "You can now close the app safely.",
-                                Toast.LENGTH_SHORT).show();
+                        if (toast != null) toast.cancel();
+                        toast = Toast.makeText(Main.this, "You can now close the app safely.",
+                                Toast.LENGTH_SHORT);
+                        toast.show();
                         break;
                 }
             }
         };
-
-        // miscellaneus jobs
-        shaker = new Shaker();
-        root.setOnLongClickListener(this);
-
-        // toast any test string values
+        vib = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) ?
+                ((VibratorManager) getSystemService(Context.VIBRATOR_MANAGER_SERVICE))
+                        .getDefaultVibrator() : (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         String tested = test();
         if (tested != null) Toast.makeText(this, tested, Toast.LENGTH_LONG).show();
-    }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (Arrays.stream(grantResults).sum() == 0) permitted();
-        else onBackPressed();
-    }
-
-
-    private void permitted() {
+        // initialise camera(s)
         ndkCamera = create();
         Size size = getCameraDimensions(ndkCamera);
         /*Toast.makeText(this, size.getWidth() + " : " + size.getHeight(),
@@ -127,6 +119,10 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         preview.setSurfaceTextureListener(this);
         if (preview.isAvailable()) //noinspection DataFlowIssue
             onSurfaceTextureAvailable(preview.getSurfaceTexture(), size.getWidth(), size.getHeight());
+
+        // initialise the debugger
+        debug = new Debug(this);
+        debug.start();
     }
 
     @Override
@@ -153,58 +149,6 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         ndkCamera = 0;
         surface = null;
         return true;
-    }
-
-    @Override
-    public boolean onLongClick(View v) {
-        PopupMenu popup = new PopupMenu(this, popupAnchor);
-        popup.inflate(R.menu.main);
-        popup.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.debug) {
-                isDebugging = !isDebugging;
-                // TODO
-                return true;
-            }
-            if (item.getItemId() == R.id.export) try {
-                FileOutputStream fos = new FileOutputStream(new File(getCacheDir(), "memory.zip"));
-                ZipOutputStream zos = new ZipOutputStream(fos);
-                addDirToZip(zos, getFilesDir(), null);
-                zos.flush();
-                fos.flush();
-                zos.close();
-                fos.close();
-                return true;
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            return false;
-        });
-        popup.getMenu().findItem(R.id.debug).setChecked(isDebugging);
-        popup.show();
-        return true;
-    }
-
-    public static void addDirToZip(ZipOutputStream zos, File fileToZip, String parentDirName)
-            throws IOException {
-        if (fileToZip == null || !fileToZip.exists()) return;
-
-        String zipEntryName = fileToZip.getName();
-        if (parentDirName != null && !parentDirName.isEmpty())
-            zipEntryName = parentDirName + "/" + fileToZip.getName();
-
-        if (fileToZip.isDirectory()) {
-            for (File file : Objects.requireNonNull(fileToZip.listFiles()))
-                addDirToZip(zos, file, zipEntryName);
-        } else {
-            byte[] buffer = new byte[1024];
-            FileInputStream fis = new FileInputStream(fileToZip);
-            zos.putNextEntry(new ZipEntry(zipEntryName));
-            int length;
-            while ((length = fis.read(buffer)) > 0)
-                zos.write(buffer, 0, length);
-            zos.closeEntry();
-            fis.close();
-        }
     }
 
     private void recording(boolean bb) {
@@ -268,9 +212,22 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     /** @param amplitude must be in range 1..255 */
     @SuppressWarnings("unused")
     void vibrate(int amplitude) {
-        shaker.amplitude = amplitude;
+        shakeAmplitude = amplitude;
+        if (shaker == null) shaker = new Thread(() -> {
+            while (shakeAmplitude != 0) {
+                if (amplitude > 0) vib.vibrate(VibrationEffect.createOneShot(200, amplitude));
+                try {
+                    //noinspection BusyWait
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            shaker = null;
+        });
     }
 
+    /** Effect for expressing simulated pleasure & pain. */
     @SuppressWarnings("unused")
     void colouring(int colour) {
         colouring.setBackgroundColor(colour);
@@ -290,6 +247,8 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
 
     @Override
     protected void onDestroy() {
+        if (shakeAmplitude != 0) shakeAmplitude = 0;
+        debug.interrupt();
         surface.release();
         destroy();
         super.onDestroy();
@@ -306,38 +265,6 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         }
 
         public abstract void onDoubleClick();
-    }
-
-    private class Shaker extends Thread { // FIXME THIS SUCKS
-        public int amplitude = 0;
-        private boolean active = true;
-        private final Vibrator vib = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) ?
-                ((VibratorManager) getSystemService(Context.VIBRATOR_MANAGER_SERVICE))
-                        .getDefaultVibrator() : (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-
-        public Shaker() {
-            start();
-        }
-
-        @Override
-        public void run() {
-            long dur = 200;
-            while (active) {
-                if (amplitude > 0) vib.vibrate(VibrationEffect.createOneShot(dur, amplitude));
-                try {
-                    //noinspection BusyWait
-                    Thread.sleep(dur);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-
-        @Override
-        public void interrupt() {
-            active = false;
-            super.interrupt();
-        }
     }
 
 
