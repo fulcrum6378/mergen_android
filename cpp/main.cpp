@@ -112,5 +112,5 @@ extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onTouch(
         JNIEnv *, jobject, jint dev, jint act, jint id, jfloat x, jfloat y, jfloat size) {
     if (!hpt) return;
-    hpt->OnTouchEvent(dev, act, id, x, y, size);
+    hpt->OnTouchEvent((int16_t) dev, (int8_t) act, (int16_t) id, x, y, size);
 }

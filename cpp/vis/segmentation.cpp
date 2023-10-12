@@ -13,6 +13,7 @@ Segmentation::Segmentation(VisualSTM *stm, JavaVM *jvm, jobject main, jmethodID 
         stm(stm), jvm_(jvm), main_(main), jmSignal_(jmSignal) {}
 
 #pragma clang diagnostic push
+#pragma ide diagnostic ignored "ConstantConditionsOC"
 #pragma ide diagnostic ignored "readability-non-const-parameter"
 
 void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
@@ -207,9 +208,8 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
     auto delta5 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
-    // in case of a debugging quest...
-    if (debugMode > 0) {
-        uint64_t tookLong = delta1 + delta2 + delta3 + delta4 + delta5;
+    // in case of debugging mode 1
+    if (debugMode == 1) {
         ofstream arrFile("/data/data/ir.mahdiparastesh.mergen/cache/arr.bin", ios::binary);
         arrFile.write((char *) &arr, sizeof(arr));
         arrFile.close();

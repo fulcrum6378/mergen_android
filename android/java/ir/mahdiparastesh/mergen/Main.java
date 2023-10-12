@@ -34,12 +34,12 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     private View colouring, capture;
     private TextureView preview;
 
-    private static Handler handler;
+    static Handler handler;
     private Vibrator vib;
     private Debug debug;
     private long ndkCamera;
     private Surface surface = null;
-    public boolean isRecording = false, isFinished = true;
+    boolean isRecording = false, isFinished = true;
     private Toast toast;
     private ObjectAnimator captureAnimation;
     private Thread shaker = null;
@@ -59,7 +59,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
                 new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO};
         if (Arrays.stream(requiredPerms).anyMatch(s -> checkSelfPermission(s) < 0))
             requestPermissions(requiredPerms, 1);
-        // FIXME else permitted();
+        else prepare();
     }
 
     @Override
@@ -69,14 +69,13 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         else onBackPressed();
     }
 
-
     private void prepare() {
         // JNI-related jobs
         handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.what) {
-                    case 0: // By vis/Camera whenever a new frame is captured for analysis or mere saving.
+                    case 0: // By vis/Camera.cpp whenever a new frame is captured.
                         capture.setAlpha(.9f);
                         captureAnimation = ObjectAnimator.ofFloat(capture, View.ALPHA, .9f, 0f)
                                 .setDuration(200);
@@ -88,15 +87,19 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
                         });
                         captureAnimation.start();
                         break;
-                    case 1: // By vis/Segmentation when it's done saving data.
+                    case 1: // By vis/Segmentation.cpp when it's done saving data.
                         isFinished = true;
                         if (toast != null) toast.cancel();
                         toast = Toast.makeText(Main.this, "You can now close the app safely.",
                                 Toast.LENGTH_SHORT);
                         toast.show();
                         break;
-                    case 2: // By vis/Segmentation to stop recording.
+                    case 2: // By vis/Segmentation.cpp to stop recording.
+                        debug.recorded = true;
                         recording(false, (byte) 0);
+                        break;
+                    case 127: // By Debug.java to start recording.
+                        recording(true, (byte) msg.obj);
                         break;
                 }
             }
@@ -152,6 +155,8 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         return true;
     }
 
+    /** Starts/stops recording.
+     * It must always be executed in the main thread. */
     void recording(boolean bb, byte debugMode) {
         if (bb == isRecording) return;
         byte res;
