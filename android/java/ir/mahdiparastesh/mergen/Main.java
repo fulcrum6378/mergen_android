@@ -89,10 +89,12 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
                         break;
                     case 1: // By vis/Segmentation.cpp when it's done saving data.
                         isFinished = true;
-                        if (toast != null) toast.cancel();
-                        toast = Toast.makeText(Main.this, "You can now close the app safely.",
-                                Toast.LENGTH_SHORT);
-                        toast.show();
+                        if (debug.recorded) {
+                            if (toast != null) toast.cancel();
+                            toast = Toast.makeText(Main.this,
+                                    "You can now close the app safely.", Toast.LENGTH_SHORT);
+                            toast.show();
+                        }
                         break;
                     case 2: // By vis/Segmentation.cpp to stop recording.
                         debug.recorded = true;
@@ -155,8 +157,10 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         return true;
     }
 
-    /** Starts/stops recording.
-     * It must always be executed in the main thread. */
+    /**
+     * Starts/stops recording.
+     * It must always be executed in the main thread.
+     */
     void recording(boolean bb, byte debugMode) {
         if (bb == isRecording) return;
         byte res;

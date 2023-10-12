@@ -20,6 +20,14 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
     locked = true;
     //ofstream test("/data/data/ir.mahdiparastesh.mergen/cache/test.yuv", ios::binary);
 
+    // remote debugging
+    if (debugMode > 0) {
+        JNIEnv *env;
+        jvm_->GetEnv((void **) &env, JNI_VERSION_1_6);
+        jvm_->AttachCurrentThread(&env, nullptr);
+        env->CallVoidMethod(main_, *jmSignal_, 2);
+    }
+
     // 1. loading; bring separate YUV data into the multidimensional array of pixels `arr`
     auto t0 = chrono::system_clock::now();
     AImageCropRect srcRect;
@@ -208,18 +216,6 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
     auto delta5 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
-    // in case of debugging mode 1
-    if (debugMode == 1) {
-        ofstream arrFile("/data/data/ir.mahdiparastesh.mergen/cache/arr.bin", ios::binary);
-        arrFile.write((char *) &arr, sizeof(arr));
-        arrFile.close();
-
-        JNIEnv *env;
-        jvm_->GetEnv((void **) &env, JNI_VERSION_1_6);
-        jvm_->AttachCurrentThread(&env, nullptr);
-        env->CallVoidMethod(main_, *jmSignal_, 2);
-    }
-
     // 6. store the segments
     t0 = chrono::system_clock::now();
     sort(segments.begin(), segments.end(),
@@ -242,6 +238,13 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
          delta1 + delta2 + delta3 + delta4 + delta5 + delta6);
     LOGI("----------------------------------");
 
+    // remote debugging
+    if (debugMode == 1) {
+        ofstream arrFile("/data/data/ir.mahdiparastesh.mergen/cache/arr", ios::binary);
+        arrFile.write((char *) &arr, sizeof(arr));
+        arrFile.close();
+    }
+
     // clear data and unlock the frame
     memset(status, 0, sizeof(status));
     s_index.clear();
@@ -249,7 +252,7 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
     locked = false;
 
     // if recording is over, save state and inform the user when they can close the app safely
-    if (!*recording && debugMode == 0) {
+    if (!*recording) {
         stm->SaveState();
 
         JNIEnv *env;

@@ -35,33 +35,34 @@ public class Debug extends Thread {
 
             byte mode = (byte) in.read();
             boolean process = true;
-            if (mode <= 1) { // those which require recording to be started
-                if (c.isFinished) {
-                    recorded = false;
-                    Main.handler.obtainMessage(127, mode).sendToTarget();
-                } else {
+            if (mode <= 2) { // those which require recording to be started
+                if (!c.isFinished) {
+                    //noinspection UnusedAssignment
                     process = false;
                     continue;
                 }
+                out.write(0);
+                recorded = false;
+                Main.handler.obtainMessage(127, mode).sendToTarget();
+                while (!recorded) try { //noinspection BusyWait
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
+            //noinspection ConstantValue
             if (process) switch (mode) {
                 case 1:
-                    out.write(0);
-                    while (!recorded) try { //noinspection BusyWait
-                        Thread.sleep(200);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    Files.copy(new File(c.getCacheDir(), "arr.bin").toPath(), out);
+                    Files.copy(new File(c.getCacheDir(), "arr").toPath(), out);
                     break;
                 case 2:
-                    out.write(0);
                     ZipOutputStream zos = new ZipOutputStream(out);
                     addDirToZip(zos, c.getFilesDir(), null);
                     break;
                 default:
                     out.write(2);
-            } else out.write(1);
+            }
+            else out.write(1);
             out.flush();
             con.close();
         } catch (IOException e) {
