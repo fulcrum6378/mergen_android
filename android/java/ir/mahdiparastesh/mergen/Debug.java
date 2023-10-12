@@ -28,27 +28,43 @@ public class Debug extends Thread {
                 Socket con = server.accept(); // blocks until something is received...
                 InputStream in = con.getInputStream();
                 OutputStream out = con.getOutputStream();
-                //Log.println(Log.ASSERT, "ASAJJ", String.valueOf(in.read()));
+
+                byte mode = (byte) in.read();
+                boolean process = true;
+                if (mode <= 1) { // those which require recording to be started
+                    if (c.isFinished) c.recording(true, mode);
+                    else {
+                        process = false;
+                        continue;
+                    }
+                }
                 byte[] res;
-                switch (in.read()) {
-                    case 0:
+                FileOutputStream cache;
+                if (process) switch (mode) {
+                    case 1:
+                        // TODO e
+                        cache = new FileOutputStream(
+                                new File(c.getCacheDir(), "arr.bin"));
+
+                        cache.close();
                         res = new byte[]{0};
                         break;
-                    case 1:
-                        FileOutputStream fos = new FileOutputStream(
+                    case 2:
+                        cache = new FileOutputStream(
                                 new File(c.getCacheDir(), "memory.zip"));
-                        ZipOutputStream zos = new ZipOutputStream(fos);
+                        ZipOutputStream zos = new ZipOutputStream(cache);
                         addDirToZip(zos, c.getFilesDir(), null);
                         zos.flush();
-                        fos.flush();
+                        cache.flush();
                         zos.close();
-                        fos.close();
+                        cache.close();
 
                         res = new byte[]{0};
                         break;
                     default:
-                        res = new byte[]{1};
+                        res = new byte[]{2};
                 }
+                else res = new byte[]{1};
                 out.write(res);
                 out.flush();
                 con.close();

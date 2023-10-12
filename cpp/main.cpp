@@ -24,7 +24,7 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
 
     // ensure that /files/ dir exists
     const char *filesDir = "/data/data/ir.mahdiparastesh.mergen/files/";
-    struct stat sb;
+    struct stat sb{};
     if (stat(filesDir, &sb) != 0) mkdir(filesDir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
     // initialise high-level parts
@@ -42,14 +42,14 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
 }
 
 extern "C" JNIEXPORT jbyte JNICALL
-Java_ir_mahdiparastesh_mergen_Main_start(JNIEnv *, jobject) {
+Java_ir_mahdiparastesh_mergen_Main_start(JNIEnv *, jobject, jbyte debugMode) {
     int8_t ret = 0;
     /*if (aud) {
         if (!aud->Start()) ret = 1;
     } else ret = 2;
     if (ret > 0) return ret;*/
     if (vis) {
-        if (!vis->SetRecording(true)) ret = 3;
+        if (!vis->SetRecording(true, debugMode)) ret = 3;
     } else ret = 4;
     return ret;
 }
@@ -62,7 +62,7 @@ Java_ir_mahdiparastesh_mergen_Main_stop(JNIEnv *, jobject) {
     } else ret = 2;
     if (ret > 0) return ret;*/
     if (vis) {
-        if (!vis->SetRecording(false)) ret = 3;
+        if (!vis->SetRecording(false, 0)) ret = 3;
     } else ret = 4;
     return ret;
 }

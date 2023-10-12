@@ -39,7 +39,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     private Debug debug;
     private long ndkCamera;
     private Surface surface = null;
-    private boolean isRecording = false, isFinished = true;
+    public boolean isRecording = false, isFinished = true;
     private Toast toast;
     private ObjectAnimator captureAnimation;
     private Thread shaker = null;
@@ -76,8 +76,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.what) {
-                    // Called by vis/Camera whenever a new frame is captured for analysis or mere saving.
-                    case 0:
+                    case 0: // By vis/Camera whenever a new frame is captured for analysis or mere saving.
                         capture.setAlpha(.9f);
                         captureAnimation = ObjectAnimator.ofFloat(capture, View.ALPHA, .9f, 0f)
                                 .setDuration(200);
@@ -89,13 +88,15 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
                         });
                         captureAnimation.start();
                         break;
-                    // Called by vis/Segmentation when it's done saving data.
-                    case 1:
+                    case 1: // By vis/Segmentation when it's done saving data.
                         isFinished = true;
                         if (toast != null) toast.cancel();
                         toast = Toast.makeText(Main.this, "You can now close the app safely.",
                                 Toast.LENGTH_SHORT);
                         toast.show();
+                        break;
+                    case 2: // By vis/Segmentation to stop recording.
+                        recording(false, (byte) 0);
                         break;
                 }
             }
@@ -144,17 +145,17 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
         root.setClickable(false);
-        recording(false);
+        recording(false, (byte) 0);
         onSurfaceStatusChanged(ndkCamera, surface, false);
         ndkCamera = 0;
         surface = null;
         return true;
     }
 
-    private void recording(boolean bb) {
+    void recording(boolean bb, byte debugMode) {
         if (bb == isRecording) return;
         byte res;
-        if (!isRecording) res = start();
+        if (!isRecording) res = start(debugMode);
         else res = stop();
         if (toast != null) toast.cancel();
         toast = Toast.makeText(this,
@@ -197,7 +198,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         root.setOnClickListener(new DoubleClickListener() {
             @Override
             public void onDoubleClick() {
-                recording(true);
+                recording(true, (byte) 0);
             }
         });
         root.setLongClickable(true);
@@ -216,8 +217,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         if (shaker == null) shaker = new Thread(() -> {
             while (shakeAmplitude != 0) {
                 if (amplitude > 0) vib.vibrate(VibrationEffect.createOneShot(200, amplitude));
-                try {
-                    //noinspection BusyWait
+                try { //noinspection BusyWait
                     Thread.sleep(200);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
@@ -236,7 +236,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     @Override
     public void onBackPressed() {
         if (isRecording) {
-            recording(false);
+            recording(false, (byte) 0);
             return;
         }
         if (!isFinished) return;
@@ -272,7 +272,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     private native long create();
 
     /** Starts recording. */
-    private native byte start();
+    private native byte start(byte debugMode);
 
     /** Stops recording. */
     private native byte stop();

@@ -75,7 +75,9 @@ public:
 
     Segmentation(VisualSTM *stm, JavaVM *jvm, jobject main, jmethodID *jmSignal);
 
-    void Process(AImage *image, bool *recording);
+    /** Main processing function of Segmentation which execute all the necessary jobs.
+     * do NOT refer to `debugMode_` in Camera. */
+    void Process(AImage *image, bool *recording, int8_t debugMode);
 
     ~Segmentation();
 };

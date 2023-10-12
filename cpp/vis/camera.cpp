@@ -209,9 +209,10 @@ void Camera::Preview(bool start) {
 }
 
 /** Always use the camera while rotating the phone in -90 degrees. */
-bool Camera::SetRecording(bool b) {
+bool Camera::SetRecording(bool b, int8_t debugMode) {
     if (captureSessionState_ != CaptureSessionState::ACTIVE || b == recording_) return false;
     recording_ = b;
+    debugMode_ = debugMode;
     if (VIS_SAVE) {
         if (b) bmp_stream_ = new BitmapStream(dimensions); else delete bmp_stream_;
         // if (bmp_stream_) bmp_stream_->BakeMetadata();
@@ -234,7 +235,9 @@ void Camera::ImageCallback(AImageReader *reader) {
     if (recording_) {
         if (!VIS_SAVE) {
             used = !segmentation_->locked;
-            if (used) std::thread(&Segmentation::Process, segmentation_, image, &recording_).detach();
+            if (used)
+                std::thread(&Segmentation::Process, segmentation_,
+                            image, &recording_, debugMode_).detach();
         } else
             used = bmp_stream_->HandleImage(image);
     }

@@ -90,7 +90,7 @@ public:
         dib_info.vres = 2835;
         dib_info.num_colors = 0;
         dib_info.num_important_colors = 0;
-        metadata.write((char *) (&dib_info), sizeof(dib_info));
+        metadata.write((char *) &dib_info, sizeof(dib_info));
         metadata.close();
     }
 

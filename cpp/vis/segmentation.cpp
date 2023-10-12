@@ -1,6 +1,8 @@
 #include <algorithm> // std::sort
 #include <chrono>
 #include <cstring>
+#include <fstream>
+#include <ios>
 
 #include "../global.h"
 #include "segmentation.h"
@@ -13,10 +15,9 @@ Segmentation::Segmentation(VisualSTM *stm, JavaVM *jvm, jobject main, jmethodID 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "readability-non-const-parameter"
 
-void Segmentation::Process(AImage *image, bool *recording) {
+void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
     locked = true;
-    /*#include <fstream> #include <ios>
-    ofstream test("/data/data/ir.mahdiparastesh.mergen/cache/test.yuv", ios::binary);*/
+    //ofstream test("/data/data/ir.mahdiparastesh.mergen/cache/test.yuv", ios::binary);
 
     // 1. loading; bring separate YUV data into the multidimensional array of pixels `arr`
     auto t0 = chrono::system_clock::now();
@@ -206,6 +207,19 @@ void Segmentation::Process(AImage *image, bool *recording) {
     auto delta5 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
+    // in case of a debugging quest...
+    if (debugMode > 0) {
+        uint64_t tookLong = delta1 + delta2 + delta3 + delta4 + delta5;
+        ofstream arrFile("/data/data/ir.mahdiparastesh.mergen/cache/arr.bin", ios::binary);
+        arrFile.write((char *) &arr, sizeof(arr));
+        arrFile.close();
+
+        JNIEnv *env;
+        jvm_->GetEnv((void **) &env, JNI_VERSION_1_6);
+        jvm_->AttachCurrentThread(&env, nullptr);
+        env->CallVoidMethod(main_, *jmSignal_, 2);
+    }
+
     // 6. store the segments
     t0 = chrono::system_clock::now();
     sort(segments.begin(), segments.end(),
@@ -235,7 +249,7 @@ void Segmentation::Process(AImage *image, bool *recording) {
     locked = false;
 
     // if recording is over, save state and inform the user when they can close the app safely
-    if (!*recording) {
+    if (!*recording && debugMode == 0) {
         stm->SaveState();
 
         JNIEnv *env;
