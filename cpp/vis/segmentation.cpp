@@ -231,7 +231,8 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
     LOGI("----------------------------------");
 
     // if recording is over, save state of VisualSTM and...
-    if (!*recording || debugMode > 0) {
+    bool singleTime = debugMode > 10 && debugMode <= 20;
+    if (!*recording || singleTime) {
         stm->SaveState();
 
         // inform the user that they can close the app safely
@@ -241,7 +242,7 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
         env->CallVoidMethod(main_, *jmSignal_, 1);
 
         // save files for debugging if wanted
-        if (debugMode == 1) {
+        if (debugMode == 11) {
             ofstream arrFile("/data/data/ir.mahdiparastesh.mergen/cache/arr", ios::binary);
             arrFile.write((char *) &arr, sizeof(arr));
             arrFile.close();
@@ -249,7 +250,7 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
 
         // signal Main.java to stop recording;
         // this MUST always be after saving the related files of debugding
-        if (debugMode > 0) env->CallVoidMethod(main_, *jmSignal_, 2);
+        if (singleTime) env->CallVoidMethod(main_, *jmSignal_, 2);
     }
 
     // clear data and unlock the frame

@@ -170,8 +170,9 @@ Ergo, touching the screen while Mergen is online is handled by [**HPT**](cpp/hpt
 as if it senses your finger and processes your pattern of touching!
 That's why I didn't use double-click to stop Mergen.
 
-I have also created a quick debugging tool for VIS, inside MyCV's
-[/debug/](https://github.com/fulcrum6378/mycv/tree/master/debug) module as a client, which communicates with
+I have also created a remote debugging tool for VIS, inside MyCV's
+[/debug/](https://github.com/fulcrum6378/mycv/tree/master/debug/main.py) module as a client,
+which communicates over a network (like Wi-Fi) with
 [Debug.java](android/java/ir/mahdiparastesh/mergen/Debug.java) which is the server, sending data of a processed image.
 
 The app **requires Android 10** and uses latest stable versions of Gradle, SDK and NDK, along with C++ 20.

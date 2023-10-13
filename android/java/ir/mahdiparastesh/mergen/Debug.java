@@ -35,7 +35,7 @@ public class Debug extends Thread {
 
             byte mode = (byte) in.read();
             boolean process = true;
-            if (mode <= 2) { // those which require recording to be started
+            if (mode > 10 && mode <= 20) { // those which require recording to be started
                 if (!c.isFinished) {
                     //noinspection UnusedAssignment
                     process = false;
@@ -53,11 +53,31 @@ public class Debug extends Thread {
             //noinspection ConstantValue
             if (process) switch (mode) {
                 case 1:
-                    Files.copy(new File(c.getCacheDir(), "arr").toPath(), out);
+                    Main.handler.obtainMessage(127, (byte) 0).sendToTarget();
+                    out.write(0);
                     break;
                 case 2:
+                    Main.handler.obtainMessage(126).sendToTarget();
+                    out.write(0);
+                    break;
+                case 3:
+                    Main.handler.obtainMessage(125).sendToTarget();
+                    out.write(0);
+                    break;
+                case 11:
+                    Files.copy(new File(c.getCacheDir(), "arr").toPath(), out);
+                    break;
+                case 21:
+                    out.write(0);
                     ZipOutputStream zos = new ZipOutputStream(out);
-                    addDirToZip(zos, c.getFilesDir(), null);
+                    addDirToZip(zos, new File(c.getFilesDir(), "vis/shapes"), null);
+                    addDirToZip(zos, new File(c.getFilesDir(), "vis/f"), null);
+                    addDirToZip(zos, new File(c.getFilesDir(), "vis/y"), null);
+                    addDirToZip(zos, new File(c.getFilesDir(), "vis/u"), null);
+                    addDirToZip(zos, new File(c.getFilesDir(), "vis/v"), null);
+                    addDirToZip(zos, new File(c.getFilesDir(), "vis/r"), null);
+                    zos.flush();
+                    zos.close(); // both necessary!
                     break;
                 default:
                     out.write(2);

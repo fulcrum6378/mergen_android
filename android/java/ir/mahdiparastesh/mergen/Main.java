@@ -75,6 +75,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.what) {
+                    // C++ signals:
                     case 0: // By vis/Camera.cpp whenever a new frame is captured.
                         capture.setAlpha(.9f);
                         captureAnimation = ObjectAnimator.ofFloat(capture, View.ALPHA, .9f, 0f)
@@ -100,8 +101,16 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
                         debug.recorded = true;
                         recording(false, (byte) 0);
                         break;
+
+                    // Java signals:
                     case 127: // By Debug.java to start recording.
                         recording(true, (byte) msg.obj);
+                        break;
+                    case 126: // By Debug.java to stop recording.
+                        recording(false, (byte) 0);
+                        break;
+                    case 125: // By Debug.java to close the app.
+                        onBackPressed();
                         break;
                 }
             }
