@@ -79,11 +79,6 @@ Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
 }
 
 
-extern "C" JNIEXPORT jstring JNICALL
-Java_ir_mahdiparastesh_mergen_Main_test(JNIEnv */*env*/, jobject) {
-    return nullptr;
-}
-
 extern "C" JNIEXPORT jobject JNICALL
 Java_ir_mahdiparastesh_mergen_Main_getCameraDimensions(
         JNIEnv *env, jobject, jlong cameraObj) {

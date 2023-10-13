@@ -109,8 +109,6 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         vib = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) ?
                 ((VibratorManager) getSystemService(Context.VIBRATOR_MANAGER_SERVICE))
                         .getDefaultVibrator() : (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        String tested = test();
-        if (tested != null) Toast.makeText(this, tested, Toast.LENGTH_LONG).show();
 
         // initialise camera(s)
         ndkCamera = create();
@@ -288,9 +286,6 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
 
     /** Destructs utilities required for recording. */
     private native void destroy();
-
-    /** Shows test string values coming from C++ */
-    private native String test();
 
     /** Camera cannot record in any dimension you want! */
     private native Size getCameraDimensions(long cameraObj);

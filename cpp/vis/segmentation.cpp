@@ -20,14 +20,6 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
     locked = true;
     //ofstream test("/data/data/ir.mahdiparastesh.mergen/cache/test.yuv", ios::binary);
 
-    // remote debugging
-    if (debugMode > 0) {
-        JNIEnv *env;
-        jvm_->GetEnv((void **) &env, JNI_VERSION_1_6);
-        jvm_->AttachCurrentThread(&env, nullptr);
-        env->CallVoidMethod(main_, *jmSignal_, 2);
-    }
-
     // 1. loading; bring separate YUV data into the multidimensional array of pixels `arr`
     auto t0 = chrono::system_clock::now();
     AImageCropRect srcRect;
@@ -238,11 +230,26 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
          delta1 + delta2 + delta3 + delta4 + delta5 + delta6);
     LOGI("----------------------------------");
 
-    // remote debugging
-    if (debugMode == 1) {
-        ofstream arrFile("/data/data/ir.mahdiparastesh.mergen/cache/arr", ios::binary);
-        arrFile.write((char *) &arr, sizeof(arr));
-        arrFile.close();
+    // if recording is over, save state of VisualSTM and...
+    if (!*recording || debugMode > 0) {
+        stm->SaveState();
+
+        // inform the user that they can close the app safely
+        JNIEnv *env;
+        jvm_->GetEnv((void **) &env, JNI_VERSION_1_6);
+        jvm_->AttachCurrentThread(&env, nullptr);
+        env->CallVoidMethod(main_, *jmSignal_, 1);
+
+        // save files for debugging if wanted
+        if (debugMode == 1) {
+            ofstream arrFile("/data/data/ir.mahdiparastesh.mergen/cache/arr", ios::binary);
+            arrFile.write((char *) &arr, sizeof(arr));
+            arrFile.close();
+        }
+
+        // signal Main.java to stop recording;
+        // this MUST always be after saving the related files of debugding
+        if (debugMode > 0) env->CallVoidMethod(main_, *jmSignal_, 2);
     }
 
     // clear data and unlock the frame
@@ -250,16 +257,6 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
     s_index.clear();
     segments.clear();
     locked = false;
-
-    // if recording is over, save state and inform the user when they can close the app safely
-    if (!*recording) {
-        stm->SaveState();
-
-        JNIEnv *env;
-        jvm_->GetEnv((void **) &env, JNI_VERSION_1_6);
-        jvm_->AttachCurrentThread(&env, nullptr);
-        env->CallVoidMethod(main_, *jmSignal_, 1);
-    }
 }
 
 #pragma clang diagnostic pop
