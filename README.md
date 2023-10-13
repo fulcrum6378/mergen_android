@@ -57,8 +57,9 @@ Mergen is intended to have 2 aspects:
 
 #### Theorem
 
-At 21 August 2020, I wanted to programme an app based on [**logical theorems**](https://en.wikipedia.org/wiki/Theorem)
-using which one can enter a sentence as a theorem and numerous chance factors below it which can make it True or False.
+At 21 August 2020, I wanted to programme a simple Android app based on [**logical theorems**](
+https://en.wikipedia.org/wiki/Theorem) using which one can enter a sentence as a theorem and numerous chance factors
+below it which can make it *True* or *False*.
 The app had to calculate their mathematical mean and say, for example:
 
 > There is 20.4657% chance that **a god** exists!
@@ -70,7 +71,7 @@ This idea gradually turned into a robot who could do the exact same thing!
 As I was getting more and more familiar with the machine learning concepts, I wanted to programme an Android app whose
 programming language was merely Python using Chaquopy, but since it had a weird bothersome license,
 I decided to forget about using Python in Android. Then I decided to try [ML Kit](
-https://developers.google.com/ml-kit), but it had no use to me either!
+https://developers.google.com/ml-kit), but it had no use to this project either!
 I wanted to name the robot I had planned to create "Horus", but then I found a better name for it!
 
 The first version of *Mergen*, started at **13 December 2020**, was intended to be a
@@ -86,18 +87,21 @@ therefore I cancelled its development and pursued a better method in Mergen II, 
 
 The second version of Mergen, started at 10-12 January 2021, was intended to primarily process audio,
 I also called it the [**Pronouncer**](https://github.com/fulcrum6378/pronouncer).
-It was a more advanced version of a [Text-To-Speech (TTS)](https://en.wikipedia.org/wiki/Speech_synthesis) engine,
-which pronounced vowels and consonants of the [**International Phonetic Alphabet (IPA)**](
-https://en.wikipedia.org/wiki/International_Phonetic_Alphabet) instead of normal alphabets.
-It synthesised human voices and was intended to be programmed to learn from voices and speak any kind of them.
+It was a mixture of a [Speech Recognition](https://en.wikipedia.org/wiki/Speech_recognition) program and a
+[Text-To-Speech (TTS)](https://en.wikipedia.org/wiki/Speech_synthesis) engine,
+which used [**International Phonetic Alphabet (IPA)**](
+https://en.wikipedia.org/wiki/International_Phonetic_Alphabet) to pronounce vowels and consonants,
+instead of normal alphabets.
+It synthesised human voices and was intended to be programmed to learn from voices
+and speak any kind of them.
 In other words, it tried to imitate a **human child**!
 
 As I learnt more and more about [Telecommunications](https://en.wikipedia.org/wiki/Telecommunications),
-I preferred a better method in Mergen III, see below.
+I preferred a more advanced method in Mergen III, see below.
 
 #### Mergen III (v0.3)
 
-The third version of Mergen, started at 29 March 2021 after many researches, had the same server-client approach,
+The third version of Mergen, started at 29 March 2021 after many researches, had the same server-client model,
 this time *temporarily* on a [**Local Area Network (LAN)**](https://en.wikipedia.org/wiki/Local_area_network),
 instead of a server thousands of kilometres away!
 
@@ -112,10 +116,10 @@ https://github.com/fulcrum6378/mergen_client) whose...
 
 Mergen I was going to be like an adult human being and Mergen II was a human child,
 but I decided that I should start from something much, much earlier: **an animal**.
-I decided to programme an animal then gradually grow it to be a super-human being, namely a god of logic!!!
+I decided to programme an animal, then gradually raise it to be perhaps someone more logical than a human being!
 
-Gradually I concluded that this server-client model and these radio waves takes such a huge amount of time to
-communicate, and since I couldn't afford *robotic* resources, I was disappointed,
+Gradually I concluded that this server-client model and these radio waves take such a huge amount of time to be
+transferred and processed, and since I couldn't afford *robotic* resources, I was disappointed,
 so I cancelled this one too after a year at 10 March 2022 :(
 
 ### Mergen IV (v0.4 - current version)
@@ -124,13 +128,17 @@ I decided to use C++ instead of Python and do all the job temporarily inside an 
 so I began developing **Mergen IV** at 2 August 2022!
 
 In 10 July 2023, I started a subproject for the computer vision (VIS) part and named it [**MyCV**](
-https://github.com/fulcrum6378/mycv).It uses Python for faster debugging of the vision-related methods.
+https://github.com/fulcrum6378/mycv). It uses Python for faster debugging of the vision-related methods.
 After its successful image processing, I started translating it to C++ since 24 September 2023.
 
-## Timeline of development
+Fortunately the C++ implementations worked in my phone, [*Samsung Galaxy A50*](
+https://www.gsmarena.com/samsung_galaxy_a50-9554.php), **10 to 50 times faster** than Python(3.11) codes in my laptop
+with a CPU of Intel Core i7!!
+
+### Timeline of development
 
 This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
-(updated as of 6402.07.16)
+(updated as of 6402.07.21)
 
 | # | Starting date          | Duration | Active days | %  |   Version   |
 |---|:-----------------------|:---------|:-----------:|:--:|:-----------:|
@@ -141,7 +149,7 @@ This table shows how much I've worked on Mergen and when. The timeline is divide
 | 5 | 2022/07/26, 6401/05/04 | 109 days |     7+8     | 14 |     0.4     |
 | 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    | 32 |     0.4     |
 | 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     | 2  |      -      |
-| 8 | 2023/04/29, 6402/02/09 | 162 days |    49+11    | 37 | 0.4 (+mycv) |
+| 8 | 2023/04/29, 6402/02/09 | 167 days |    54+11    | 39 | 0.4 (+mycv) |
 
 - Periods 1, 2 and 3 include days of researches which are not recorded.
 - Period 5 includes a few days of researching/practicing about/on a new programming language
@@ -149,6 +157,24 @@ This table shows how much I've worked on Mergen and when. The timeline is divide
 - Periods 6, 7 and 8 include a few days when I was learning/evaluating Vulkan (18-0-0 days),
   OpenBSD (2-0-0 days), FreeBSD (1-0-2 days), TensorFlow (3-0-0 days), PyTorch (3-1-0/5 days),
   Statistics (Data Science, 0-0-3/5 days) and Machine Learning (0-0-5 days).
+
+## How to use the Android app
+
+[**Main.java**](android/java/ir/mahdiparastesh/mergen/Main.java) provides a basic control panel for this robot.
+
+1. **Double-tap** anywhere **to start Mergen**.
+2. Press the **Back button** of the phone **to stop Mergen**.
+
+Once Mergen is started, it'll receive all kinds of visual, auditory and haptic inputs.
+Ergo, touching the screen while Mergen is online is handled by [**HPT**](cpp/hpt) as a haptic input;
+as if it senses your finger and processes your pattern of touching!
+That's why I didn't use double-click to stop Mergen.
+
+I have also created a quick debugging tool for VIS, inside MyCV's
+[/debug/](https://github.com/fulcrum6378/mycv/tree/master/debug) module as a client, which communicates with
+[Debug.java](android/java/ir/mahdiparastesh/mergen/Debug.java) which is the server, sending data of a processed image.
+
+The app **requires Android 10** and uses latest stable versions of Gradle, SDK and NDK, along with C++ 20.
 
 ## License
 
