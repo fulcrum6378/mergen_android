@@ -34,36 +34,37 @@ public class Debug extends Thread {
             OutputStream out = con.getOutputStream();
 
             byte mode = (byte) in.read();
-            boolean process = true;
             if (mode > 10 && mode <= 20) { // those which require recording to be started
-                if (!c.isFinished) {
-                    //noinspection UnusedAssignment
-                    process = false;
-                    continue;
-                }
                 out.write(0);
                 recorded = false;
                 Main.handler.obtainMessage(127, mode).sendToTarget();
-                while (!recorded) try { //noinspection BusyWait
-                    Thread.sleep(200);
+                try {
+                    while (!recorded) //noinspection BusyWait
+                        Thread.sleep(200);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
             }
-            //noinspection ConstantValue
-            if (process) switch (mode) {
-                case 1:
-                    Main.handler.obtainMessage(127, (byte) 0).sendToTarget();
-                    out.write(0);
+            switch (mode) {
+                case 1: // START
+                    if (!c.isRecording) {
+                        Main.handler.obtainMessage(127, (byte) 0).sendToTarget();
+                        out.write(0);
+                    } else out.write(1);
                     break;
-                case 2:
-                    Main.handler.obtainMessage(126).sendToTarget();
-                    out.write(0);
+                case 2: // STOP
+                    if (c.isRecording) {
+                        Main.handler.obtainMessage(126).sendToTarget();
+                        out.write(0);
+                    } else out.write(1);
                     break;
-                case 3:
-                    Main.handler.obtainMessage(125).sendToTarget();
-                    out.write(0);
+                case 3: // EXIT
+                    if (c.isFinished) {
+                        Main.handler.obtainMessage(125).sendToTarget();
+                        out.write(0);
+                    } else out.write(1);
                     break;
+
                 case 11:
                     Files.copy(new File(c.getCacheDir(), "arr").toPath(), out);
                     break;
@@ -80,9 +81,8 @@ public class Debug extends Thread {
                     zos.close(); // both necessary!
                     break;
                 default:
-                    out.write(2);
+                    out.write(255);
             }
-            else out.write(1);
             out.flush();
             con.close();
         } catch (IOException e) {
