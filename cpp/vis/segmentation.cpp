@@ -55,6 +55,7 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
     t0 = chrono::system_clock::now();
     uint16_t thisY = 0, thisX = 0;
     int64_t last; // must be signed
+    uint32_t nextSeg = 1;
     bool foundSthToAnalyse = true;
     while (foundSthToAnalyse) {
         foundSthToAnalyse = false;
@@ -70,8 +71,9 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
         }
         if (!foundSthToAnalyse) break;
 
-        Segment seg{(uint32_t) segments.size() + 1};
+        Segment seg{nextSeg};
         stack.push_back(new uint16_t[3]{thisY, thisX, 0});
+        nextSeg++;
         uint16_t y, x, dr;
         while ((last = ((int64_t) stack.size()) - 1) != -1) {
             y = stack[last][0], x = stack[last][1], dr = stack[last][2];
