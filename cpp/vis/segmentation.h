@@ -71,7 +71,7 @@ private:
     void SetAsBorder(uint16_t y, uint16_t x);
 
 public:
-    bool locked = false;
+    std::atomic<bool> locked = false;
 
     Segmentation(VisualSTM *stm, JavaVM *jvm, jobject main, jmethodID *jmSignal);
 
