@@ -127,7 +127,7 @@ so I cancelled this one too after a year at 10 March 2022 :(
 I decided to use C++ instead of Python and do all the job temporarily inside an Android smartphone,
 so I began developing **Mergen IV** at 2 August 2022!
 
-In 10 July 2023, I started a subproject for the computer vision (VIS) part and named it [**MyCV**](
+At 10 July 2023, I started a subproject for the computer vision (VIS) part and named it [**MyCV**](
 https://github.com/fulcrum6378/mycv). It uses Python for faster debugging of the vision-related methods.
 After its successful image processing, I started translating it to C++ since 24 September 2023.
 
@@ -135,21 +135,25 @@ Fortunately the C++ implementations worked in my phone, [*Samsung Galaxy A50*](
 https://www.gsmarena.com/samsung_galaxy_a50-9554.php), **10 to 50 times faster** than Python(3.11) codes in my laptop
 with a CPU of Intel Core i7!!
 
+At 16 October 2023, I started another subproject, called it [**MergenLinux**](
+https://github.com/fulcrum6378/mergen_linux), which runs Mergen on the Linux OS,
+so that I could learn how to implement them in a more difficult and lesser known OS, such as *FreeBSD*.
+
 ### Timeline of development
 
 This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
-(updated as of 6402.07.21)
+(updated as of 6402.07.27)
 
-| # | Starting date          | Duration | Active days | %  |   Version   |
-|---|:-----------------------|:---------|:-----------:|:--:|:-----------:|
-| 1 | 2020/12/13, 6399/09/23 | 43 days  |     20      | 47 |  0.1..0.2   |
-| 2 | 2021/01/25, 6399/11/06 | 264 days |     ~33     | 13 |  0.2..0.3   |
-| 3 | 2021/10/16, 6400/07/24 | 145 days |     18      | 12 |     0.3     |
-| 4 | 2022/03/10, 6400/12/19 | 137 days |      0      | 0  |      -      |
-| 5 | 2022/07/26, 6401/05/04 | 109 days |     7+8     | 14 |     0.4     |
-| 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    | 32 |     0.4     |
-| 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     | 2  |      -      |
-| 8 | 2023/04/29, 6402/02/09 | 167 days |    54+11    | 39 | 0.4 (+mycv) |
+| # | Starting date          | Duration | Active days | %  |     Version      |
+|---|:-----------------------|:---------|:-----------:|:--:|:----------------:|
+| 1 | 2020/12/13, 6399/09/23 | 43 days  |     20      | 47 |     0.1..0.2     |
+| 2 | 2021/01/25, 6399/11/06 | 264 days |     ~33     | 13 |     0.2..0.3     |
+| 3 | 2021/10/16, 6400/07/24 | 145 days |     18      | 12 |       0.3        |
+| 4 | 2022/03/10, 6400/12/19 | 137 days |      0      | 0  |        -         |
+| 5 | 2022/07/26, 6401/05/04 | 109 days |     7+8     | 14 |       0.4        |
+| 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    | 32 |       0.4        |
+| 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     | 2  |        -         |
+| 8 | 2023/04/29, 6402/02/09 | 173 days |    60+11    | 41 | 0.4, mycv, linux |
 
 - Periods 1, 2 and 3 include days of researches which are not recorded.
 - Period 5 includes a few days of researching/practicing about/on a new programming language
@@ -176,6 +180,7 @@ which communicates over a network (like Wi-Fi) with
 [Debug.java](android/java/ir/mahdiparastesh/mergen/Debug.java) which is the server, sending data of a processed image.
 
 The app **requires Android 10** and uses latest stable versions of Gradle, SDK and NDK, along with C++ 20.
+No modular dependencies needed.
 
 ## License
 

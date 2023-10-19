@@ -16,11 +16,9 @@ VisualSTM::VisualSTM() {
     string root;
     for (string *dir: {&root, &dirShapes, &dirFrame, &dirY, &dirU, &dirV, &dirRt}) {
         string branch = *dir;
-        if (!branch.empty()) {
-            dir->insert(0, visDirPath);
-            dir->append("/");
-        }
-        auto path = (visDirPath + branch).c_str();
+        dir->insert(0, visDirPath);
+        if (!branch.empty()) dir->append("/");
+        auto path = (*dir).c_str();
         if (stat(path, &sb) != 0) mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     }
 
@@ -30,7 +28,7 @@ VisualSTM::VisualSTM() {
         framesStored++;
 
     // load saved state { nextFrameId, nextShapeId, earliestFrameId }
-    const char *savedStatePath = (visDirPath + savedStateFile).c_str();
+    string savedStatePath = visDirPath + savedStateFile;
     if (filesystem::exists(savedStatePath)) {
         ifstream ssf(savedStatePath, ios::binary);
         char buf[18];
@@ -56,9 +54,7 @@ void VisualSTM::Insert(
 
     // write shape file
     ofstream shf(dirShapes + to_string(nextShapeId), ios::binary);
-    shf.write((char *) &(*m)[0], 1); // Y
-    shf.write((char *) &(*m)[1], 1); // U
-    shf.write((char *) &(*m)[2], 1); // V TODO
+    shf.write((char *) *m, 3); // Mean Colour
     shf.write((char *) &r, 2); // Ratio
     shf.write((char *) &nextFrameId, 8); // Frame ID
     shf.write((char *) w, 2); // Width
@@ -119,7 +115,7 @@ void VisualSTM::Forget() {
             uint16_t r;
 
             // open shape file, read its necessary details and then remove it
-            const char *sPath = (stm->dirShapes + to_string(sid)).c_str();
+            string sPath = stm->dirShapes + to_string(sid);
             ifstream shf(sPath, ios::binary);
             shf.read(reinterpret_cast<char *>(&y), 1);
             shf.read(reinterpret_cast<char *>(&u), 1);
@@ -128,7 +124,7 @@ void VisualSTM::Forget() {
             shf.read(buf, 2);
             r = (buf[1] << 8) | buf[0];
             shf.close();
-            remove(sPath);
+            remove(sPath.c_str());
 
             // read unread indices
             if (!stm->ym.contains(y))
@@ -197,19 +193,19 @@ void VisualSTM::RemoveFromIndex(list<uint16_t> *l, uint16_t id) {
 template<class INT>
 void VisualSTM::SaveIndexes(unordered_map<INT, list<uint16_t>> *indexes, string *dir) {
     for (pair<const INT, list<uint16_t>> &index: (*indexes)) {
-        const char *path = ((*dir) + to_string(index.first)).c_str();
+        string path = (*dir) + to_string(index.first);
         if (!index.second.empty()) {
             ofstream sff(path, ios::binary);
             for (uint16_t sid: index.second)
                 sff.write((char *) &sid, 2);
             sff.close();
-        } else remove(path);
+        } else remove(path.c_str());
     }
     indexes->clear();
 }
 
 void VisualSTM::SaveState() {
-    ofstream ssf((visDirPath + savedStateFile).c_str(), ios::binary);
+    ofstream ssf(visDirPath + savedStateFile, ios::binary);
     ssf.write((char *) &nextFrameId, 8);
     ssf.write((char *) &nextShapeId, 2);
     ssf.write((char *) &earliestFrameId, 8);
