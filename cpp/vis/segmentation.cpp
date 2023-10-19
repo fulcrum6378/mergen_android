@@ -277,7 +277,7 @@ bool Segmentation::CompareColours(uint32_t a, uint32_t b) {
            abs((int16_t) (a & 0xFF) - (int16_t) (b & 0xFF)) <= 4;
 }
 
-uint32_t Segmentation::FindPixelOfASegmentToDissolveIn(Segment *seg) const {
+uint32_t Segmentation::FindPixelOfASegmentToDissolveIn(Segment *seg) {
     uint32_t cor = seg->p.front();
     uint16_t a = cor >> 16, b = cor & 0xFFFF;
     if (a > 0)

@@ -1,6 +1,7 @@
 #ifndef VIS_SEGMENTATION_H
 #define VIS_SEGMENTATION_H
 
+#include <atomic>
 #include <jni.h>
 #include <list>
 #include <media/NdkImage.h>
@@ -37,16 +38,16 @@ struct Segment {
 class Segmentation {
 private:
     // width, height
-    const uint16_t h = 1088, w = 1088;
+    static const uint16_t h = 1088, w = 1088;
     // minimum allowed number of pixels for a segment to contain
     const uint32_t min_seg_size = 1;
     // maximum allowed segments to be stored in the short-term memory
     const uint16_t max_segs = 10;
 
     // multidimensional array of pixels + last byte indicates whether it is a border pixel or not.
-    uint32_t arr[1088][1088]{}; // four bytes: b(1=true,0=false), Y, U, V
+    uint32_t arr[h][w]{}; // four bytes: b(1=true,0=false), Y, U, V
     // maps pixels to their Segment IDs
-    uint32_t status[1088][1088]{};
+    uint32_t status[h][w]{};
     // a vector containing all Segments
     std::vector<Segment> segments;
     // simulates recursive programming (vector is always better for it than list!)
@@ -62,7 +63,7 @@ private:
 
     static bool CompareColours(uint32_t a, uint32_t b);
 
-    uint32_t FindPixelOfASegmentToDissolveIn(Segment *seg) const;
+    static uint32_t FindPixelOfASegmentToDissolveIn(Segment *seg) ;
 
     // Checks if this pixel is in border.
     void CheckIfBorder(uint16_t y1, uint16_t x1, uint16_t y2, uint16_t x2);
