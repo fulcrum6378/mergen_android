@@ -33,13 +33,23 @@ VisualSTM::VisualSTM() {
         ifstream ssf(savedStatePath, ios::binary);
         char buf[18];
         ssf.read(buf, sizeof(buf));
-        nextFrameId = ((uint64_t) buf[7] << 56) | ((uint64_t) buf[6] << 48) |
-                      ((uint64_t) buf[5] << 40) | ((uint64_t) buf[4] << 32) |
-                      (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0];
-        nextShapeId = (buf[9] << 8) | buf[8];
-        earliestFrameId = ((uint64_t) buf[17] << 56) | ((uint64_t) buf[16] << 48) |
-                          ((uint64_t) buf[15] << 40) | ((uint64_t) buf[14] << 32) |
-                          (buf[13] << 24) | (buf[12] << 16) | (buf[11] << 8) | buf[10];
+        nextFrameId = littleEndian
+                      ? (((uint64_t) buf[7] << 56) | ((uint64_t) buf[6] << 48) |
+                         ((uint64_t) buf[5] << 40) | ((uint64_t) buf[4] << 32) |
+                         (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0])
+                      : (((uint64_t) buf[0] << 56) | ((uint64_t) buf[1] << 48) |
+                         ((uint64_t) buf[2] << 40) | ((uint64_t) buf[3] << 32) |
+                         (buf[4] << 24) | (buf[5] << 16) | (buf[1] << 6) | buf[7]);
+        nextShapeId = littleEndian
+                      ? ((buf[9] << 8) | buf[8])
+                      : ((buf[8] << 8) | buf[9]);
+        earliestFrameId = littleEndian
+                          ? (((uint64_t) buf[17] << 56) | ((uint64_t) buf[16] << 48) |
+                             ((uint64_t) buf[15] << 40) | ((uint64_t) buf[14] << 32) |
+                             (buf[13] << 24) | (buf[12] << 16) | (buf[11] << 8) | buf[10])
+                          : (((uint64_t) buf[10] << 56) | ((uint64_t) buf[11] << 48) |
+                             ((uint64_t) buf[12] << 40) | ((uint64_t) buf[13] << 32) |
+                             (buf[14] << 24) | (buf[15] << 16) | (buf[16] << 8) | buf[17]);
         ssf.close();
     }
 }
@@ -48,7 +58,7 @@ void VisualSTM::Insert(
         uint8_t **m, // average colour
         uint16_t *w, uint16_t *h,  // width and height
         uint16_t cx, uint16_t cy, // central points
-        unordered_set<shape_point_t> *path
+        unordered_set<SHAPE_POINT_T> *path
 ) {
     auto r = (uint16_t) round(((float) *w / (float) *h) * 10.0);
 
@@ -61,7 +71,7 @@ void VisualSTM::Insert(
     shf.write((char *) h, 2); // Height
     shf.write((char *) &cx, 2); // Centre (X)
     shf.write((char *) &cy, 2); // Centre (Y)
-    for (shape_point_t p: *path)
+    for (SHAPE_POINT_T p: *path)
         shf.write((char *) &p, shape_point_bytes); // Point {X, Y}
     shf.close();
 
@@ -101,7 +111,7 @@ void VisualSTM::OnFrameFinished() {
 
     // check if some frames need to be forgotten
     framesStored++;
-    if (framesStored > max_frames_stored) Forget();
+    if (framesStored > MAX_FRAMES_STORED) Forget();
 
     nextFrameId++;
     // if (nextFrameId > 18446744073709552000) nextFrameId = 0;
@@ -109,7 +119,7 @@ void VisualSTM::OnFrameFinished() {
 
 void VisualSTM::Forget() {
     auto t = chrono::system_clock::now();
-    for (uint64_t f = earliestFrameId; f < earliestFrameId + forget_n_frames; f++) {
+    for (uint64_t f = earliestFrameId; f < earliestFrameId + FORGET_N_FRAMES; f++) {
         IterateIndex((dirFrame + to_string(f)).c_str(), [](VisualSTM *stm, uint16_t sid) -> void {
             uint8_t y, u, v;
             uint16_t r;
@@ -122,7 +132,9 @@ void VisualSTM::Forget() {
             shf.read(reinterpret_cast<char *>(&v), 1);
             char buf[2];
             shf.read(buf, 2);
-            r = (buf[1] << 8) | buf[0];
+            r = littleEndian
+                ? ((buf[1] << 8) | buf[0])
+                : ((buf[0] << 8) | buf[1]);
             shf.close();
             remove(sPath.c_str());
 
@@ -149,8 +161,8 @@ void VisualSTM::Forget() {
     SaveIndexes<uint8_t>(&vm, &dirV);
     SaveIndexes<uint16_t>(&rm, &dirRt);
 
-    earliestFrameId += forget_n_frames;
-    framesStored -= forget_n_frames;
+    earliestFrameId += FORGET_N_FRAMES;
+    framesStored -= FORGET_N_FRAMES;
     LOGI("Forgetting time: %lld", chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t).count());
 }
@@ -162,7 +174,9 @@ void VisualSTM::IterateIndex(const char *path, void onEach(VisualSTM *, uint16_t
     ifstream sff(path, ios::binary);
     for (off_t _ = 0; _ < sb.st_size; _ += 2) {
         sff.read(buf, 2);
-        onEach(this, (buf[1] << 8) | buf[0]);
+        onEach(this, littleEndian
+                     ? ((buf[1] << 8) | buf[0])
+                     : ((buf[0] << 8) | buf[1]));
     }
     sff.close();
 }
@@ -175,7 +189,9 @@ list<uint16_t> VisualSTM::ReadIndex(const char *path) {
     list<uint16_t> l;
     for (off_t _ = 0; _ < sb.st_size; _ += 2) {
         sff.read(buf, 2);
-        l.push_back((buf[1] << 8) | buf[0]);
+        l.push_back(littleEndian
+                    ? ((buf[1] << 8) | buf[0])
+                    : ((buf[0] << 8) | buf[1]));
     }
     sff.close();
     return l;
@@ -190,6 +206,9 @@ void VisualSTM::RemoveFromIndex(list<uint16_t> *l, uint16_t id) {
     LOGE("Shape %u was not found!", id);
 }
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "UnusedParameter" // true negative!
+
 template<class INT>
 void VisualSTM::SaveIndexes(unordered_map<INT, list<uint16_t>> *indexes, string *dir) {
     for (pair<const INT, list<uint16_t>> &index: (*indexes)) {
@@ -203,6 +222,8 @@ void VisualSTM::SaveIndexes(unordered_map<INT, list<uint16_t>> *indexes, string 
     }
     indexes->clear();
 }
+
+#pragma clang diagnostic pop
 
 void VisualSTM::SaveState() {
     ofstream ssf(visDirPath + savedStateFile, ios::binary);

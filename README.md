@@ -40,7 +40,7 @@ Mergen is intended to have 2 aspects:
   He must be programmed to always be sceptical about himself, he must be really **Indecisive**!
   And consult everything with a human being.
 
-## Parts
+## Components
 
 |      Codename      | Description                                 |
 |:------------------:|:--------------------------------------------|
@@ -127,7 +127,7 @@ so I cancelled this one too after a year at 10 March 2022 :(
 I decided to use C++ instead of Python and do all the job temporarily inside an Android smartphone,
 so I began developing **Mergen IV** at 2 August 2022!
 
-At 10 July 2023, I started a subproject for the computer vision (VIS) part and named it [**MyCV**](
+At 10 July 2023, I started a subproject for the computer vision (VIS) component and named it [**MyCV**](
 https://github.com/fulcrum6378/mycv). It uses Python for faster debugging of the vision-related methods.
 After its successful image processing, I started translating it to C++ since 24 September 2023.
 

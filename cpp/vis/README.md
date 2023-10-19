@@ -3,7 +3,7 @@
 Vision is, without doubt, the most crucial sense (data input) of an intelligent being
 for their knowledge and information to be based upon.
 
-This part contains the following steps:
+This component contains the following steps:
 
 1. [**Camera**](camera.cpp) : responsible for dealing with Android's camera API,
    reading image frames and passing them onto the next step. This step is platform-specific.

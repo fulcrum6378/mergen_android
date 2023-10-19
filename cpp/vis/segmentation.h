@@ -12,6 +12,15 @@
 
 #include "visual_stm.h"
 
+// height of an image frame
+#define H 1088
+// width of an image frame
+#define W 1088
+// minimum allowed number of pixels for a segment to contain
+#define MIN_SEG_SIZE 1
+// maximum allowed segments to be stored in the short-term memory
+#define MAX_SEGS 10
+
 struct Segment {
     // starting from 1
     uint32_t id;
@@ -22,7 +31,7 @@ struct Segment {
     // boundaries and dimensions
     uint16_t min_y, min_x, max_y, max_x, w, h;
     // border pixels
-    std::unordered_set<shape_point_t> border;
+    std::unordered_set<SHAPE_POINT_T> border;
 };
 
 /**
@@ -37,17 +46,10 @@ struct Segment {
  */
 class Segmentation {
 private:
-    // width, height
-    static const uint16_t h = 1088, w = 1088;
-    // minimum allowed number of pixels for a segment to contain
-    const uint32_t min_seg_size = 1;
-    // maximum allowed segments to be stored in the short-term memory
-    const uint16_t max_segs = 10;
-
     // multidimensional array of pixels + last byte indicates whether it is a border pixel or not.
-    uint32_t arr[h][w]{}; // four bytes: b(1=true,0=false), Y, U, V
+    uint32_t arr[H][W]{}; // four bytes: b(1=true,0=false), Y, U, V
     // maps pixels to their Segment IDs
-    uint32_t status[h][w]{};
+    uint32_t status[H][W]{};
     // a vector containing all Segments
     std::vector<Segment> segments;
     // simulates recursive programming (vector is always better for it than list!)
@@ -63,7 +65,7 @@ private:
 
     static bool CompareColours(uint32_t a, uint32_t b);
 
-    static uint32_t FindPixelOfASegmentToDissolveIn(Segment *seg) ;
+    static uint32_t FindPixelOfASegmentToDissolveIn(Segment *seg);
 
     // Checks if this pixel is in border.
     void CheckIfBorder(uint16_t y1, uint16_t x1, uint16_t y2, uint16_t x2);
@@ -78,7 +80,7 @@ public:
 
     /** Main processing function of Segmentation which execute all the necessary jobs.
      * do NOT refer to `debugMode_` in Camera. */
-    void Process(AImage *image, bool *recording, int8_t debugMode);
+    void Process(AImage *image, const bool *recording, int8_t debugMode);
 
     ~Segmentation();
 };

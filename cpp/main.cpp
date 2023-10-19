@@ -27,13 +27,13 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     struct stat sb{};
     if (stat(filesDir, &sb) != 0) mkdir(filesDir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
-    // initialise high-level parts
+    // initialise high-level components
     Manifest::init();
     scm = new Crawler();
     rew = new Rewarder(env, gMain); // must be declared before the rest
     // ComputeVK().run(state->activity->assetManager);
 
-    // initialise low-level parts
+    // initialise low-level components
     vis = new Camera(scm->vis, jvm, gMain);
     aud = new Microphone();
     hpt = new Touchscreen(rew);

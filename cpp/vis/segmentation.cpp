@@ -12,11 +12,7 @@ using namespace std;
 Segmentation::Segmentation(VisualSTM *stm, JavaVM *jvm, jobject main, jmethodID *jmSignal) :
         stm(stm), jvm_(jvm), main_(main), jmSignal_(jmSignal) {}
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "ConstantConditionsOC"
-#pragma ide diagnostic ignored "readability-non-const-parameter"
-
-void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
+void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMode) {
     locked = true;
     //ofstream test("/data/data/ir.mahdiparastesh.mergen/cache/test.yuv", ios::binary);
 
@@ -35,13 +31,13 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
     int32_t uvPixelStride;
     AImage_getPlanePixelStride(image, 1, &uvPixelStride);
 
-    for (uint16_t y = 0; y < h; y++) {
+    for (uint16_t y = 0; y < H; y++) {
         const uint8_t *pY = yPixel + yStride * (y + srcRect.top) + srcRect.left;
         int32_t uv_row_start = uvStride * ((y + srcRect.top) >> 1);
         const uint8_t *pU = uPixel + uv_row_start + (srcRect.left >> 1);
         const uint8_t *pV = vPixel + uv_row_start + (srcRect.left >> 1);
 
-        for (uint16_t x = 0; x < w; x++) {
+        for (uint16_t x = 0; x < W; x++) {
             const int32_t uv_offset = (x >> 1) * uvPixelStride;
             arr[y][x] = (pY[x] << 16) | (pU[uv_offset] << 8) | pV[uv_offset];
             //test.put(pY[x]); test.put(pU[uv_offset]); test.put(pV[uv_offset]);
@@ -57,10 +53,13 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
     int64_t last; // must be signed
     uint32_t nextSeg = 1;
     bool foundSthToAnalyse = true;
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "ConstantConditionsOC"
     while (foundSthToAnalyse) {
+#pragma clang diagnostic pop
         foundSthToAnalyse = false;
-        for (uint16_t y = thisY; y < h; y++) {
-            for (uint16_t x = (y == thisY) ? thisX : 0; x < w; x++)
+        for (uint16_t y = thisY; y < H; y++) {
+            for (uint16_t x = (y == thisY) ? thisX : 0; x < W; x++)
                 if (status[y][x] == 0) {
                     foundSthToAnalyse = true;
                     thisY = y;
@@ -96,7 +95,7 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
             }
             if (dr <= 2) { // right
                 stack[last][2]++;
-                if (x < (w - 1) && status[y][x + 1] == 0 &&
+                if (x < (W - 1) && status[y][x + 1] == 0 &&
                     CompareColours(arr[y][x], arr[y][x + 1])) {
                     stack.push_back(new uint16_t[3]{y, static_cast<uint16_t>(x + 1), 0});
                     continue;
@@ -104,7 +103,7 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
             }
             if (dr <= 3) { // bottom
                 stack[last][2]++;
-                if (y < (h - 1) && status[y + 1][x] == 0 &&
+                if (y < (H - 1) && status[y + 1][x] == 0 &&
                     CompareColours(arr[y][x], arr[y + 1][x])) {
                     stack.push_back(new uint16_t[3]{static_cast<uint16_t>(y + 1), x, 0});
                     continue;
@@ -119,11 +118,13 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
 
     // 3. dissolution
     t0 = chrono::system_clock::now();
-    if (min_seg_size > 1) {
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "readability-container-size-empty"
+    if (MIN_SEG_SIZE > 1) {
         uint32_t absorber_i, size_bef = segments.size(), removal = 1;
         Segment *absorber;
         for (int32_t seg = ((int32_t) size_bef) - 1; seg > -1; seg--)
-            if (segments[seg].p.size() < min_seg_size) {
+            if (segments[seg].p.size() < MIN_SEG_SIZE) {
                 absorber_i = FindPixelOfASegmentToDissolveIn(&segments[seg]);
                 if (absorber_i == 0xFFFFFFFF) continue;
                 absorber = &segments[status[absorber_i >> 16][absorber_i & 0xFFFF] - 1];
@@ -138,6 +139,7 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
         LOGI("Total segments: %zu / %u", segments.size(), size_bef);
     } else
         LOGI("Total segments: %zu", segments.size());
+#pragma clang diagnostic pop
     auto delta3 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
@@ -190,13 +192,13 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
 
     // 5. trace border pixels
     t0 = chrono::system_clock::now();
-    for (y = 0; y < h; y++) {
-        if (y == 0 || y == h - 1)
-            for (x = 0; x < w; x++)
+    for (y = 0; y < H; y++) {
+        if (y == 0 || y == H - 1)
+            for (x = 0; x < W; x++)
                 SetAsBorder(y, x);
         else
-            for (x = 0; x < w; x++) {
-                if (x == 0 or x == w - 1) {
+            for (x = 0; x < W; x++) {
+                if (x == 0 or x == W - 1) {
                     SetAsBorder(y, x);
                     continue;
                 }
@@ -215,7 +217,7 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
     sort(segments.begin(), segments.end(),
          [](const Segment &a, const Segment &b) { return a.p.size() > b.p.size(); });
     l_ = segments.size();
-    for (uint16_t seg = 0; seg < max_segs; seg++) {// Segment &seg: segments
+    for (uint16_t seg = 0; seg < MAX_SEGS; seg++) {// Segment &seg: segments
         if (seg >= l_) break;
         stm->Insert(&segments[seg].m, &segments[seg].w, &segments[seg].h,
                     (segments[seg].min_x + segments[seg].max_x + 1) / 2, // central point X
@@ -262,8 +264,6 @@ void Segmentation::Process(AImage *image, bool *recording, int8_t debugMode) {
     locked = false;
 }
 
-#pragma clang diagnostic pop
-
 /**
  * - `abs()` is much more efficient than `256 - static_cast<uint8_t>(a - b)`!
  * - There's no need for `static_cast<int16_t>`.
@@ -286,9 +286,9 @@ uint32_t Segmentation::FindPixelOfASegmentToDissolveIn(Segment *seg) {
         return (a << 16) | (b - 1);
     cor = seg->p.back();
     a = cor >> 16, b = cor & 0xFFFF;
-    if (a < h - 1)
+    if (a < H - 1)
         return ((a + 1) << 16) | b;
-    if (b < w - 1)
+    if (b < W - 1)
         return (a << 16) | (b + 1);
     return 0xFFFFFFFF;
 }
@@ -304,10 +304,10 @@ void Segmentation::SetAsBorder(uint16_t y, uint16_t x) {
     arr[y][x] |= 1 << 24;
     Segment *seg = s_index[status[y][x]];
     seg->border.insert(
-            (static_cast<shape_point_t>((shape_point_max / (float) seg->w) *
+            (static_cast<SHAPE_POINT_T>((shape_point_max / (float) seg->w) *
                                         (float) (x - seg->min_x)) // fractional X
                     << shape_point_each_bits) |
-            static_cast<shape_point_t>((shape_point_max / (float) seg->h) *
+            static_cast<SHAPE_POINT_T>((shape_point_max / (float) seg->h) *
                                        (float) (y - seg->min_y))  // fractional Y
     );
 }

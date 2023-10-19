@@ -54,7 +54,7 @@ Camera::Camera(VisualSTM *stm, JavaVM *jvm, jobject main) :
 
     // initialise AImageReader and retrieve its ANativeWindow (Surface in Java)
     media_status_t status = AImageReader_newWithUsage(
-            dimensions.first, dimensions.second, VIS_IMAGE_FORMAT,
+            dimensions.first, dimensions.second, IMAGE_FORMAT,
             AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN, MAX_BUF_COUNT, &reader_);
     ASSERT(reader_ && status == AMEDIA_OK, "Failed to create AImageReader")
     status = AImageReader_getWindow(reader_, &readerWindow_);
@@ -133,13 +133,13 @@ void Camera::DetermineCaptureDimensions() {
     for (uint32_t i = 0; i < entry.count; i += 4) {
         int32_t input = entry.data.i32[i + 3];
         int32_t format = entry.data.i32[i + 0];
-        if (input || format != VIS_IMAGE_FORMAT) continue;
+        if (input || format != IMAGE_FORMAT) continue;
 
         std::pair<int32_t, int32_t> ent(entry.data.i32[i + 1], entry.data.i32[i + 2]);
         //if (ent.first == ent.second) continue; // discard square dimensions
 
-        if (abs(ent.second - VIS_IMAGE_NEAREST_HEIGHT) <
-            abs(dimensions.second - VIS_IMAGE_NEAREST_HEIGHT)) {
+        if (abs(ent.second - IMAGE_NEAREST_HEIGHT) <
+            abs(dimensions.second - IMAGE_NEAREST_HEIGHT)) {
             foundIt = true;
             dimensions = ent;
         }
