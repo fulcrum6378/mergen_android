@@ -118,28 +118,26 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
 
     // 3. dissolution
     t0 = chrono::system_clock::now();
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "readability-container-size-empty"
-    if (MIN_SEG_SIZE > 1) {
-        uint32_t absorber_i, size_bef = segments.size(), removal = 1;
-        Segment *absorber;
-        for (int32_t seg = ((int32_t) size_bef) - 1; seg > -1; seg--)
-            if (segments[seg].p.size() < MIN_SEG_SIZE) {
-                absorber_i = FindPixelOfASegmentToDissolveIn(&segments[seg]);
-                if (absorber_i == 0xFFFFFFFF) continue;
-                absorber = &segments[status[absorber_i >> 16][absorber_i & 0xFFFF] - 1];
-                for (uint32_t &p: segments[seg].p) {
-                    absorber->p.push_back(p); // merge()
-                    status[p >> 16][p & 0xFFFF] = absorber->id;
-                }
-                swap(segments[seg], segments[size_bef - removal]);
-                removal++;
+#if MIN_SEG_SIZE > 1
+    uint32_t absorber_i, size_bef = segments.size(), removal = 1;
+    Segment *absorber;
+    for (int32_t seg = ((int32_t) size_bef) - 1; seg > -1; seg--)
+        if (segments[seg].p.size() < MIN_SEG_SIZE) {
+            absorber_i = FindPixelOfASegmentToDissolveIn(&segments[seg]);
+            if (absorber_i == 0xFFFFFFFF) continue;
+            absorber = &segments[status[absorber_i >> 16][absorber_i & 0xFFFF] - 1];
+            for (uint32_t &p: segments[seg].p) {
+                absorber->p.push_back(p); // merge()
+                status[p >> 16][p & 0xFFFF] = absorber->id;
             }
-        segments.resize(size_bef - (removal - 1));
-        LOGI("Total segments: %zu / %u", segments.size(), size_bef);
-    } else
-        LOGI("Total segments: %zu", segments.size());
-#pragma clang diagnostic pop
+            swap(segments[seg], segments[size_bef - removal]);
+            removal++;
+        }
+    segments.resize(size_bef - (removal - 1));
+    LOGI("Total segments: %zu / %u", segments.size(), size_bef);
+#else
+    LOGI("Total segments: %zu", segments.size());
+#endif
     auto delta3 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
