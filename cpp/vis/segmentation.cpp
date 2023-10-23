@@ -39,7 +39,9 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
 
         for (uint16_t x = 0; x < W; x++) {
             const int32_t uv_offset = (x >> 1) * uvPixelStride;
-            arr[y][x] = (pY[x] << 16) | (pU[uv_offset] << 8) | pV[uv_offset];
+            arr[y][x][0] = pY[x];
+            arr[y][x][1] = pU[uv_offset];
+            arr[y][x][2] = pV[uv_offset];
             //test.put(pY[x]); test.put(pU[uv_offset]); test.put(pV[uv_offset]);
         }
     }
@@ -81,34 +83,28 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                 status[y][x] = seg.id;
                 // left
                 stack[last][2]++;
-                if (x > 0 && status[y][x - 1] == 0 && CompareColours(
-                        reinterpret_cast<uint8_t *>(&arr[y][x]), reinterpret_cast<uint8_t *>(&arr[y][x - 1]))) {
+                if (x > 0 && status[y][x - 1] == 0 && CompareColours(&arr[y][x], &arr[y][x - 1])) {
                     stack.push_back({y, static_cast<uint16_t>(x - 1), 0});
                     continue;
                 }
             }
             if (dr <= 1) { // top
                 stack[last][2]++;
-                if (y > 0 && status[y - 1][x] == 0 && CompareColours(
-                        reinterpret_cast<uint8_t *>(&arr[y][x]), reinterpret_cast<uint8_t *>(&arr[y - 1][x]))) {
+                if (y > 0 && status[y - 1][x] == 0 && CompareColours(&arr[y][x], &arr[y - 1][x])) {
                     stack.push_back({static_cast<uint16_t>(y - 1), x, 0});
                     continue;
                 }
             }
             if (dr <= 2) { // right
                 stack[last][2]++;
-                if (x < (W - 1) && status[y][x + 1] == 0 &&
-                    CompareColours(
-                            reinterpret_cast<uint8_t *>(&arr[y][x]), reinterpret_cast<uint8_t *>(&arr[y][x + 1]))) {
+                if (x < (W - 1) && status[y][x + 1] == 0 && CompareColours(&arr[y][x], &arr[y][x + 1])) {
                     stack.push_back({y, static_cast<uint16_t>(x + 1), 0});
                     continue;
                 }
             }
             if (dr <= 3) { // bottom
                 stack[last][2]++;
-                if (y < (H - 1) && status[y + 1][x] == 0 &&
-                    CompareColours(
-                            reinterpret_cast<uint8_t *>(&arr[y][x]), reinterpret_cast<uint8_t *>(&arr[y + 1][x]))) {
+                if (y < (H - 1) && status[y + 1][x] == 0 && CompareColours(&arr[y][x], &arr[y + 1][x])) {
                     stack.push_back({static_cast<uint16_t>(y + 1), x, 0});
                     continue;
                 }
@@ -147,7 +143,8 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
 
     // 4. average colours + detect boundaries
     t0 = chrono::system_clock::now();
-    uint32_t col, l_;
+    uint32_t l_;
+    uint8_t *col;
     uint64_t aa, bb, cc;
     bool isFirst;
     uint16_t y, x;
@@ -156,9 +153,9 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
         aa = 0, bb = 0, cc = 0;
         for (uint32_t p: seg.p) {
             col = arr[p >> 16][p & 0xFFFF];
-            aa += (col >> 16) & 0xFF;
-            bb += (col >> 8) & 0xFF;
-            cc += col & 0xFF;
+            aa += col[0];
+            bb += col[1];
+            cc += col[2];
         }
         l_ = seg.p.size();
         seg.m = new uint8_t[3]{static_cast<uint8_t>(aa / l_),
@@ -204,7 +201,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                     SetAsBorder(y, x);
                     continue;
                 }
-                if (((arr[y][x] >> 24) & 0xFF) == 1) continue;
+                if (b_status[y][x] == 1) continue;
                 CheckIfBorder(y, x, y, x + 1); //     eastern
                 CheckIfBorder(y, x, y + 1, x + 1); // south-eastern
                 CheckIfBorder(y, x, y + 1, x); //     southern
@@ -273,14 +270,10 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
  * that-define-a-linear-gradient` doesn't make a (big) difference.
  * - Geometric mean didn't work correctly (0,0,0).
  */
-bool Segmentation::CompareColours(uint8_t *a, uint8_t *b) {
-    // const uint32_t* a, const uint32_t* b
-    /*return abs((int16_t) (((*a) >> 16) & 0xFF) - (int16_t) (((*b) >> 16) & 0xFF)) <= 4 &&
-           abs((int16_t) (((*a) >> 8) & 0xFF) - (int16_t) (((*b) >> 8) & 0xFF)) <= 4 &&
-           abs((int16_t) ((*a) & 0xFF) - (int16_t) ((*b) & 0xFF)) <= 4;*/
-    return abs(a[1] - b[1]) <= 4 &&
-           abs(a[2] - b[2]) <= 4 &&
-           abs(a[3] - b[3]) <= 4;
+bool Segmentation::CompareColours(uint8_t (*a)[3], uint8_t (*b)[3]) {
+    return abs((*a)[0] - (*b)[0]) <= 4 &&
+           abs((*a)[1] - (*b)[1]) <= 4 &&
+           abs((*a)[2] - (*b)[2]) <= 4;
 }
 
 uint32_t Segmentation::FindPixelOfASegmentToDissolveIn(Segment *seg) {
@@ -307,7 +300,7 @@ void Segmentation::CheckIfBorder(uint16_t y1, uint16_t x1, uint16_t y2, uint16_t
 }
 
 void Segmentation::SetAsBorder(uint16_t y, uint16_t x) {
-    arr[y][x] |= 1 << 24;
+    b_status[y][x] |= 1;
     Segment *seg = s_index[status[y][x]];
     seg->border.insert(
             (static_cast<SHAPE_POINT_T>((shape_point_max / (float) seg->w) *

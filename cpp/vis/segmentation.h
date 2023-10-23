@@ -47,10 +47,12 @@ struct Segment {
  */
 class Segmentation {
 private:
-    // multidimensional array of pixels + last byte indicates whether it is a border pixel or not.
-    uint32_t arr[H][W]{}; // four bytes: b(1=true,0=false), Y, U, V
+    // multidimensional array of pixels
+    uint8_t arr[H][W][3]{};
     // maps pixels to their Segment IDs
     uint32_t status[H][W]{};
+    // a vector containing all Segments
+    uint8_t b_status[H][W]{};
     // a vector containing all Segments
     std::vector<Segment> segments;
     // simulates recursive programming (vector is always better for it than list!)
@@ -64,7 +66,7 @@ private:
     jobject main_;
     jmethodID *jmSignal_;
 
-    static bool CompareColours(uint8_t *a, uint8_t *b);
+    static bool CompareColours(uint8_t (*a)[3], uint8_t (*b)[3]);
 
     static uint32_t FindPixelOfASegmentToDissolveIn(Segment *seg);
 
