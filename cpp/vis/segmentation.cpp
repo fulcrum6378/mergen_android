@@ -54,7 +54,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     uint32_t nextSeg = 1;
     bool foundSthToAnalyse = true;
 #pragma clang diagnostic push
-#pragma ide diagnostic ignored "ConstantConditionsOC"
+#pragma ide diagnostic ignored "ConstantConditionsOC" // false positive
     while (foundSthToAnalyse) {
 #pragma clang diagnostic pop
         foundSthToAnalyse = false;
@@ -71,7 +71,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
         if (!foundSthToAnalyse) break;
 
         Segment seg{nextSeg};
-        stack.push_back(new uint16_t[3]{thisY, thisX, 0});
+        stack.push_back({thisY, thisX, 0});
         nextSeg++;
         uint16_t y, x, dr;
         while ((last = ((int64_t) stack.size()) - 1) != -1) {
@@ -81,31 +81,35 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                 status[y][x] = seg.id;
                 // left
                 stack[last][2]++;
-                if (x > 0 && status[y][x - 1] == 0 && CompareColours(arr[y][x], arr[y][x - 1])) {
-                    stack.push_back(new uint16_t[3]{y, static_cast<uint16_t>(x - 1), 0});
+                if (x > 0 && status[y][x - 1] == 0 && CompareColours(
+                        reinterpret_cast<uint8_t *>(&arr[y][x]), reinterpret_cast<uint8_t *>(&arr[y][x - 1]))) {
+                    stack.push_back({y, static_cast<uint16_t>(x - 1), 0});
                     continue;
                 }
             }
             if (dr <= 1) { // top
                 stack[last][2]++;
-                if (y > 0 && status[y - 1][x] == 0 && CompareColours(arr[y][x], arr[y - 1][x])) {
-                    stack.push_back(new uint16_t[3]{static_cast<uint16_t>(y - 1), x, 0});
+                if (y > 0 && status[y - 1][x] == 0 && CompareColours(
+                        reinterpret_cast<uint8_t *>(&arr[y][x]), reinterpret_cast<uint8_t *>(&arr[y - 1][x]))) {
+                    stack.push_back({static_cast<uint16_t>(y - 1), x, 0});
                     continue;
                 }
             }
             if (dr <= 2) { // right
                 stack[last][2]++;
                 if (x < (W - 1) && status[y][x + 1] == 0 &&
-                    CompareColours(arr[y][x], arr[y][x + 1])) {
-                    stack.push_back(new uint16_t[3]{y, static_cast<uint16_t>(x + 1), 0});
+                    CompareColours(
+                            reinterpret_cast<uint8_t *>(&arr[y][x]), reinterpret_cast<uint8_t *>(&arr[y][x + 1]))) {
+                    stack.push_back({y, static_cast<uint16_t>(x + 1), 0});
                     continue;
                 }
             }
             if (dr <= 3) { // bottom
                 stack[last][2]++;
                 if (y < (H - 1) && status[y + 1][x] == 0 &&
-                    CompareColours(arr[y][x], arr[y + 1][x])) {
-                    stack.push_back(new uint16_t[3]{static_cast<uint16_t>(y + 1), x, 0});
+                    CompareColours(
+                            reinterpret_cast<uint8_t *>(&arr[y][x]), reinterpret_cast<uint8_t *>(&arr[y + 1][x]))) {
+                    stack.push_back({static_cast<uint16_t>(y + 1), x, 0});
                     continue;
                 }
             }
@@ -269,10 +273,14 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
  * that-define-a-linear-gradient` doesn't make a (big) difference.
  * - Geometric mean didn't work correctly (0,0,0).
  */
-bool Segmentation::CompareColours(uint32_t a, uint32_t b) {
-    return abs((int16_t) ((a >> 16) & 0xFF) - (int16_t) ((b >> 16) & 0xFF)) <= 4 &&
-           abs((int16_t) ((a >> 8) & 0xFF) - (int16_t) ((b >> 8) & 0xFF)) <= 4 &&
-           abs((int16_t) (a & 0xFF) - (int16_t) (b & 0xFF)) <= 4;
+bool Segmentation::CompareColours(uint8_t *a, uint8_t *b) {
+    // const uint32_t* a, const uint32_t* b
+    /*return abs((int16_t) (((*a) >> 16) & 0xFF) - (int16_t) (((*b) >> 16) & 0xFF)) <= 4 &&
+           abs((int16_t) (((*a) >> 8) & 0xFF) - (int16_t) (((*b) >> 8) & 0xFF)) <= 4 &&
+           abs((int16_t) ((*a) & 0xFF) - (int16_t) ((*b) & 0xFF)) <= 4;*/
+    return abs(a[1] - b[1]) <= 4 &&
+           abs(a[2] - b[2]) <= 4 &&
+           abs(a[3] - b[3]) <= 4;
 }
 
 uint32_t Segmentation::FindPixelOfASegmentToDissolveIn(Segment *seg) {

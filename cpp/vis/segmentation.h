@@ -1,6 +1,7 @@
 #ifndef VIS_SEGMENTATION_H
 #define VIS_SEGMENTATION_H
 
+#include <array>
 #include <atomic>
 #include <jni.h>
 #include <list>
@@ -53,7 +54,7 @@ private:
     // a vector containing all Segments
     std::vector<Segment> segments;
     // simulates recursive programming (vector is always better for it than list!)
-    std::vector<uint16_t *> stack;
+    std::vector<std::array<uint16_t, 3>> stack;
     // maps IDs of Segments to their pointers
     std::unordered_map<uint32_t, Segment *> s_index;
     // visual short-term memory (output)
@@ -63,7 +64,7 @@ private:
     jobject main_;
     jmethodID *jmSignal_;
 
-    static bool CompareColours(uint32_t a, uint32_t b);
+    static bool CompareColours(uint8_t *a, uint8_t *b);
 
     static uint32_t FindPixelOfASegmentToDissolveIn(Segment *seg);
 
