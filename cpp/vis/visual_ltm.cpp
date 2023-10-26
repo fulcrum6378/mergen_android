@@ -4,9 +4,8 @@
 #include <iterator>
 #include <sys/stat.h>
 
-#include "../binary_integers.h"
-#include "../global.h"
-#include "visual_ltm.h"
+#include "../global.hpp"
+#include "visual_ltm.hpp"
 
 using namespace std;
 

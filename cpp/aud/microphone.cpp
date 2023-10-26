@@ -1,6 +1,6 @@
 #include <cstring>
 
-#include "microphone.h"
+#include "microphone.hpp"
 
 Microphone::Microphone() : freeQueue_(nullptr), recQueue_(nullptr), devShadowQueue_(nullptr) {
     SLresult result;

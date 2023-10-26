@@ -1,7 +1,7 @@
 #include <cmath>
 
-#include "../global.h"
-#include "touchscreen.h"
+#include "../global.hpp"
+#include "touchscreen.hpp"
 
 Touchscreen::Touchscreen(Rewarder *rew) : rew_(rew) {}
 

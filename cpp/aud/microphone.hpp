@@ -3,7 +3,7 @@
 
 #include <fstream>
 
-#include "commons.h"
+#include "commons.hpp"
 
 static const bool AUD_SAVE = true;
 

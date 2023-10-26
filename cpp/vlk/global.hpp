@@ -6,7 +6,7 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
-#include "../global.h"
+#include "../global.hpp"
 
 #define VK_CHECK(x)                           \
   do {                                        \

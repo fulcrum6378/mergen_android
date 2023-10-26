@@ -1,7 +1,7 @@
 #ifndef VIS_PERCEPTION_H
 #define VIS_PERCEPTION_H
 
-#include "../vis/visual_stm.h"
+#include "../vis/visual_stm.hpp"
 
 class Perception {
 public:

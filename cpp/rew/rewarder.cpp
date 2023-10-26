@@ -1,7 +1,7 @@
-#include "../global.h"
-#include "../mov/vibrator.h"
-#include "../vis/colouring.h"
-#include "rewarder.h"
+#include "../global.hpp"
+#include "../mov/vibrator.hpp"
+#include "../vis/colouring.hpp"
+#include "rewarder.hpp"
 
 Rewarder::Rewarder(JNIEnv *env, jobject main) {
     // define criterions

@@ -4,8 +4,8 @@
 #include <fstream>
 #include <ios>
 
-#include "../global.h"
-#include "segmentation.h"
+#include "../global.hpp"
+#include "segmentation.hpp"
 
 using namespace std;
 

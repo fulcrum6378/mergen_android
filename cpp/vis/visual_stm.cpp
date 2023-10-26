@@ -2,9 +2,8 @@
 #include <filesystem>
 #include <sys/stat.h>
 
-#include "../binary_integers.h"
-#include "../global.h"
-#include "visual_stm.h"
+#include "../global.hpp"
+#include "visual_stm.hpp"
 
 using namespace std;
 

@@ -1,6 +1,6 @@
 #include <cstring>
 
-#include "speaker.h"
+#include "speaker.hpp"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"

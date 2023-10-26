@@ -1,7 +1,7 @@
 #ifndef VLK_COMPUTE_VK_H
 #define VLK_COMPUTE_VK_H
 
-#include "global.h"
+#include "global.hpp"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"

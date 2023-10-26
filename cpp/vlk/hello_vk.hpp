@@ -6,7 +6,7 @@
 #include <memory> // unique_ptr
 #include <optional>
 
-#include "global.h"
+#include "global.hpp"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"

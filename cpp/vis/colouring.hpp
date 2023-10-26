@@ -3,7 +3,7 @@
 
 #include <cmath>
 
-#include "../rew/expression.h"
+#include "../rew/expression.hpp"
 
 #define OUTPUT_ID_SCREEN (-1)
 

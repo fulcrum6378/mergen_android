@@ -10,8 +10,8 @@
 #include <string>
 #include <utility>
 
-#include "bitmap_stream.h"
-#include "segmentation.h"
+#include "bitmap_stream.hpp"
+#include "segmentation.hpp"
 
 /** Together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone!
  * @see <a href="https://developer.android.com/reference/android/graphics/ImageFormat#YUV_420_888">

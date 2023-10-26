@@ -7,39 +7,39 @@ add_definitions(-DVK_USE_PLATFORM_ANDROID_KHR=1)
 
 add_library(main SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-        global.h
-        manifest.h
-        binary_integers.h
+        global.hpp
+        manifest.hpp
 
         aud/commons.cpp
-        aud/commons.h
+        aud/commons.hpp
         aud/microphone.cpp
-        aud/microphone.h
+        aud/microphone.hpp
         aud/speaker.cpp
-        aud/speaker.h
+        aud/speaker.hpp
 
         hpt/touchscreen.cpp
-        hpt/touchscreen.h
+        hpt/touchscreen.hpp
 
-        mov/vibrator.h
+        mov/vibrator.hpp
 
-        rew/expression.h
+        rew/expression.hpp
         rew/rewarder.cpp
-        rew/rewarder.h
+        rew/rewarder.hpp
 
-        scm/subconscious.h
+        scm/subconscious.hpp
 
-        vis/bitmap_stream.h
+        vis/binary_integers.hpp
+        vis/bitmap_stream.hpp
         vis/camera.cpp
-        vis/camera.h
-        vis/colouring.h
-        vis/perception.h
+        vis/camera.hpp
+        vis/colouring.hpp
+        vis/perception.hpp
         vis/segmentation.cpp
-        vis/segmentation.h
+        vis/segmentation.hpp
         vis/visual_ltm.cpp
-        vis/visual_ltm.h
+        vis/visual_ltm.hpp
         vis/visual_stm.cpp
-        vis/visual_stm.h
+        vis/visual_stm.hpp
 
         #vlk/hello_vk.cpp
         #vlk/hello_vk.h

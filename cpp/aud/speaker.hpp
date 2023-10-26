@@ -4,8 +4,8 @@
 #include <sys/types.h>
 #include <mutex>
 
-#include "../global.h"
-#include "commons.h"
+#include "../global.hpp"
+#include "commons.hpp"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"

@@ -1,7 +1,7 @@
 #include <cmath>
 #include <cstring>
 
-#include "compute_vk.h"
+#include "compute_vk.hpp"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "UnreachableCode"

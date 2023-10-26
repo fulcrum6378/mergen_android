@@ -1,7 +1,7 @@
 #ifndef MOV_VIBRATOR_H
 #define MOV_VIBRATOR_H
 
-#include "../rew/expression.h"
+#include "../rew/expression.hpp"
 
 #define OUTPUT_ID_VIBRATOR (-3)
 

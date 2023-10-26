@@ -1,7 +1,7 @@
 #ifndef SCM_SUBCONSCIOUS_H
 #define SCM_SUBCONSCIOUS_H
 
-#include "../vis/visual_ltm.h"
+#include "../vis/visual_ltm.hpp"
 
 class Subconscious {
 public:

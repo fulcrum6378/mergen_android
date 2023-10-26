@@ -1,8 +1,8 @@
 #ifndef REW_REWARDER_H
 #define REW_REWARDER_H
 
-#include "../manifest.h"
-#include "../rew/expression.h"
+#include "../manifest.hpp"
+#include "../rew/expression.hpp"
 
 struct Criterion {
     uint8_t id;

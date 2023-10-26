@@ -2,12 +2,12 @@
 #include <jni.h>
 #include <sys/stat.h>
 
-#include "aud/microphone.h"
-#include "hpt/touchscreen.h"
-#include "rew/rewarder.h"
-#include "scm/subconscious.h"
-#include "vis/camera.h"
-#include "vis/perception.h"
+#include "aud/microphone.hpp"
+#include "hpt/touchscreen.hpp"
+#include "rew/rewarder.hpp"
+#include "scm/subconscious.hpp"
+#include "vis/camera.hpp"
+#include "vis/perception.hpp"
 
 static Subconscious *scm = nullptr;
 static Rewarder *rew = nullptr;

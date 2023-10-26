@@ -5,7 +5,7 @@
 #include <sstream>
 #include <string>
 
-#include "hello_vk.h"
+#include "hello_vk.hpp"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"

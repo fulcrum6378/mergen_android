@@ -1,7 +1,7 @@
 #ifndef HPT_TOUCH_H
 #define HPT_TOUCH_H
 
-#include "../rew/rewarder.h"
+#include "../rew/rewarder.hpp"
 
 #define INPUT_ID_TOUCH 4
 
