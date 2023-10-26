@@ -65,8 +65,9 @@ public class Debug extends Thread {
                     } else out.write(1);
                     break;
 
-                case 11: // send `arr`
+                case 11: // send `arr` and `b_status`
                     Files.copy(new File(c.getCacheDir(), "arr").toPath(), out);
+                    Files.copy(new File(c.getCacheDir(), "b_status").toPath(), out);
                     break;
                 case 21: // send `stm.zip`
                     if (!c.isFinished) {

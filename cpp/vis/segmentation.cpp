@@ -249,6 +249,9 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
             ofstream arrFile("/data/data/ir.mahdiparastesh.mergen/cache/arr", ios::binary);
             arrFile.write((char *) &arr, sizeof(arr));
             arrFile.close();
+            ofstream bstFile("/data/data/ir.mahdiparastesh.mergen/cache/b_status", ios::binary);
+            bstFile.write((char *) &b_status, sizeof(b_status));
+            bstFile.close();
         }
 
         // signal Main.java to stop recording;
