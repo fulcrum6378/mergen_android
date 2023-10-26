@@ -1,7 +1,6 @@
 #ifndef VIS_VISUAL_STM_H
 #define VIS_VISUAL_STM_H
 
-#include <list>
 #include <map>
 #include <unordered_set>
 
@@ -17,14 +16,19 @@ static float shape_point_max = 256.0;      // 256.0,    65535.0
 // forget N frames whenever hit the maximum
 #define FORGET_N_FRAMES 1
 
-static bool littleEndian = std::endian::native == std::endian::little;
-
-/** Visual Short-Term Memory */
+/**
+ * Visual Short-Term Memory
+ *
+ * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/storage/volatile_indices_1.py">
+ * Volatile Indices 1</a>
+ * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/storage/sequence_files_2.py">
+ * Sequence Files 2</a>
+ */
 class VisualSTM {
 private:
     const std::string dirOut = "/data/data/ir.mahdiparastesh.mergen/files/vis/stm/";
     std::string dirShapes = "shapes", dirY = "y", dirU = "u", dirV = "v", dirR = "r",
-            framesFile = "frames", savedStateFile = "saved_state";
+            framesFile = "frames", numbersFile = "numbers";
     // frame ID incrementor | ID of earliest frame which is STILL available in memory
     uint64_t nextFrameId = 0, firstFrameId = 0;
     // shape ID incrementor | ID of first shape in THIS FRAME
@@ -42,7 +46,8 @@ private:
     void Forget();
 
     /** Reads an entire Sequence File. */
-    static void ReadIndices(const char *path);
+    template<class INT>
+    static void ReadIndices(std::map<INT, std::unordered_set<uint16_t>> *indexes, std::string *dir);
 
     /** Save an index in non-volatile memory. */
     template<class INT>

@@ -9,6 +9,7 @@ add_library(main SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         global.h
         manifest.h
+        binary_integers.h
 
         aud/commons.cpp
         aud/commons.h
@@ -32,14 +33,13 @@ add_library(main SHARED
         vis/camera.cpp
         vis/camera.h
         vis/colouring.h
+        vis/perception.h
         vis/segmentation.cpp
         vis/segmentation.h
         vis/visual_ltm.cpp
         vis/visual_ltm.h
         vis/visual_stm.cpp
         vis/visual_stm.h
-        vis/perception.cpp
-        vis/perception.h
 
         #vlk/hello_vk.cpp
         #vlk/hello_vk.h

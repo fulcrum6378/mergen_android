@@ -1,10 +1,8 @@
-#include <chrono>
 #include <cmath>
 #include <filesystem>
-#include <fstream>
-#include <iterator>
 #include <sys/stat.h>
 
+#include "../binary_integers.h"
 #include "../global.h"
 #include "visual_stm.h"
 
@@ -23,64 +21,72 @@ VisualSTM::VisualSTM() {
     }
 
     // load volatile indices
-    ReadIndices(dirY.c_str());
-    ReadIndices(dirU.c_str());
-    ReadIndices(dirV.c_str());
-    ReadIndices(dirR.c_str());
+    ReadIndices(&yi, &dirY);
+    ReadIndices(&ui, &dirU);
+    ReadIndices(&vi, &dirV);
+    ReadIndices(&ri, &dirR);
 
-    // load frame index
+    // load file `frames` (frame index {frame ID, beginning shape ID, ending shape ID})
     string framesPath = dirOut + framesFile;
     if (filesystem::exists(framesPath)) {
-        ifstream ff(framesPath, ios::binary);
-        // TODO
-        ff.close();
+        stat(framesPath.c_str(), &sb);
+        ifstream fif(framesPath, ios::binary);
+        uint64_t fid;
+        uint16_t beg, end;
+        for (off_t _ = 0; _ < sb.st_size; _ += 12) {
+            fid = read_uint64(&fif);
+            beg = read_uint16(&fif);
+            end = read_uint16(&fif);
+            fi[fid] = pair(beg, end);
+        }
+        fif.close();
         framesStored = fi.size();
     }
 
-    // load saved state { nextFrameId, nextShapeId, earliestFrameId }
-    string savedStatePath = dirOut + savedStateFile;
-    if (filesystem::exists(savedStatePath)) {
-        ifstream ssf(savedStatePath, ios::binary);
-        char buf[18];
-        ssf.read(buf, sizeof(buf));
-        nextFrameId = littleEndian
-                      ? (((uint64_t) buf[7] << 56) | ((uint64_t) buf[6] << 48) |
-                         ((uint64_t) buf[5] << 40) | ((uint64_t) buf[4] << 32) |
-                         (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0])
-                      : (((uint64_t) buf[0] << 56) | ((uint64_t) buf[1] << 48) |
-                         ((uint64_t) buf[2] << 40) | ((uint64_t) buf[3] << 32) |
-                         (buf[4] << 24) | (buf[5] << 16) | (buf[1] << 6) | buf[7]);
-        nextShapeId = littleEndian
-                      ? ((buf[9] << 8) | buf[8])
-                      : ((buf[8] << 8) | buf[9]);
+    // load file `numbers`: { nextFrameId, nextShapeId, earliestFrameId }
+    string numbersPath = dirOut + numbersFile;
+    if (filesystem::exists(numbersPath)) {
+        ifstream ssf(numbersPath, ios::binary);
+        nextFrameId = read_uint64(&ssf);
+        nextShapeId = read_uint16(&ssf);
         firstShapeId = nextShapeId;
-        firstFrameId = littleEndian
-                          ? (((uint64_t) buf[17] << 56) | ((uint64_t) buf[16] << 48) |
-                             ((uint64_t) buf[15] << 40) | ((uint64_t) buf[14] << 32) |
-                             (buf[13] << 24) | (buf[12] << 16) | (buf[11] << 8) | buf[10])
-                          : (((uint64_t) buf[10] << 56) | ((uint64_t) buf[11] << 48) |
-                             ((uint64_t) buf[12] << 40) | ((uint64_t) buf[13] << 32) |
-                             (buf[14] << 24) | (buf[15] << 16) | (buf[16] << 8) | buf[17]);
+        firstFrameId = read_uint64(&ssf);
         ssf.close();
     }
 }
 
-void VisualSTM::ReadIndices(const char *path) {
-    for {
-        char buf[2];
-        struct stat sb{};
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "UnusedParameter" // true negative!
+
+template<class INT>
+void VisualSTM::ReadIndices(map<INT, unordered_set<uint16_t>> *indexes, string *dir) {
+    struct stat sb{};
+    for (const filesystem::directory_entry &ent: filesystem::directory_iterator(filesystem::path{*dir})) {
+        const char *path = reinterpret_cast<const char *>(ent.path().c_str());
         stat(path, &sb);
-        ifstream sff(path, ios::binary);
+        ifstream seq(path, ios::binary);
         unordered_set<uint16_t> l;
-        for (off_t _ = 0; _ < sb.st_size; _ += 2) {
-            sff.read(buf, 2);
-            l.insert(littleEndian
-                     ? ((buf[1] << 8) | buf[0])
-                     : ((buf[0] << 8) | buf[1]));
-        }
-        sff.close();
+        for (off_t _ = 0; _ < sb.st_size; _ += 2)
+            l.insert(read_uint16(&seq));
+        seq.close();
+        (*indexes)[(uint16_t) stoi(path)] = l;
     }
 }
+
+template<class INT>
+void VisualSTM::SaveIndices(map<INT, unordered_set<uint16_t>> *indexes, string *dir) {
+    for (pair<const INT, unordered_set<uint16_t>> &index: (*indexes)) {
+        string path = (*dir) + to_string(index.first);
+        if (!index.second.empty()) {
+            ofstream sff(path, ios::binary);
+            for (uint16_t sid: index.second)
+                sff.write((char *) &sid, 2);
+            sff.close();
+        } else remove(path.c_str());
+    }
+}
+
+#pragma clang diagnostic pop
 
 void VisualSTM::Insert(
         uint8_t **m, // average colour
@@ -128,7 +134,6 @@ void VisualSTM::OnFrameFinished() {
 }
 
 void VisualSTM::Forget() {
-    auto t = chrono::system_clock::now();
     pair<uint16_t, uint16_t> *range;
     for (uint64_t f = firstFrameId; f < firstFrameId + FORGET_N_FRAMES; f++) {
         range = &fi[f];
@@ -142,11 +147,7 @@ void VisualSTM::Forget() {
             shf.read(reinterpret_cast<char *>(&y), 1);
             shf.read(reinterpret_cast<char *>(&u), 1);
             shf.read(reinterpret_cast<char *>(&v), 1);
-            char buf[2];
-            shf.read(buf, 2);
-            r = littleEndian
-                ? ((buf[1] << 8) | buf[0])
-                : ((buf[0] << 8) | buf[1]);
+            r = read_uint16(&shf);
             shf.close();
             remove(sPath.c_str());
 
@@ -161,33 +162,28 @@ void VisualSTM::Forget() {
 
     firstFrameId += FORGET_N_FRAMES;
     framesStored -= FORGET_N_FRAMES;
-    LOGI("Forgetting time: %lld", chrono::duration_cast<chrono::milliseconds>(
-            chrono::system_clock::now() - t).count());
 }
 
 void VisualSTM::SaveState() {
-    // `saved_state`
-    ofstream ssf(dirOut + savedStateFile, ios::binary);
+    // save volatile indices
+    SaveIndices<uint8_t>(&yi, &dirY);
+    SaveIndices<uint8_t>(&ui, &dirU);
+    SaveIndices<uint8_t>(&vi, &dirV);
+    SaveIndices<uint16_t>(&ri, &dirR);
+
+    // save file `frames`
+    ofstream fif(framesFile, ios::binary);
+    for (pair<uint64_t, pair<uint16_t, uint16_t>> f: fi) {
+        fif.write((char *) &f.first, 8);
+        fif.write((char *) &f.second.first, 2);
+        fif.write((char *) &f.second.second, 2);
+    }
+    fif.close();
+
+    // save file `numbers`
+    ofstream ssf(dirOut + numbersFile, ios::binary);
     ssf.write((char *) &nextFrameId, 8);
     ssf.write((char *) &nextShapeId, 2);
     ssf.write((char *) &firstFrameId, 8);
     ssf.close();
 }
-
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "UnusedParameter" // true negative!
-
-template<class INT>
-void VisualSTM::SaveIndices(map<INT, unordered_set<uint16_t>> *indexes, string *dir) {
-    for (pair<const INT, list<uint16_t>> &index: (*indexes)) {
-        string path = (*dir) + to_string(index.first);
-        if (!index.second.empty()) {
-            ofstream sff(path, ios::binary);
-            for (uint16_t sid: index.second)
-                sff.write((char *) &sid, 2);
-            sff.close();
-        } else remove(path.c_str());
-    }
-}
-
-#pragma clang diagnostic pop

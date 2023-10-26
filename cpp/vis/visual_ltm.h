@@ -19,7 +19,12 @@ static float shape_point_max = 256.0;      // 256.0,    65535.0
 
 static bool littleEndian = std::endian::native == std::endian::little;
 
-/** Visual Short-Term Memory */
+/**
+ * Visual Long-Term Memory
+ *
+ * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/storage/sequence_files_2.py">
+ * Sequence Files 2</a>
+ */
 class [[maybe_unused]] VisualLTM {
 private:
     const std::string dirOut = "/data/data/ir.mahdiparastesh.mergen/files/vis/ltm/";
