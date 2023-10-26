@@ -5,13 +5,15 @@
 #include "aud/microphone.h"
 #include "hpt/touchscreen.h"
 #include "rew/rewarder.h"
-#include "scm/crawler.h"
+#include "scm/subconscious.h"
 #include "vis/camera.h"
+#include "vis/perception.h"
 
-static Crawler *scm = nullptr;
+static Subconscious *scm = nullptr;
 static Rewarder *rew = nullptr;
 
-static Camera *vis = nullptr;
+static Camera *vis1 = nullptr;
+static Perception *vis2 = nullptr;
 static Microphone *aud = nullptr; // temporarily disabled
 static Touchscreen *hpt = nullptr;
 
@@ -29,16 +31,17 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
 
     // initialise high-level components
     Manifest::init();
-    scm = new Crawler();
+    scm = new Subconscious();
     rew = new Rewarder(env, gMain); // must be declared before the rest
     // ComputeVK().run(state->activity->assetManager);
 
     // initialise low-level components
-    vis = new Camera(scm->vis, jvm, gMain);
+    vis2 = new Perception();
+    vis1 = new Camera(vis2->stm, jvm, gMain);
     aud = new Microphone();
     hpt = new Touchscreen(rew);
 
-    return reinterpret_cast<jlong>(vis);
+    return reinterpret_cast<jlong>(vis1);
 }
 
 extern "C" JNIEXPORT jbyte JNICALL
@@ -48,8 +51,8 @@ Java_ir_mahdiparastesh_mergen_Main_start(JNIEnv *, jobject, jbyte debugMode) {
         if (!aud->Start()) ret = 1;
     } else ret = 2;
     if (ret > 0) return ret;*/
-    if (vis) {
-        if (!vis->SetRecording(true, debugMode)) ret = 3;
+    if (vis1) {
+        if (!vis1->SetRecording(true, debugMode)) ret = 3;
     } else ret = 4;
     return ret;
 }
@@ -61,8 +64,8 @@ Java_ir_mahdiparastesh_mergen_Main_stop(JNIEnv *, jobject) {
         if (!aud->Stop()) ret = 1;
     } else ret = 2;
     if (ret > 0) return ret;*/
-    if (vis) {
-        if (!vis->SetRecording(false, 0)) ret = 3;
+    if (vis1) {
+        if (!vis1->SetRecording(false, 0)) ret = 3;
     } else ret = 4;
     return ret;
 }
@@ -71,6 +74,8 @@ extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
     delete aud;
     aud = nullptr;
+    delete vis2;
+    vis2 = nullptr;
 
     delete rew;
     rew = nullptr;
@@ -95,11 +100,11 @@ extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
         JNIEnv *env, jobject, jlong cameraObj, jobject surface, jboolean available) {
     auto *cam = reinterpret_cast<Camera *>(cameraObj);
-    assert(cam == vis);
+    assert(cam == vis1);
     if (available) cam->CreateSession(ANativeWindow_fromSurface(env, surface));
     else { // don't put these in Main.destroy()
         delete cam;
-        vis = nullptr;
+        vis1 = nullptr;
     }
 }
 

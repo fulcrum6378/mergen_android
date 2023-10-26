@@ -26,7 +26,7 @@ add_library(main SHARED
         rew/rewarder.cpp
         rew/rewarder.h
 
-        scm/crawler.h
+        scm/subconscious.h
 
         vis/bitmap_stream.h
         vis/camera.cpp
@@ -34,11 +34,12 @@ add_library(main SHARED
         vis/colouring.h
         vis/segmentation.cpp
         vis/segmentation.h
-        vis/sequence_files.h
         vis/visual_ltm.cpp
         vis/visual_ltm.h
         vis/visual_stm.cpp
         vis/visual_stm.h
+        vis/perception.cpp
+        vis/perception.h
 
         #vlk/hello_vk.cpp
         #vlk/hello_vk.h

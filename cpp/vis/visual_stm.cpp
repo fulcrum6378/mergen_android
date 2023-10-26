@@ -14,24 +14,31 @@ VisualSTM::VisualSTM() {
     // create directories if they don't exist and resolves their path variables
     struct stat sb{};
     string root;
-    for (string *dir: {&root, &dirShapes, &dirY, &dirU, &dirV, &dirRt}) {
+    for (string *dir: {&root, &dirShapes, &dirY, &dirU, &dirV, &dirR}) {
         string branch = *dir;
-        dir->insert(0, visDirPath);
+        dir->insert(0, dirOut);
         if (!branch.empty()) dir->append("/");
         auto path = (*dir).c_str();
         if (stat(path, &sb) != 0) mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     }
 
     // load volatile indices
-    // TODO
+    ReadIndices(dirY.c_str());
+    ReadIndices(dirU.c_str());
+    ReadIndices(dirV.c_str());
+    ReadIndices(dirR.c_str());
 
-    // count frames that are stored in memory
-    for ([[maybe_unused]] auto &_:
-            filesystem::directory_iterator(filesystem::path{dirFrame}))
-        framesStored++;
+    // load frame index
+    string framesPath = dirOut + framesFile;
+    if (filesystem::exists(framesPath)) {
+        ifstream ff(framesPath, ios::binary);
+        // TODO
+        ff.close();
+        framesStored = fi.size();
+    }
 
     // load saved state { nextFrameId, nextShapeId, earliestFrameId }
-    string savedStatePath = visDirPath + savedStateFile;
+    string savedStatePath = dirOut + savedStateFile;
     if (filesystem::exists(savedStatePath)) {
         ifstream ssf(savedStatePath, ios::binary);
         char buf[18];
@@ -55,6 +62,23 @@ VisualSTM::VisualSTM() {
                              ((uint64_t) buf[12] << 40) | ((uint64_t) buf[13] << 32) |
                              (buf[14] << 24) | (buf[15] << 16) | (buf[16] << 8) | buf[17]);
         ssf.close();
+    }
+}
+
+void VisualSTM::ReadIndices(const char *path) {
+    for {
+        char buf[2];
+        struct stat sb{};
+        stat(path, &sb);
+        ifstream sff(path, ios::binary);
+        unordered_set<uint16_t> l;
+        for (off_t _ = 0; _ < sb.st_size; _ += 2) {
+            sff.read(buf, 2);
+            l.insert(littleEndian
+                     ? ((buf[1] << 8) | buf[0])
+                     : ((buf[0] << 8) | buf[1]));
+        }
+        sff.close();
     }
 }
 
@@ -143,7 +167,7 @@ void VisualSTM::Forget() {
 
 void VisualSTM::SaveState() {
     // `saved_state`
-    ofstream ssf(visDirPath + savedStateFile, ios::binary);
+    ofstream ssf(dirOut + savedStateFile, ios::binary);
     ssf.write((char *) &nextFrameId, 8);
     ssf.write((char *) &nextShapeId, 2);
     ssf.write((char *) &firstFrameId, 8);
@@ -154,7 +178,7 @@ void VisualSTM::SaveState() {
 #pragma ide diagnostic ignored "UnusedParameter" // true negative!
 
 template<class INT>
-void VisualSTM::SaveIndexes(unordered_map<INT, list<uint16_t>> *indexes, string *dir) {
+void VisualSTM::SaveIndices(map<INT, unordered_set<uint16_t>> *indexes, string *dir) {
     for (pair<const INT, list<uint16_t>> &index: (*indexes)) {
         string path = (*dir) + to_string(index.first);
         if (!index.second.empty()) {
@@ -164,7 +188,6 @@ void VisualSTM::SaveIndexes(unordered_map<INT, list<uint16_t>> *indexes, string 
             sff.close();
         } else remove(path.c_str());
     }
-    indexes->clear();
 }
 
 #pragma clang diagnostic pop

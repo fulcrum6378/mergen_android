@@ -16,7 +16,7 @@ VisualLTM::VisualLTM() {
     string root;
     for (string *dir: {&root, &dirShapes, &dirFrame, &dirY, &dirU, &dirV, &dirRt}) {
         string branch = *dir;
-        dir->insert(0, visDirPath);
+        dir->insert(0, dirOut);
         if (!branch.empty()) dir->append("/");
         auto path = (*dir).c_str();
         if (stat(path, &sb) != 0) mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -28,7 +28,7 @@ VisualLTM::VisualLTM() {
         framesStored++;
 
     // load saved state { nextFrameId, nextShapeId, earliestFrameId }
-    string savedStatePath = visDirPath + savedStateFile;
+    string savedStatePath = dirOut + savedStateFile;
     if (filesystem::exists(savedStatePath)) {
         ifstream ssf(savedStatePath, ios::binary);
         char buf[18];
@@ -226,7 +226,7 @@ void VisualLTM::SaveIndexes(unordered_map<INT, list<uint16_t>> *indexes, string 
 #pragma clang diagnostic pop
 
 [[maybe_unused]] void VisualLTM::SaveState() {
-    ofstream ssf(visDirPath + savedStateFile, ios::binary);
+    ofstream ssf(dirOut + savedStateFile, ios::binary);
     ssf.write((char *) &nextFrameId, 8);
     ssf.write((char *) &nextShapeId, 2);
     ssf.write((char *) &earliestFrameId, 8);

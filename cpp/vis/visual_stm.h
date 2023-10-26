@@ -3,7 +3,6 @@
 
 #include <list>
 #include <map>
-#include <unordered_map>
 #include <unordered_set>
 
 // Shapes' paths can be saved in 2 ways:      uint16_t, uint32_t
@@ -23,8 +22,8 @@ static bool littleEndian = std::endian::native == std::endian::little;
 /** Visual Short-Term Memory */
 class VisualSTM {
 private:
-    const std::string visDirPath = "/data/data/ir.mahdiparastesh.mergen/files/vis/stm/";
-    std::string dirShapes = "shapes", dirY = "y", dirU = "u", dirV = "v", dirRt = "r",
+    const std::string dirOut = "/data/data/ir.mahdiparastesh.mergen/files/vis/stm/";
+    std::string dirShapes = "shapes", dirY = "y", dirU = "u", dirV = "v", dirR = "r",
             framesFile = "frames", savedStateFile = "saved_state";
     // frame ID incrementor | ID of earliest frame which is STILL available in memory
     uint64_t nextFrameId = 0, firstFrameId = 0;
@@ -42,9 +41,12 @@ private:
     /** Forgets N of oldest frames. */
     void Forget();
 
+    /** Reads an entire Sequence File. */
+    static void ReadIndices(const char *path);
+
     /** Save an index in non-volatile memory. */
     template<class INT>
-    void SaveIndexes(std::unordered_map<INT, std::list<uint16_t>> *indexes, std::string *dir);
+    void SaveIndices(std::map<INT, std::unordered_set<uint16_t>> *indexes, std::string *dir);
 
 public:
     VisualSTM();

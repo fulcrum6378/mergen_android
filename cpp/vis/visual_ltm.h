@@ -22,7 +22,7 @@ static bool littleEndian = std::endian::native == std::endian::little;
 /** Visual Short-Term Memory */
 class [[maybe_unused]] VisualLTM {
 private:
-    const std::string visDirPath = "/data/data/ir.mahdiparastesh.mergen/files/vis/ltm/";
+    const std::string dirOut = "/data/data/ir.mahdiparastesh.mergen/files/vis/ltm/";
     std::string dirShapes = "shapes", dirFrame = "f", dirY = "y", dirU = "u", dirV = "v", dirRt = "r",
             savedStateFile = "saved_state";
     uint64_t nextFrameId = 0;
