@@ -34,6 +34,7 @@ add_library(main SHARED
         vis/colouring.h
         vis/segmentation.cpp
         vis/segmentation.h
+        vis/sequence_files.h
         vis/visual_ltm.cpp
         vis/visual_ltm.h
         vis/visual_stm.cpp

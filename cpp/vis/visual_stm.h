@@ -1,7 +1,8 @@
-#ifndef VIS_VISUAL_LTM_H
-#define VIS_VISUAL_LTM_H
+#ifndef VIS_VISUAL_STM_H
+#define VIS_VISUAL_STM_H
 
 #include <list>
+#include <map>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -20,45 +21,36 @@ static float shape_point_max = 256.0;      // 256.0,    65535.0
 static bool littleEndian = std::endian::native == std::endian::little;
 
 /** Visual Short-Term Memory */
-class [[maybe_unused]] VisualLTM {
+class VisualSTM {
 private:
-    const std::string visDirPath = "/data/data/ir.mahdiparastesh.mergen/files/vis/ltm/";
-    std::string dirShapes = "shapes", dirFrame = "f", dirY = "y", dirU = "u", dirV = "v", dirRt = "r",
-            savedStateFile = "saved_state";
-    uint64_t nextFrameId = 0;
-    uint16_t nextShapeId = 0;
-    // ID of earliest frame which is STILL available in memory
-    uint64_t earliestFrameId = 0;
+    const std::string visDirPath = "/data/data/ir.mahdiparastesh.mergen/files/vis/stm/";
+    std::string dirShapes = "shapes", dirY = "y", dirU = "u", dirV = "v", dirRt = "r",
+            framesFile = "frames", savedStateFile = "saved_state";
+    // frame ID incrementor | ID of earliest frame which is STILL available in memory
+    uint64_t nextFrameId = 0, firstFrameId = 0;
+    // shape ID incrementor | ID of first shape in THIS FRAME
+    uint16_t nextShapeId = 0, firstShapeId = 0;
     // total number of frames available in memory
     uint16_t framesStored = 0;
-    // IDs of shapes inside current frame
-    std::list<uint16_t> shapesInFrame;
-    // helper maps for altering 'uint8_t' indexes
-    std::unordered_map<uint8_t, std::list<uint16_t>> ym, um, vm;
-    // helper maps for altering 'uint16_t' indexes
-    std::unordered_map<uint16_t, std::list<uint16_t>> rm;
+    // frame index (8-bit)
+    std::map<uint64_t, std::pair<uint16_t, uint16_t>> fi;
+    // 1-bit volatile indices
+    std::map<uint8_t, std::unordered_set<uint16_t>> yi, ui, vi;
+    // 2-bit volatile indices
+    std::map<uint16_t, std::unordered_set<uint16_t>> ri;
 
     /** Forgets N of oldest frames. */
     void Forget();
 
-    /** Iterates on every ID in a Sequence File. */
-    void IterateIndex(const char *path, void onEach(VisualLTM *, uint16_t));
-
-    /** Reads an entire Sequence File. */
-    static std::list<uint16_t> ReadIndex(const char *path);
-
-    /** Removes an ID from a list (index/sequence file). */
-    static void RemoveFromIndex(std::list<uint16_t> *l, uint16_t id);
-
-    /** Save an index in non-volatile memory and clear its data from RAM. */
+    /** Save an index in non-volatile memory. */
     template<class INT>
     void SaveIndexes(std::unordered_map<INT, std::list<uint16_t>> *indexes, std::string *dir);
 
 public:
-    VisualLTM();
+    VisualSTM();
 
     /** Inserts a new shape into memory. */
-    [[maybe_unused]] void Insert(
+    void Insert(
             uint8_t **m, // average colour
             uint16_t *w, uint16_t *h, // width and height
             uint16_t cx, uint16_t cy, // central points
@@ -66,11 +58,11 @@ public:
     );
 
     /** Anything that needs to be done at the end. */
-    [[maybe_unused]] void OnFrameFinished();
+    void OnFrameFinished();
 
     /** Saves current state { nextFrameId, nextShapeId, earliestFrameId }
      * Don't save paths as variables in the constructor! */
-    [[maybe_unused]] void SaveState();
+    void SaveState();
 };
 
-#endif //VIS_VISUAL_LTM_H
+#endif //VIS_VISUAL_STM_H
