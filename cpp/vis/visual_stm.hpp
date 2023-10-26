@@ -7,7 +7,7 @@
 #include "binary_integers.hpp"
 
 // maximum frames allowed to be present in memory at a time
-#define MAX_FRAMES_STORED 10
+#define MAX_FRAMES_STORED 3
 // forget N frames whenever hit the maximum
 #define FORGET_N_FRAMES 1
 
@@ -40,11 +40,15 @@ private:
     /** Forgets N of oldest frames. */
     void Forget();
 
-    /** Reads an entire Sequence File. */
+    /** Reads an entire Sequence File and then deletes it. */
     template<class INT>
     static void ReadIndices(std::map<INT, std::unordered_set<uint16_t>> *indexes, std::string *dir);
 
-    /** Save an index in non-volatile memory. */
+    /** Removes all Sequence Files for replacement.
+     * In MergenLinux and etc, this should be merged into ReadIndices(). */
+    static void DeleteIndices(std::string *dir);
+
+    /** Save all indexes as Sequence Files. */
     template<class INT>
     void SaveIndices(std::map<INT, std::unordered_set<uint16_t>> *indexes, std::string *dir);
 

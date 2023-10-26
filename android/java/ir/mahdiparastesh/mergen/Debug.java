@@ -65,20 +65,36 @@ public class Debug extends Thread {
                     } else out.write(1);
                     break;
 
-                case 11:
+                case 11: // send `arr`
                     Files.copy(new File(c.getCacheDir(), "arr").toPath(), out);
                     break;
-                case 21:
+                case 21: // send `stm.zip`
+                    if (!c.isFinished) {
+                        out.write(1);
+                        break;
+                    }
                     out.write(0);
-                    ZipOutputStream zos = new ZipOutputStream(out);
-                    addDirToZip(zos, new File(c.getFilesDir(), "vis/shapes"), null);
-                    addDirToZip(zos, new File(c.getFilesDir(), "vis/f"), null);
-                    addDirToZip(zos, new File(c.getFilesDir(), "vis/y"), null);
-                    addDirToZip(zos, new File(c.getFilesDir(), "vis/u"), null);
-                    addDirToZip(zos, new File(c.getFilesDir(), "vis/v"), null);
-                    addDirToZip(zos, new File(c.getFilesDir(), "vis/r"), null);
-                    zos.flush();
-                    zos.close(); // both necessary!
+                    ZipOutputStream stm = new ZipOutputStream(out);
+                    addFileToZip(stm, new File(c.getFilesDir(), "vis/stm/shapes"), null);
+                    addFileToZip(stm, new File(c.getFilesDir(), "vis/stm/y"), null);
+                    addFileToZip(stm, new File(c.getFilesDir(), "vis/stm/u"), null);
+                    addFileToZip(stm, new File(c.getFilesDir(), "vis/stm/v"), null);
+                    addFileToZip(stm, new File(c.getFilesDir(), "vis/stm/r"), null);
+                    addFileToZip(stm, new File(c.getFilesDir(), "vis/stm/frames"), null);
+                    addFileToZip(stm, new File(c.getFilesDir(), "vis/stm/numbers"), null);
+                    stm.flush();
+                    stm.close(); // both necessary!
+                    break;
+                case 22: // send 'ltm.zip'
+                    out.write(0);
+                    ZipOutputStream ltm = new ZipOutputStream(out);
+                    addFileToZip(ltm, new File(c.getFilesDir(), "vis/ltm/shapes"), null);
+                    addFileToZip(ltm, new File(c.getFilesDir(), "vis/ltm/y"), null);
+                    addFileToZip(ltm, new File(c.getFilesDir(), "vis/ltm/u"), null);
+                    addFileToZip(ltm, new File(c.getFilesDir(), "vis/ltm/v"), null);
+                    addFileToZip(ltm, new File(c.getFilesDir(), "vis/ltm/r"), null);
+                    ltm.flush();
+                    ltm.close();
                     break;
                 default:
                     out.write(255);
@@ -95,7 +111,7 @@ public class Debug extends Thread {
         }
     }
 
-    public static void addDirToZip(ZipOutputStream zos, File fileToZip, String parentDirName)
+    public static void addFileToZip(ZipOutputStream zos, File fileToZip, String parentDirName)
             throws IOException {
         if (fileToZip == null || !fileToZip.exists()) return;
 
@@ -105,7 +121,7 @@ public class Debug extends Thread {
 
         if (fileToZip.isDirectory()) {
             for (File file : Objects.requireNonNull(fileToZip.listFiles()))
-                addDirToZip(zos, file, zipEntryName);
+                addFileToZip(zos, file, zipEntryName);
         } else {
             byte[] buffer = new byte[1024];
             FileInputStream fis = new FileInputStream(fileToZip);

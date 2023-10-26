@@ -42,14 +42,14 @@ VisualSTM::VisualSTM() {
         framesStored = fi.size();
     }
 
-    // load file `numbers`: { nextFrameId, nextShapeId, earliestFrameId }
+    // load file `numbers`: { nextFrameId, firstFrameId, nextShapeId }
     string numbersPath = dirOut + numbersFile;
     if (filesystem::exists(numbersPath)) {
         ifstream ssf(numbersPath, ios::binary);
         nextFrameId = read_uint64(&ssf);
+        firstFrameId = read_uint64(&ssf);
         nextShapeId = read_uint16(&ssf);
         firstShapeId = nextShapeId;
-        firstFrameId = read_uint64(&ssf);
         ssf.close();
     }
 }
@@ -60,7 +60,8 @@ VisualSTM::VisualSTM() {
 template<class INT>
 void VisualSTM::ReadIndices(map<INT, unordered_set<uint16_t>> *indexes, string *dir) {
     struct stat sb{};
-    for (const filesystem::directory_entry &ent: filesystem::directory_iterator(filesystem::path{*dir})) {
+    for (const filesystem::directory_entry &ent: filesystem::directory_iterator(
+            filesystem::path{*dir})) {
         const char *path = reinterpret_cast<const char *>(ent.path().c_str());
         stat(path, &sb);
         ifstream seq(path, ios::binary);
@@ -68,20 +69,27 @@ void VisualSTM::ReadIndices(map<INT, unordered_set<uint16_t>> *indexes, string *
         for (off_t _ = 0; _ < sb.st_size; _ += 2)
             l.insert(read_uint16(&seq));
         seq.close();
-        (*indexes)[(uint16_t) stoi(path)] = l;
+        (*indexes)[(uint16_t) stoul(ent.path().filename().c_str())] = l;
+        // remove(path); in MergenLinux and etc.
     }
+}
+
+void VisualSTM::DeleteIndices(string *dir) {
+    for (const filesystem::directory_entry &ent: filesystem::directory_iterator(
+            filesystem::path{*dir}))
+        remove(reinterpret_cast<const char *>(ent.path().c_str()));
 }
 
 template<class INT>
 void VisualSTM::SaveIndices(map<INT, unordered_set<uint16_t>> *indexes, string *dir) {
+    string path;
     for (pair<const INT, unordered_set<uint16_t>> &index: (*indexes)) {
-        string path = (*dir) + to_string(index.first);
-        if (!index.second.empty()) {
-            ofstream sff(path, ios::binary);
-            for (uint16_t sid: index.second)
-                sff.write((char *) &sid, 2);
-            sff.close();
-        } else remove(path.c_str());
+        if (index.second.empty()) continue;
+        path = (*dir) + to_string(index.first);
+        ofstream sff(path, ios::binary);
+        for (uint16_t sid: index.second)
+            sff.write((char *) &sid, 2);
+        sff.close();
     }
 }
 
@@ -164,14 +172,18 @@ void VisualSTM::Forget() {
 }
 
 void VisualSTM::SaveState() {
-    // save volatile indices
+    // replace volatile indices
+    DeleteIndices(&dirY);
+    DeleteIndices(&dirU);
+    DeleteIndices(&dirV);
+    DeleteIndices(&dirR);
     SaveIndices<uint8_t>(&yi, &dirY);
     SaveIndices<uint8_t>(&ui, &dirU);
     SaveIndices<uint8_t>(&vi, &dirV);
     SaveIndices<uint16_t>(&ri, &dirR);
 
     // save file `frames`
-    ofstream fif(framesFile, ios::binary);
+    ofstream fif(dirOut + framesFile, ios::binary);
     for (pair<uint64_t, pair<uint16_t, uint16_t>> f: fi) {
         fif.write((char *) &f.first, 8);
         fif.write((char *) &f.second.first, 2);
@@ -182,7 +194,7 @@ void VisualSTM::SaveState() {
     // save file `numbers`
     ofstream ssf(dirOut + numbersFile, ios::binary);
     ssf.write((char *) &nextFrameId, 8);
-    ssf.write((char *) &nextShapeId, 2);
     ssf.write((char *) &firstFrameId, 8);
+    ssf.write((char *) &nextShapeId, 2);
     ssf.close();
 }

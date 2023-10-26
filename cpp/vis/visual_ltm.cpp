@@ -26,13 +26,13 @@ VisualLTM::VisualLTM() {
             filesystem::directory_iterator(filesystem::path{dirFrame}))
         framesStored++;
 
-    // load saved state { nextFrameId, nextShapeId, earliestFrameId }
+    // load saved state { nextFrameId, firstFrameId, nextShapeId }
     string savedStatePath = dirOut + savedStateFile;
     if (filesystem::exists(savedStatePath)) {
         ifstream ssf(savedStatePath, ios::binary);
         nextFrameId = read_uint64(&ssf);
+        firstFrameId = read_uint64(&ssf);
         nextShapeId = read_uint16(&ssf);
-        earliestFrameId = read_uint64(&ssf);
         ssf.close();
     }
 }
@@ -102,7 +102,7 @@ VisualLTM::VisualLTM() {
 
 void VisualLTM::Forget() {
     auto t = chrono::system_clock::now();
-    for (uint64_t f = earliestFrameId; f < earliestFrameId + FORGET_N_FRAMES; f++) {
+    for (uint64_t f = firstFrameId; f < firstFrameId + FORGET_N_FRAMES; f++) {
         IterateIndex((dirFrame + to_string(f)).c_str(), [](VisualLTM *ltm, uint16_t sid) -> void {
             uint8_t y, u, v;
             uint16_t r;
@@ -140,7 +140,7 @@ void VisualLTM::Forget() {
     SaveIndexes<uint8_t>(&vm, &dirV);
     SaveIndexes<uint16_t>(&rm, &dirRt);
 
-    earliestFrameId += FORGET_N_FRAMES;
+    firstFrameId += FORGET_N_FRAMES;
     framesStored -= FORGET_N_FRAMES;
     LOGI("Forgetting time: %lld", chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t).count());
@@ -180,9 +180,10 @@ void VisualLTM::RemoveFromIndex(list<uint16_t> *l, uint16_t id) {
 
 template<class INT>
 void VisualLTM::SaveIndexes(unordered_map<INT, list<uint16_t>> *indexes, string *dir) {
+    string path;
     for (pair<const INT, list<uint16_t>> &index: (*indexes)) {
-        string path = (*dir) + to_string(index.first);
         if (!index.second.empty()) {
+            path = (*dir) + to_string(index.first);
             ofstream sff(path, ios::binary);
             for (uint16_t sid: index.second)
                 sff.write((char *) &sid, 2);
@@ -197,7 +198,7 @@ void VisualLTM::SaveIndexes(unordered_map<INT, list<uint16_t>> *indexes, string 
 [[maybe_unused]] void VisualLTM::SaveState() {
     ofstream ssf(dirOut + savedStateFile, ios::binary);
     ssf.write((char *) &nextFrameId, 8);
+    ssf.write((char *) &firstFrameId, 8);
     ssf.write((char *) &nextShapeId, 2);
-    ssf.write((char *) &earliestFrameId, 8);
     ssf.close();
 }

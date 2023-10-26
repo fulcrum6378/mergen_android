@@ -23,10 +23,10 @@ private:
     const std::string dirOut = "/data/data/ir.mahdiparastesh.mergen/files/vis/ltm/";
     std::string dirShapes = "shapes", dirFrame = "f", dirY = "y", dirU = "u", dirV = "v", dirRt = "r",
             savedStateFile = "saved_state";
-    uint64_t nextFrameId = 0;
+    // frame ID incrementor | ID of earliest frame which is STILL available in memory
+    uint64_t nextFrameId = 0, firstFrameId = 0;
+    // shape ID incrementor
     uint16_t nextShapeId = 0;
-    // ID of earliest frame which is STILL available in memory
-    uint64_t earliestFrameId = 0;
     // total number of frames available in memory
     uint16_t framesStored = 0;
     // IDs of shapes inside current frame

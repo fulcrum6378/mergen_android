@@ -25,9 +25,13 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     jobject gMain = env->NewGlobalRef(main);
 
     // ensure that /files/ dir exists
-    const char *filesDir = "/data/data/ir.mahdiparastesh.mergen/files/";
+    std::string filesDir = "/data/data/ir.mahdiparastesh.mergen/files/";
     struct stat sb{};
-    if (stat(filesDir, &sb) != 0) mkdir(filesDir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    for (std::string dirN: {"", "vis"}) {
+        const char *dir = (filesDir + dirN).c_str();
+        if (stat(dir, &sb) != 0)
+            mkdir(dir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    }
 
     // initialise high-level components
     Manifest::init();
