@@ -1,6 +1,7 @@
 #ifndef VIS_VISUAL_STM_H
 #define VIS_VISUAL_STM_H
 
+#include <array>
 #include <map>
 #include <unordered_set>
 
@@ -57,7 +58,7 @@ public:
 
     /** Inserts a new shape into memory. */
     void Insert(
-            uint8_t **m, // average colour
+            std::array<uint8_t, 3> *m, // average colour
             uint16_t *w, uint16_t *h, // width and height
             uint16_t cx, uint16_t cy, // central points
             std::unordered_set<SHAPE_POINT_T> *path

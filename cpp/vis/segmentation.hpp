@@ -1,7 +1,6 @@
 #ifndef VIS_SEGMENTATION_H
 #define VIS_SEGMENTATION_H
 
-#include <array>
 #include <atomic>
 #include <jni.h>
 #include <list>
@@ -27,8 +26,12 @@ struct Segment {
     uint32_t id;
     // pixel coordinates
     std::list<uint32_t> p;
+#if MIN_SEG_SIZE == 1
+    // sum of colours
+    uint64_t ys, us, vs;
+#endif
     // average colour
-    uint8_t *m;
+    std::array<uint8_t, 3> m;
     // boundaries and dimensions
     uint16_t min_y, min_x, max_y, max_x, w, h;
     // border pixels

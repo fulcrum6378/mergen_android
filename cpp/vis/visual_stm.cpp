@@ -1,4 +1,5 @@
 #include <cmath>
+#include <cstring>
 #include <filesystem>
 #include <sys/stat.h>
 
@@ -52,6 +53,16 @@ VisualSTM::VisualSTM() {
         firstShapeId = nextShapeId;
         ssf.close();
     }
+
+    /*char test_buf[10];
+    memset(&test_buf, 0, 10);
+    uint16_t tv = 309;
+    std::array<uint8_t, 3> m = {1, 2, 3};
+    memcpy(&test_buf[0], &m, 3);
+    memcpy(&test_buf[3], &tv, 2);
+    LOGI("%u %u %u %u %u %u %u %u %u %u",
+         test_buf[0], test_buf[1], test_buf[2], test_buf[3], test_buf[4],
+         test_buf[5], test_buf[6], test_buf[7], test_buf[8], test_buf[9]);*/
 }
 
 #pragma clang diagnostic push
@@ -69,7 +80,7 @@ void VisualSTM::ReadIndices(map<INT, unordered_set<uint16_t>> *indexes, string *
         for (off_t _ = 0; _ < sb.st_size; _ += 2)
             l.insert(read_uint16(&seq));
         seq.close();
-        (*indexes)[(uint16_t) stoul(ent.path().filename().c_str())] = l;
+        (*indexes)[static_cast<uint16_t>(stoul(ent.path().filename().c_str()))] = l;
         // remove(path); in MergenLinux and etc.
     }
 }
@@ -96,24 +107,31 @@ void VisualSTM::SaveIndices(map<INT, unordered_set<uint16_t>> *indexes, string *
 #pragma clang diagnostic pop
 
 void VisualSTM::Insert(
-        uint8_t **m, // average colour
+        array<uint8_t, 3> *m, // average colour
         uint16_t *w, uint16_t *h,  // width and height
         uint16_t cx, uint16_t cy, // central points
         unordered_set<SHAPE_POINT_T> *path
 ) {
-    auto r = (uint16_t) round(((float) *w / (float) *h) * 10.0);
+    auto r = static_cast<uint16_t>(round((static_cast<float>(*w) / static_cast<float>(*h)) * 10.0));
 
-    // write shape file
+    // put data in a buffer
+    uint64_t offset = 21;
+    char buf[offset + (shape_point_bytes * (*path).size())];
+    memcpy(&buf[0], m, 3); // Mean Colour
+    memcpy(&buf[3], &r, 2); // Ratio
+    memcpy(&buf[5], &nextFrameId, 8); // Frame ID
+    memcpy(&buf[13], w, 2); // Width
+    memcpy(&buf[15], h, 2); // Height
+    memcpy(&buf[17], &cx, 2); // Centre (X)
+    memcpy(&buf[19], &cy, 2); // Centre (Y)
+    for (SHAPE_POINT_T p: *path) {
+        memcpy(&buf[offset], &p, shape_point_bytes); // Point {X, Y}
+        offset += shape_point_bytes;
+    }
+
+    // write buffer to shape file
     ofstream shf(dirShapes + to_string(nextShapeId), ios::binary);
-    shf.write((char *) *m, 3); // Mean Colour
-    shf.write((char *) &r, 2); // Ratio
-    shf.write((char *) &nextFrameId, 8); // Frame ID
-    shf.write((char *) w, 2); // Width
-    shf.write((char *) h, 2); // Height
-    shf.write((char *) &cx, 2); // Centre (X)
-    shf.write((char *) &cy, 2); // Centre (Y)
-    for (SHAPE_POINT_T p: *path)
-        shf.write((char *) &p, shape_point_bytes); // Point {X, Y}
+    shf.write(buf, static_cast<streamsize>(sizeof(buf)));
     shf.close();
 
     // update the volatile indices

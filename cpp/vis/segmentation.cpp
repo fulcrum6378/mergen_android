@@ -76,7 +76,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
         stack.push_back({thisY, thisX, 0});
         nextSeg++;
         uint16_t y, x, dr;
-        while ((last = ((int64_t) stack.size()) - 1) != -1) {
+        while ((last = static_cast<int64_t>(stack.size()) - 1) != -1) {
             y = stack[last][0], x = stack[last][1], dr = stack[last][2];
             if (dr == 0) {
                 seg.p.push_back((y << 16) | x);
@@ -121,7 +121,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
 #if MIN_SEG_SIZE > 1
     uint32_t absorber_i, size_bef = segments.size(), removal = 1;
     Segment *absorber;
-    for (int32_t seg = ((int32_t) size_bef) - 1; seg > -1; seg--)
+    for (int32_t seg = static_cast<int32_t>(size_bef) - 1; seg > -1; seg--)
         if (segments[seg].p.size() < MIN_SEG_SIZE) {
             absorber_i = FindPixelOfASegmentToDissolveIn(&segments[seg]);
             if (absorber_i == 0xFFFFFFFF) continue;
@@ -144,23 +144,31 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     // 4. average colours + detect boundaries
     t0 = chrono::system_clock::now();
     uint32_t l_;
+#if MIN_SEG_SIZE > 1
     uint8_t *col;
-    uint64_t aa, bb, cc;
+    uint64_t ys, us, vs;
+#endif
     bool isFirst;
     uint16_t y, x;
     for (Segment &seg: segments) {
         // average colours of each segment
-        aa = 0, bb = 0, cc = 0;
+        l_ = seg.p.size();
+#if MIN_SEG_SIZE > 1
+        ys = 0, us = 0, vs = 0;
         for (uint32_t p: seg.p) {
             col = arr[p >> 16][p & 0xFFFF];
-            aa += col[0];
-            bb += col[1];
-            cc += col[2];
+            ys += col[0];
+            us += col[1];
+            vs += col[2];
         }
-        l_ = seg.p.size();
-        seg.m = new uint8_t[3]{static_cast<uint8_t>(aa / l_),
-                               static_cast<uint8_t>(bb / l_),
-                               static_cast<uint8_t>(cc / l_)};
+        seg.m = new uint8_t[3]{static_cast<uint8_t>(ys / l_),
+                               static_cast<uint8_t>(us / l_),
+                               static_cast<uint8_t>(vs / l_)};
+#else
+        seg.m = {static_cast<uint8_t>(seg.ys / l_),
+                 static_cast<uint8_t>(seg.us / l_),
+                 static_cast<uint8_t>(seg.vs / l_)};
+#endif
 
         // detect boundaries (min_y, min_x, max_y, max_x)
         isFirst = true;
@@ -306,11 +314,11 @@ void Segmentation::SetAsBorder(uint16_t y, uint16_t x) {
     b_status[y][x] |= 1;
     Segment *seg = s_index[status[y][x]];
     seg->border.insert(
-            (static_cast<SHAPE_POINT_T>((shape_point_max / (float) seg->w) *
-                                        (float) (x - seg->min_x)) // fractional X
+            (static_cast<SHAPE_POINT_T>((shape_point_max / static_cast<float>(seg->w)) *
+                                        static_cast<float>(x - seg->min_x)) // fractional X
                     << shape_point_each_bits) |
-            static_cast<SHAPE_POINT_T>((shape_point_max / (float) seg->h) *
-                                       (float) (y - seg->min_y))  // fractional Y
+            static_cast<SHAPE_POINT_T>((shape_point_max / static_cast<float>(seg->h)) *
+                                       static_cast<float>(y - seg->min_y))  // fractional Y
     );
 }
 
