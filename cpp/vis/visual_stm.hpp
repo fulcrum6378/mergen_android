@@ -7,7 +7,7 @@
 #include "binary_integers.hpp"
 
 // maximum frames allowed to be present in memory at a time
-#define MAX_FRAMES_STORED 3
+#define MAX_FRAMES_STORED 10
 // forget N frames whenever hit the maximum
 #define FORGET_N_FRAMES 1
 
@@ -40,15 +40,15 @@ private:
     /** Forgets N of oldest frames. */
     void Forget();
 
-    /** Reads an entire Sequence File and then deletes it. */
+    /** Reads all Sequence Files of an aspect. */
     template<class INT>
     static void ReadIndices(std::map<INT, std::unordered_set<uint16_t>> *indexes, std::string *dir);
 
-    /** Removes all Sequence Files for replacement.
+    /** Removes all Sequence Files of an aspect for replacement.
      * In MergenLinux and etc, this should be merged into ReadIndices(). */
     static void DeleteIndices(std::string *dir);
 
-    /** Save all indexes as Sequence Files. */
+    /** Save all indices of an aspect as Sequence Files. */
     template<class INT>
     void SaveIndices(std::map<INT, std::unordered_set<uint16_t>> *indexes, std::string *dir);
 
@@ -66,7 +66,7 @@ public:
     /** Anything that needs to be done at the end. */
     void OnFrameFinished();
 
-    /** Saves current state { nextFrameId, nextShapeId, earliestFrameId }
+    /** Saves current state { nextFrameId, firstFrameId, nextShapeId }
      * Don't save paths as variables in the constructor! */
     void SaveState();
 };

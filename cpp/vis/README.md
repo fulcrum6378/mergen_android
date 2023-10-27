@@ -15,18 +15,19 @@ This component contains the following steps:
    https://github.com/fulcrum6378/mycv/blob/master/segmentation/region_growing_4.py) and [**Comprehender**](
    https://github.com/fulcrum6378/mycv/blob/master/tracing/comprehender_rg4.py).
 
-   2.1. **Resegmentation** : which updates segments of *Segmentation* in a second analysis.
-   Translated from [First](https://github.com/fulcrum6378/mycv/blob/master/resegmentation/first_rg4.py).
-
 3. [**VisualSTM**](visual_stm.cpp) : *Visual Short-Term Memory*; it stores shapes (segments)
    temporarily on a non-volatile (persistent) memory for a later (as soon as possible) analysis by
    the [**Subconscious Mind (SCM)**](../scm).
 
-   Translated from *MyCV*'s [**Sequence Files 2**](
-   https://github.com/fulcrum6378/mycv/blob/master/storage/sequence_files_2.py).
+   Translated from *MyCV*'s [**Volatile Indices 1**](
+   https://github.com/fulcrum6378/mycv/blob/master/storage/volatile_indices_1.py).
 
-#### Other classes
+4. [**Perception**](perception.cpp) : a separate thread from *Camera*,
+   its responsibility is to make sense of these segments.
 
-- [BitmapStream](bitmap_stream.h) : it stores image frames in BMP image format for testing in *MyCV*.
-- [Colouring](colouring.h) : it makes a very simple effect in the UI of the Android app,
+#### Other classes and procedural files
+
+- [binary_integers.hpp](binary_integers.hpp) : it helps with converting byte arrays into integers.
+- [BitmapStream](bitmap_stream.hpp) : it stores image frames in BMP image format for testing in *MyCV*.
+- [Colouring](colouring.hpp) : it makes a very simple effect in the UI of the Android app,
   indicating pleasure (in green) or pain (in red).
