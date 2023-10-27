@@ -1,6 +1,7 @@
 #include <cmath>
 #include <cstring>
 #include <filesystem>
+#include <fstream>
 #include <sys/stat.h>
 
 #include "../global.hpp"
@@ -29,40 +30,34 @@ VisualSTM::VisualSTM() {
     // load file `frames` (frame index {frame ID, beginning shape ID, ending shape ID})
     string framesPath = dirOut + framesFile;
     if (filesystem::exists(framesPath)) {
-        stat(framesPath.c_str(), &sb);
-        ifstream fif(framesPath, ios::binary);
         uint64_t fid;
         uint16_t beg, end;
-        for (off_t _ = 0; _ < sb.st_size; _ += 12) {
-            fid = read_uint64(&fif);
-            beg = read_uint16(&fif);
-            end = read_uint16(&fif);
+        stat(framesPath.c_str(), &sb);
+        char buf[sb.st_size];
+        ifstream fif(framesPath, ios::binary);
+        fif.read(buf, sb.st_size);
+        fif.close();
+        for (off_t off = 0; off < sb.st_size; off += 12) {
+            memcpy(&fid, &buf[off], 8);
+            memcpy(&beg, &buf[off + 8], 2);
+            memcpy(&end, &buf[off + 10], 2);
             fi[fid] = pair(beg, end);
         }
-        fif.close();
         framesStored = fi.size();
     }
 
     // load file `numbers`: { nextFrameId, firstFrameId, nextShapeId }
     string numbersPath = dirOut + numbersFile;
     if (filesystem::exists(numbersPath)) {
+        char buf[18];
         ifstream ssf(numbersPath, ios::binary);
-        nextFrameId = read_uint64(&ssf);
-        firstFrameId = read_uint64(&ssf);
-        nextShapeId = read_uint16(&ssf);
-        firstShapeId = nextShapeId;
+        ssf.read(buf, sizeof(buf));
         ssf.close();
+        memcpy(&nextFrameId, &buf[0], 8);
+        memcpy(&firstFrameId, &buf[8], 8);
+        memcpy(&nextShapeId, &buf[16], 2);
+        firstShapeId = nextShapeId;
     }
-
-    /*char test_buf[10];
-    memset(&test_buf, 0, 10);
-    uint16_t tv = 309;
-    std::array<uint8_t, 3> m = {1, 2, 3};
-    memcpy(&test_buf[0], &m, 3);
-    memcpy(&test_buf[3], &tv, 2);
-    LOGI("%u %u %u %u %u %u %u %u %u %u",
-         test_buf[0], test_buf[1], test_buf[2], test_buf[3], test_buf[4],
-         test_buf[5], test_buf[6], test_buf[7], test_buf[8], test_buf[9]);*/
 }
 
 #pragma clang diagnostic push
@@ -75,11 +70,16 @@ void VisualSTM::ReadIndices(map<INT, unordered_set<uint16_t>> *indexes, string *
             filesystem::path{*dir})) {
         const char *path = reinterpret_cast<const char *>(ent.path().c_str());
         stat(path, &sb);
+        char buf[sb.st_size];
         ifstream seq(path, ios::binary);
-        unordered_set<uint16_t> l;
-        for (off_t _ = 0; _ < sb.st_size; _ += 2)
-            l.insert(read_uint16(&seq));
+        seq.read(buf, sb.st_size);
         seq.close();
+        unordered_set<uint16_t> l;
+        uint16_t i;
+        for (off_t off = 0; off < sb.st_size; off += 2) {
+            memcpy(&i, &buf[off], 2);
+            l.insert(i);
+        }
         (*indexes)[static_cast<uint16_t>(stoul(ent.path().filename().c_str()))] = l;
         // remove(path); in MergenLinux and etc.
     }
@@ -94,12 +94,18 @@ void VisualSTM::DeleteIndices(string *dir) {
 template<class INT>
 void VisualSTM::SaveIndices(map<INT, unordered_set<uint16_t>> *indexes, string *dir) {
     string path;
+    uint32_t off;
     for (pair<const INT, unordered_set<uint16_t>> &index: (*indexes)) {
         if (index.second.empty()) continue;
+        char buf[index.second.size() * 2];
+        off = 0;
+        for (uint16_t sid: index.second) {
+            memcpy(&buf[off], &sid, 2);
+            off += 2;
+        }
         path = (*dir) + to_string(index.first);
         ofstream sff(path, ios::binary);
-        for (uint16_t sid: index.second)
-            sff.write((char *) &sid, 2);
+        sff.write(buf, sizeof(buf));
         sff.close();
     }
 }
@@ -115,8 +121,8 @@ void VisualSTM::Insert(
     auto r = static_cast<uint16_t>(round((static_cast<float>(*w) / static_cast<float>(*h)) * 10.0));
 
     // put data in a buffer
-    uint64_t offset = 21;
-    char buf[offset + (shape_point_bytes * (*path).size())];
+    uint64_t off = 21;
+    char buf[off + (shape_point_bytes * (*path).size())];
     memcpy(&buf[0], m, 3); // Mean Colour
     memcpy(&buf[3], &r, 2); // Ratio
     memcpy(&buf[5], &nextFrameId, 8); // Frame ID
@@ -125,8 +131,8 @@ void VisualSTM::Insert(
     memcpy(&buf[17], &cx, 2); // Centre (X)
     memcpy(&buf[19], &cy, 2); // Centre (Y)
     for (SHAPE_POINT_T p: *path) {
-        memcpy(&buf[offset], &p, shape_point_bytes); // Point {X, Y}
-        offset += shape_point_bytes;
+        memcpy(&buf[off], &p, shape_point_bytes); // Point {X, Y}
+        off += shape_point_bytes;
     }
 
     // write buffer to shape file
@@ -167,13 +173,15 @@ void VisualSTM::Forget() {
             uint16_t r;
 
             // open shape file, read its necessary details and then remove it
+            char b_s[5];
             string sPath = dirShapes + to_string(sid);
             ifstream shf(sPath, ios::binary);
-            shf.read(reinterpret_cast<char *>(&y), 1);
-            shf.read(reinterpret_cast<char *>(&u), 1);
-            shf.read(reinterpret_cast<char *>(&v), 1);
-            r = read_uint16(&shf);
+            shf.read(b_s, sizeof(b_s));
             shf.close();
+            memcpy(&y, &b_s[0], 1);
+            memcpy(&u, &b_s[1], 1);
+            memcpy(&v, &b_s[2], 1);
+            memcpy(&r, &b_s[3], 2);
             remove(sPath.c_str());
 
             // remove this shape ID from all indexes
@@ -201,18 +209,26 @@ void VisualSTM::SaveState() {
     SaveIndices<uint16_t>(&ri, &dirR);
 
     // save file `frames`
-    ofstream fif(dirOut + framesFile, ios::binary);
+    char b_f[fi.size() * 12];
+    uint32_t off = 0;
     for (pair<uint64_t, pair<uint16_t, uint16_t>> f: fi) {
-        fif.write((char *) &f.first, 8);
-        fif.write((char *) &f.second.first, 2);
-        fif.write((char *) &f.second.second, 2);
+        memcpy(&b_f[off], &f.first, 8);
+        off += 8;
+        memcpy(&b_f[off], &f.second.first, 2);
+        off += 2;
+        memcpy(&b_f[off], &f.second.second, 2);
+        off += 2;
     }
+    ofstream fif(dirOut + framesFile, ios::binary);
+    fif.write(b_f, static_cast<int32_t>(sizeof(b_f)));
     fif.close();
 
     // save file `numbers`
+    char b_n[18];
+    memcpy(&b_n[0], &nextFrameId, 8);
+    memcpy(&b_n[8], &firstFrameId, 8);
+    memcpy(&b_n[16], &nextShapeId, 2);
     ofstream ssf(dirOut + numbersFile, ios::binary);
-    ssf.write((char *) &nextFrameId, 8);
-    ssf.write((char *) &firstFrameId, 8);
-    ssf.write((char *) &nextShapeId, 2);
+    ssf.write(b_n, sizeof(b_n));
     ssf.close();
 }

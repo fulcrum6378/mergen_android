@@ -5,8 +5,6 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "binary_integers.hpp"
-
 // maximum frames allowed to be present in memory at a time
 #define MAX_FRAMES_STORED 10
 // forget N frames whenever hit the maximum
@@ -21,23 +19,18 @@
 class [[maybe_unused]] VisualLTM {
 private:
     const std::string dirOut = "/data/data/ir.mahdiparastesh.mergen/files/vis/ltm/";
-    std::string dirShapes = "shapes", dirFrame = "f", dirY = "y", dirU = "u", dirV = "v", dirRt = "r",
-            savedStateFile = "saved_state";
+    std::string dirShapes = "shapes", dirY = "y", dirU = "u", dirV = "v", dirR = "r";
     // frame ID incrementor | ID of earliest frame which is STILL available in memory
     uint64_t nextFrameId = 0, firstFrameId = 0;
     // shape ID incrementor
     uint16_t nextShapeId = 0;
-    // total number of frames available in memory
-    uint16_t framesStored = 0;
-    // IDs of shapes inside current frame
-    std::list<uint16_t> shapesInFrame;
     // helper maps for altering 'uint8_t' indexes
     std::unordered_map<uint8_t, std::list<uint16_t>> ym, um, vm;
     // helper maps for altering 'uint16_t' indexes
     std::unordered_map<uint16_t, std::list<uint16_t>> rm;
 
     /** Forgets N of oldest frames. */
-    void Forget();
+    [[maybe_unused]] void Forget();
 
     /** Iterates on every ID in a Sequence File. */
     void IterateIndex(const char *path, void onEach(VisualLTM *, uint16_t));
@@ -60,15 +53,8 @@ public:
             uint8_t **m, // average colour
             uint16_t *w, uint16_t *h, // width and height
             uint16_t cx, uint16_t cy, // central points
-            std::unordered_set<SHAPE_POINT_T> *path
+            std::unordered_set<uint16_t> *path
     );
-
-    /** Anything that needs to be done at the end. */
-    [[maybe_unused]] void OnFrameFinished();
-
-    /** Saves current state { nextFrameId, nextShapeId, earliestFrameId }
-     * Don't save paths as variables in the constructor! */
-    [[maybe_unused]] void SaveState();
 };
 
 #endif //VIS_VISUAL_LTM_H

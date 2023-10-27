@@ -7,7 +7,7 @@ class Subconscious {
 public:
     VisualLTM *vis;
 
-    Subconscious() : vis(new VisualLTM()) {}
+    Subconscious() : vis(nullptr/*new VisualLTM()*/) {}
 
     ~Subconscious() {
         delete vis;

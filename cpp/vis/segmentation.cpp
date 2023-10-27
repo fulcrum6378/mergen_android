@@ -80,6 +80,11 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
             y = stack[last][0], x = stack[last][1], dr = stack[last][2];
             if (dr == 0) {
                 seg.p.push_back((y << 16) | x);
+#if MIN_SEG_SIZE == 1 // add colours in order to compute their mean value later
+                seg.ys += arr[y][x][0];
+                seg.us += arr[y][x][1];
+                seg.vs += arr[y][x][2];
+#endif
                 status[y][x] = seg.id;
                 // left
                 stack[last][2]++;
@@ -255,10 +260,10 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
         // save files for debugging if wanted
         if (debugMode == 11) {
             ofstream arrFile("/data/data/ir.mahdiparastesh.mergen/cache/arr", ios::binary);
-            arrFile.write((char *) &arr, sizeof(arr));
+            arrFile.write(reinterpret_cast<char *>(&arr), sizeof(arr));
             arrFile.close();
             ofstream bstFile("/data/data/ir.mahdiparastesh.mergen/cache/b_status", ios::binary);
-            bstFile.write((char *) &b_status, sizeof(b_status));
+            bstFile.write(reinterpret_cast<char *>(&b_status), sizeof(b_status));
             bstFile.close();
         }
 

@@ -8,7 +8,7 @@
 #include "binary_integers.hpp"
 
 // maximum frames allowed to be present in memory at a time
-#define MAX_FRAMES_STORED 10
+#define MAX_FRAMES_STORED 3
 // forget N frames whenever hit the maximum
 #define FORGET_N_FRAMES 1
 
