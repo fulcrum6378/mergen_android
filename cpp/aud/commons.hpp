@@ -3,7 +3,7 @@
 
 #include <atomic>
 #include <cassert>
-#include <limits> // std::numeric_limits
+#include <limits>
 #include <memory>
 #include <SLES/OpenSLES_Android.h>
 

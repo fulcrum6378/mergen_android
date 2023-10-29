@@ -5,16 +5,14 @@
 #include "aud/microphone.hpp"
 #include "hpt/touchscreen.hpp"
 #include "rew/rewarder.hpp"
-#include "scm/subconscious.hpp"
+#include "scm/perception.hpp"
 #include "vis/camera.hpp"
-#include "vis/perception.hpp"
 
-static Subconscious *scm = nullptr;
+static Perception *scm = nullptr;
 static Rewarder *rew = nullptr;
 
-static Camera *vis1 = nullptr;
-static Perception *vis2 = nullptr;
-static Microphone *aud = nullptr; // temporarily disabled
+static Camera *vis = nullptr;
+static Microphone *aud = nullptr;
 static Touchscreen *hpt = nullptr;
 
 extern "C" JNIEXPORT jlong JNICALL
@@ -27,7 +25,7 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     // ensure that /files/ dir exists
     std::string filesDir = "/data/data/ir.mahdiparastesh.mergen/files/";
     struct stat sb{};
-    for (std::string dirN: {"", "vis"}) {
+    for (std::string dirN: {""/*, "aud"*//*, "vis"*/}) {
         const char *dir = (filesDir + dirN).c_str();
         if (stat(dir, &sb) != 0)
             mkdir(dir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -35,28 +33,27 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
 
     // initialise high-level components
     Manifest::init();
-    scm = new Subconscious();
+    scm = new Perception();
     rew = new Rewarder(env, gMain); // must be declared before the rest
     // ComputeVK().run(state->activity->assetManager);
 
     // initialise low-level components
-    vis2 = new Perception();
-    vis1 = new Camera(vis2->stm, jvm, gMain);
+    vis = new Camera(nullptr, jvm, gMain);
     aud = new Microphone();
     hpt = new Touchscreen(rew);
 
-    return reinterpret_cast<jlong>(vis1);
+    return reinterpret_cast<jlong>(vis);
 }
 
 extern "C" JNIEXPORT jbyte JNICALL
 Java_ir_mahdiparastesh_mergen_Main_start(JNIEnv *, jobject, jbyte debugMode) {
     int8_t ret = 0;
-    /*if (aud) {
+    if (aud) {
         if (!aud->Start()) ret = 1;
     } else ret = 2;
-    if (ret > 0) return ret;*/
-    if (vis1) {
-        if (!vis1->SetRecording(true, debugMode)) ret = 3;
+    if (ret > 0) return ret;
+    if (vis) {
+        if (!vis->SetRecording(true, debugMode)) ret = 3;
     } else ret = 4;
     return ret;
 }
@@ -64,12 +61,12 @@ Java_ir_mahdiparastesh_mergen_Main_start(JNIEnv *, jobject, jbyte debugMode) {
 extern "C" JNIEXPORT jbyte JNICALL
 Java_ir_mahdiparastesh_mergen_Main_stop(JNIEnv *, jobject) {
     int8_t ret = 0;
-    /*if (aud) {
+    if (aud) {
         if (!aud->Stop()) ret = 1;
     } else ret = 2;
-    if (ret > 0) return ret;*/
-    if (vis1) {
-        if (!vis1->SetRecording(false, 0)) ret = 3;
+    if (ret > 0) return ret;
+    if (vis) {
+        if (!vis->SetRecording(false, 0)) ret = 3;
     } else ret = 4;
     return ret;
 }
@@ -78,8 +75,6 @@ extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
     delete aud;
     aud = nullptr;
-    delete vis2;
-    vis2 = nullptr;
 
     delete rew;
     rew = nullptr;
@@ -104,11 +99,11 @@ extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
         JNIEnv *env, jobject, jlong cameraObj, jobject surface, jboolean available) {
     auto *cam = reinterpret_cast<Camera *>(cameraObj);
-    assert(cam == vis1);
+    assert(cam == vis);
     if (available) cam->CreateSession(ANativeWindow_fromSurface(env, surface));
     else { // don't put these in Main.destroy()
         delete cam;
-        vis1 = nullptr;
+        vis = nullptr;
     }
 }
 

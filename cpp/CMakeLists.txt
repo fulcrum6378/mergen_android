@@ -26,14 +26,13 @@ add_library(main SHARED
         rew/rewarder.cpp
         rew/rewarder.hpp
 
-        scm/subconscious.hpp
+        scm/perception.hpp
 
         vis/binary_integers.hpp
         vis/bitmap_stream.hpp
         vis/camera.cpp
         vis/camera.hpp
         vis/colouring.hpp
-        vis/perception.hpp
         vis/segmentation.cpp
         vis/segmentation.hpp
         vis/visual_ltm.cpp

@@ -33,9 +33,9 @@ private:
 public:
     Microphone();
 
-    bool Start(void);
+    bool Start();
 
-    bool Stop(void);
+    bool Stop();
 
     ~Microphone();
 };

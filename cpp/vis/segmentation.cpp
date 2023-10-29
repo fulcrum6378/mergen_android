@@ -224,8 +224,8 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     auto delta5 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
-    // 6. store the segments
-    t0 = chrono::system_clock::now();
+    // 6. store the segments (deprecated)
+    /*t0 = chrono::system_clock::now();
     sort(segments.begin(), segments.end(),
          [](const Segment &a, const Segment &b) { return a.p.size() > b.p.size(); });
     l_ = segments.size();
@@ -238,9 +238,21 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     }
     stm->OnFrameFinished();
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(
+            chrono::system_clock::now() - t0).count();*/
+
+    // 7. track objects and measure their differences
+    t0 = chrono::system_clock::now();
+    sort(segments.begin(), segments.end(),
+         [](const Segment &a, const Segment &b) { return a.p.size() > b.p.size(); });
+    l_ = segments.size();
+    for (uint16_t seg = 0; seg < MAX_SEGS; seg++) {
+        if (seg >= l_) break;
+        // TODO TRANSLATE MyCV/perception/first.py
+    }
+    auto delta6 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
-    // summary: loading + segmentation + dissolution + segment_analysis + tracing + saving
+    // summary: loading + segmentation + dissolution + segment_analysis + tracing + tracking
     LOGI("Delta times: %lld + %lld + %lld + %lld + %lld + %lld => %lld",
          delta1, delta2, delta3, delta4, delta5, delta6,
          delta1 + delta2 + delta3 + delta4 + delta5 + delta6);
