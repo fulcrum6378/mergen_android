@@ -166,9 +166,9 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
             us += col[1];
             vs += col[2];
         }
-        seg.m = new uint8_t[3]{static_cast<uint8_t>(ys / l_),
-                               static_cast<uint8_t>(us / l_),
-                               static_cast<uint8_t>(vs / l_)};
+        seg.m = {static_cast<uint8_t>(ys / l_),
+                 static_cast<uint8_t>(us / l_),
+                 static_cast<uint8_t>(vs / l_)};
 #else
         seg.m = {static_cast<uint8_t>(seg.ys / l_),
                  static_cast<uint8_t>(seg.us / l_),

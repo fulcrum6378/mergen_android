@@ -52,7 +52,7 @@ public:
     [[maybe_unused]] void Insert(
             uint8_t **m, // average colour
             uint16_t *w, uint16_t *h, // width and height
-            uint16_t cx, uint16_t cy, // central points
+            uint16_t cx, uint16_t cy, // central point
             std::unordered_set<uint16_t> *path
     );
 };

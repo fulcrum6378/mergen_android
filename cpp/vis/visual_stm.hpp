@@ -60,7 +60,7 @@ public:
     void Insert(
             std::array<uint8_t, 3> *m, // average colour
             uint16_t *w, uint16_t *h, // width and height
-            uint16_t cx, uint16_t cy, // central points
+            uint16_t cx, uint16_t cy, // central point
             std::unordered_set<SHAPE_POINT_T> *path
     );
 

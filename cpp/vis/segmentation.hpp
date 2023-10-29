@@ -45,8 +45,6 @@ struct Segment {
  * Region Growing 4 (image segmentation)</a>
  * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/tracing/comprehender_rg4.py">
  * Comprehender (image tracing)</a>
- *
- * Dimensions are defined explicitly in order to avoid type-casting complications.
  */
 class Segmentation {
 private:
@@ -54,7 +52,7 @@ private:
     uint8_t arr[H][W][3]{};
     // maps pixels to their Segment IDs
     uint32_t status[H][W]{};
-    // a vector containing all Segments
+    // maps pixels to their status of being border or not
     uint8_t b_status[H][W]{};
     // a vector containing all Segments
     std::vector<Segment> segments;
