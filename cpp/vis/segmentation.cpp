@@ -11,7 +11,7 @@
 using namespace std;
 
 Segmentation::Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal) :
-        jvm_(jvm), main_(main), jmSignal_(jmSignal) {}
+        stm(new VisualSTM), jvm_(jvm), main_(main), jmSignal_(jmSignal) {}
 
 void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMode) {
     locked = true;
@@ -79,9 +79,9 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
             if (dr == 0) {
                 seg.p.push_back((y << 16) | x);
 #if MIN_SEG_SIZE == 1 // add colours in order to compute their mean value later
-                seg.ys += arr[y][x][0];
-                seg.us += arr[y][x][1];
-                seg.vs += arr[y][x][2];
+                seg.ys += arr[y][x][0] * arr[y][x][0];
+                seg.us += arr[y][x][1] * arr[y][x][1];
+                seg.vs += arr[y][x][2] * arr[y][x][2];
 #endif
                 status[y][x] = seg.id;
                 // left
@@ -150,7 +150,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     t0 = chrono::system_clock::now();
     uint32_t l_;
 #if MIN_SEG_SIZE > 1
-    uint8_t *col;
+    array<uint8_t, 3> *col;
     uint64_t ys, us, vs;
 #endif
     bool isFirst;
@@ -161,19 +161,21 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
 #if MIN_SEG_SIZE > 1
         ys = 0, us = 0, vs = 0;
         for (uint32_t p: seg.p) {
-            col = arr[p >> 16][p & 0xFFFF];
-            ys += col[0];
-            us += col[1];
-            vs += col[2];
+            col = reinterpret_cast<array<uint8_t, 3> *>(&arr[p >> 16][p & 0xFFFF]);
+            ys += (*col)[0] * (*col)[0]; // pow(, 2)
+            us += (*col)[1] * (*col)[1];
+            vs += (*col)[2] * (*col)[2];
         }
-        seg.m = {static_cast<uint8_t>(ys / l_),
-                 static_cast<uint8_t>(us / l_),
-                 static_cast<uint8_t>(vs / l_)};
+        seg.m = {static_cast<uint8_t>(sqrt(ys / l_)),
+                 static_cast<uint8_t>(sqrt(us / l_)),
+                 static_cast<uint8_t>(sqrt(vs / l_))};
 #else
-        seg.m = {static_cast<uint8_t>(seg.ys / l_),
-                 static_cast<uint8_t>(seg.us / l_),
-                 static_cast<uint8_t>(seg.vs / l_)};
+        seg.m = {static_cast<uint8_t>(sqrt(seg.ys / l_)),
+                 static_cast<uint8_t>(sqrt(seg.us / l_)),
+                 static_cast<uint8_t>(sqrt(seg.vs / l_))};
 #endif
+        // https://stackoverflow.com/questions/649454/what-is-the-best-way-to-average-two-colors-that-
+        // define-a-linear-gradient
 
         // detect boundaries (min_y, min_x, max_y, max_x)
         isFirst = true;
@@ -224,10 +226,11 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     auto delta5 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
-    // 6. store the segments (deprecated)
-    /*t0 = chrono::system_clock::now();
+    // 6. (save in VisualSTM and) track objects and measure their differences
+    t0 = chrono::system_clock::now();
     sort(segments.begin(), segments.end(),
          [](const Segment &a, const Segment &b) { return a.p.size() > b.p.size(); });
+#if VISUAL_STM // store the segments for debugging
     l_ = segments.size();
     for (uint16_t seg = 0; seg < MAX_SEGS; seg++) {// Segment &seg: segments
         if (seg >= l_) break;
@@ -237,13 +240,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                     &segments[seg].border);
     }
     stm->OnFrameFinished();
-    auto delta6 = chrono::duration_cast<chrono::milliseconds>(
-            chrono::system_clock::now() - t0).count();*/
-
-    // 6. track objects and measure their differences
-    t0 = chrono::system_clock::now();
-    sort(segments.begin(), segments.end(),
-         [](const Segment &a, const Segment &b) { return a.p.size() > b.p.size(); });
+#endif
     float nearest_dist, dist;
     int32_t best;
     l_ = segments.size();
@@ -319,16 +316,18 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
-    // summary: loading + segmentation + dissolution + segment_analysis + tracing + tracking
+    // summary: loading + segmentation + dissolution + segment_analysis + tracing + stm&tracking
     LOGI("Delta times: %lld + %lld + %lld + %lld + %lld + %lld => %lld",
          delta1, delta2, delta3, delta4, delta5, delta6,
          delta1 + delta2 + delta3 + delta4 + delta5 + delta6);
     LOGI("----------------------------------");
 
-    // if recording is over, do the debugging related stuff if wanted...
+    // debugging
     bool singleTime = debugMode > 10 && debugMode <= 20;
     if (!*recording || singleTime) {
-        //stm->SaveState();
+#if VISUAL_STM
+        stm->SaveState();
+#endif
 
         // inform the user that they can close the app safely
         JNIEnv *env;
@@ -355,11 +354,10 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     memset(status, 0, sizeof(status));
     s_index.clear();
     prev_segments = std::move(segments);
+    diff.clear();
     locked = false;
 }
 
-// TODO https://stackoverflow.com/questions/649454/what-is-the-best-way-to-average-two-colors-that-
-// define-a-linear-gradient
 bool Segmentation::CompareColours(uint8_t (*a)[3], uint8_t (*b)[3]) {
     return abs((*a)[0] - (*b)[0]) <= 4 &&
            abs((*a)[1] - (*b)[1]) <= 4 &&
@@ -401,4 +399,6 @@ void Segmentation::SetAsBorder(uint16_t y, uint16_t x) {
     );
 }
 
-Segmentation::~Segmentation() = default;
+Segmentation::~Segmentation() {
+    delete stm;
+}

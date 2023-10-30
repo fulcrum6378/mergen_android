@@ -1,24 +1,19 @@
-#ifndef VIS_VISUAL_LTM_H
-#define VIS_VISUAL_LTM_H
+#ifndef VIS_MEMORY_H
+#define VIS_MEMORY_H
 
 #include <list>
 #include <unordered_map>
 #include <unordered_set>
 
-// maximum frames allowed to be present in memory at a time
-#define MAX_FRAMES_STORED 10
-// forget N frames whenever hit the maximum
-#define FORGET_N_FRAMES 1
-
 /**
- * Visual Long-Term Memory
+ * Visual Memory
  *
  * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/storage/sequence_files_2.py">
  * Sequence Files 2</a>
  */
-class [[maybe_unused]] VisualLTM {
+class [[maybe_unused]] VisMemory {
 private:
-    const std::string dirOut = "/data/data/ir.mahdiparastesh.mergen/files/vis/ltm/";
+    const std::string dirOut = "/data/data/ir.mahdiparastesh.mergen/files/vis/mem/";
     std::string dirShapes = "shapes", dirY = "y", dirU = "u", dirV = "v", dirR = "r";
     // frame ID incrementor | ID of earliest frame which is STILL available in memory
     uint64_t nextFrameId = 0, firstFrameId = 0;
@@ -33,7 +28,7 @@ private:
     [[maybe_unused]] void Forget();
 
     /** Iterates on every ID in a Sequence File. */
-    void IterateIndex(const char *path, void onEach(VisualLTM *, uint16_t));
+    void IterateIndex(const char *path, void onEach(VisMemory *, uint16_t));
 
     /** Reads an entire Sequence File. */
     static std::list<uint16_t> ReadIndex(const char *path);
@@ -46,7 +41,7 @@ private:
     void SaveIndexes(std::unordered_map<INT, std::list<uint16_t>> *indexes, std::string *dir);
 
 public:
-    VisualLTM();
+    VisMemory();
 
     /** Inserts a new shape into memory. */
     [[maybe_unused]] void Insert(
@@ -57,4 +52,4 @@ public:
     );
 };
 
-#endif //VIS_VISUAL_LTM_H
+#endif //VIS_MEMORY_H

@@ -11,9 +11,9 @@
 static Perception *scm = nullptr;
 static Rewarder *rew = nullptr;
 
-static Camera *vis = nullptr;
 static Microphone *aud_in = nullptr;
 static Touchscreen *hpt = nullptr;
+static Camera *vis = nullptr;
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
@@ -25,7 +25,7 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     // ensure that /files/ dir exists
     std::string filesDir = "/data/data/ir.mahdiparastesh.mergen/files/";
     struct stat sb{};
-    for (std::string dirN: {""/*, "aud"*//*, "vis"*/}) {
+    for (std::string dirN: {""/*, "aud"*//*, "hpt"*/, "vis"}) {
         const char *dir = (filesDir + dirN).c_str();
         if (stat(dir, &sb) != 0)
             mkdir(dir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -38,9 +38,9 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     // ComputeVK().run(state->activity->assetManager);
 
     // initialise low-level components
-    vis = new Camera(jvm, gMain);
     aud_in = new Microphone();
     hpt = new Touchscreen(rew);
+    vis = new Camera(jvm, gMain);
 
     return reinterpret_cast<jlong>(vis);
 }
@@ -75,6 +75,8 @@ extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
     delete aud_in;
     aud_in = nullptr;
+    delete hpt;
+    hpt = nullptr;
 
     delete rew;
     rew = nullptr;

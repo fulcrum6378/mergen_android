@@ -33,18 +33,18 @@ add_library(main SHARED
         vis/camera.cpp
         vis/camera.hpp
         vis/colouring.hpp
+        vis/memory.cpp
+        vis/memory.hpp
         vis/segmentation.cpp
         vis/segmentation.hpp
-        vis/visual_ltm.cpp
-        vis/visual_ltm.hpp
         vis/visual_stm.cpp
         vis/visual_stm.hpp
 
-        #vlk/hello_vk.cpp
-        #vlk/hello_vk.h
-        #vlk/global.h
         #vlk/compute_vk.cpp
         #vlk/compute_vk.h
+        #vlk/global.h
+        #vlk/hello_vk.cpp
+        #vlk/hello_vk.h
 )
 
 # For CLion to index the Android NDK headers

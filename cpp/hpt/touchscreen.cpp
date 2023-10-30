@@ -55,4 +55,4 @@ void Touchscreen::CheckForRewards() {
     rew_->SetScore(0, score);
 }
 
-Touchscreen::~Touchscreen() {}
+Touchscreen::~Touchscreen() = default;

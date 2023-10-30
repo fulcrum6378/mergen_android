@@ -12,7 +12,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "binary_integers.hpp"
+#include "visual_stm.hpp"
 
 // height of an image frame
 #define H 1088
@@ -27,6 +27,8 @@
 #define U_RADIUS 10
 #define V_RADIUS 10
 #define R_RADIUS 15
+// debug the results using VisualSTM
+#define VISUAL_STM true
 
 struct Segment {
     // starting from 1
@@ -83,6 +85,9 @@ private:
     // a final map for tracking visual objects and explaining their differences
     std::unordered_map<uint16_t, std::vector<int32_t>> diff;
 
+#if VISUAL_STM
+    VisualSTM *stm;
+#endif
     JavaVM *jvm_;
     jobject main_;
     jmethodID *jmSignal_;

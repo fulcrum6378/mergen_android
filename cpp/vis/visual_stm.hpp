@@ -8,12 +8,13 @@
 #include "binary_integers.hpp"
 
 // maximum frames allowed to be present in memory at a time
-#define MAX_FRAMES_STORED 3
+#define MAX_FRAMES_STORED 5
 // forget N frames whenever hit the maximum
 #define FORGET_N_FRAMES 1
 
 /**
  * Visual Short-Term Memory
+ * deprecated and currently used only for debugging.
  *
  * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/storage/volatile_indices_1.py">
  * Volatile Indices 1</a>
