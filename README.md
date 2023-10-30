@@ -142,7 +142,7 @@ so that I could learn how to implement them in a more difficult and lesser known
 ### Timeline of development
 
 This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
-(updated as of 6402.08.08)
+(updated as of 6402.08.09)
 
 | # | Starting date          | Duration | Active days | %  |     Version      |
 |---|:-----------------------|:---------|:-----------:|:--:|:----------------:|
@@ -153,7 +153,7 @@ This table shows how much I've worked on Mergen and when. The timeline is divide
 | 5 | 2022/07/26, 6401/05/04 | 109 days |     7+8     | 14 |       0.4        |
 | 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    | 32 |       0.4        |
 | 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     | 2  |        -         |
-| 8 | 2023/04/29, 6402/02/09 | 183 days |    69+11    | 44 | 0.4, mycv, linux |
+| 8 | 2023/04/29, 6402/02/09 | 184 days |    70+11    | 44 | 0.4, mycv, linux |
 
 - Periods 1, 2 and 3 include days of researches which are not recorded.
 - Period 5 includes a few days of researching/practicing about/on a new programming language

@@ -8,7 +8,7 @@
 #include "segment.hpp"
 
 // maximum frames allowed to be present in memory at a time
-#define MAX_FRAMES_STORED 5
+#define MAX_FRAMES_STORED 3
 // forget N frames whenever hit the maximum
 #define FORGET_N_FRAMES 1
 
@@ -21,7 +21,7 @@
  * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/storage/sequence_files_2.py">
  * Sequence Files 2</a>
  */
-class [[maybe_unused]] VisualSTM {
+class VisualSTM {
 private:
     const std::string dirOut = "/data/data/ir.mahdiparastesh.mergen/files/vis/stm/";
     std::string dirShapes = "shapes", dirY = "y", dirU = "u", dirV = "v", dirR = "r",
@@ -57,14 +57,8 @@ private:
 public:
     VisualSTM();
 
-    /** Inserts a new shape into memory.
-     * do not use Segment* since it cannot be imported! */
-    [[maybe_unused]] void Insert(
-            std::array<uint8_t, 3> *m, // average colour
-            uint16_t *w, uint16_t *h, uint16_t *r, // width, height and their ratio
-            uint16_t *cx, uint16_t *cy, // central point
-            std::unordered_set<SHAPE_POINT_T> *path
-    );
+    /** Inserts a new shape into memory. */
+    [[maybe_unused]] void Insert(Segment* seg);
 
     /** Anything that needs to be done at the end. */
     [[maybe_unused]] void OnFrameFinished();

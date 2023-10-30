@@ -19,10 +19,10 @@ This component contains the following steps:
 
 #### Other classes and procedural files
 
-- [binary_integers.hpp](binary_integers.hpp) : it defines the type of path points in shapes.
 - [BitmapStream](bitmap_stream.hpp) : it stores image frames in BMP image format for testing in *MyCV*.
 - [Colouring](colouring.hpp) : it makes a very simple effect in the UI of the Android app,
   indicating pleasure (in green) or pain (in red).
+- [segment.hpp](segment.hpp) : it defines struct Segment and the type of path points in shapes.
 - [VisualSTM](visual_stm.cpp) : *Visual Short-Term Memory*; it stores shapes (segments)
   temporarily on a non-volatile (persistent) memory for debugging.
   Translated from *MyCV*'s [**Volatile Indices 1**](

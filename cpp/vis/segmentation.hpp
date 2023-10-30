@@ -1,10 +1,10 @@
 #ifndef VIS_SEGMENTATION_H
 #define VIS_SEGMENTATION_H
 
+#include <array>
 #include <atomic>
 #include <cmath>
 #include <jni.h>
-#include <list>
 #include <map>
 #include <media/NdkImage.h>
 #include <unordered_map>
@@ -18,8 +18,6 @@
 #define H 1088
 // width of an image frame
 #define W 1088
-// minimum allowed number of pixels for a segment to contain
-#define MIN_SEG_SIZE 5
 // maximum allowed segments to be analysed extensively
 #define MAX_SEGS 20
 // radii for searching through Volatile Indices
@@ -37,6 +35,8 @@
  * Region Growing 4 (image segmentation)</a>
  * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/tracing/comprehender_rg4.py">
  * Comprehender (image tracing)</a>
+ * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/perception/tracking.py">
+ * Tracking (object tracking)</a>
  */
 class Segmentation {
 private:

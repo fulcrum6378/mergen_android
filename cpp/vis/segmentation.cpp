@@ -123,7 +123,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
 
     // 3. dissolution
     t0 = chrono::system_clock::now();
-#if MIN_SEG_SIZE > 1
+#if MIN_SEG_SIZE != 1
     uint32_t absorber_i, size_bef = segments.size(), removal = 1;
     Segment *absorber;
     for (int32_t seg = static_cast<int32_t>(size_bef) - 1; seg > -1; seg--)
@@ -149,7 +149,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     // 4. average colours + detect boundaries
     t0 = chrono::system_clock::now();
     uint32_t l_;
-#if MIN_SEG_SIZE > 1
+#if MIN_SEG_SIZE != 1
     array<uint8_t, 3> *col;
     uint64_t ys, us, vs;
 #endif
@@ -158,7 +158,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     for (Segment &seg: segments) {
         // average colours of each segment
         l_ = seg.p.size();
-#if MIN_SEG_SIZE > 1
+#if MIN_SEG_SIZE != 1
         ys = 0, us = 0, vs = 0;
         for (uint32_t p: seg.p) {
             col = reinterpret_cast<array<uint8_t, 3> *>(&arr[p >> 16][p & 0xFFFF]);
@@ -237,8 +237,8 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
         if (sid >= l_) break;
         Segment *seg = &segments[sid];
         seg->ComputeRatioAndCentre();
-#if VISUAL_STM // store the segments for debugging
-        stm->Insert(&seg->m, &seg->w, &seg->h, &seg->r, &seg->cx, &seg->cy, &seg->border);
+#if VISUAL_STM
+        stm->Insert(seg);
 #endif
         if (!prev_segments.empty()) {
             for (uint8_t y_ = seg->m[0] - Y_RADIUS; y_ < seg->m[0] + Y_RADIUS; y_++) {

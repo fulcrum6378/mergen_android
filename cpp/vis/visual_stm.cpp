@@ -107,23 +107,18 @@ void VisualSTM::SaveIndices(map<INT, unordered_set<uint16_t>> *indexes, string *
     }
 }
 
-[[maybe_unused]] void VisualSTM::Insert(
-        array<uint8_t, 3> *m, // average colour
-        uint16_t *w, uint16_t *h, uint16_t *r,  // width, height and their ratio
-        uint16_t *cx, uint16_t *cy, // central points
-        unordered_set<SHAPE_POINT_T> *path
-) {
+[[maybe_unused]] void VisualSTM::Insert(Segment* seg) {
     // put data in a buffer
     uint64_t off = 21;
-    char buf[off + (shape_point_bytes * (*path).size())];
-    memcpy(&buf[0], m, 3); // Mean Colour
-    memcpy(&buf[3], r, 2); // Ratio
+    char buf[off + (shape_point_bytes * seg->border.size())];
+    memcpy(&buf[0], &seg->m, 3); // Mean Colour
+    memcpy(&buf[3], &seg->r, 2); // Ratio
     memcpy(&buf[5], &nextFrameId, 8); // Frame ID
-    memcpy(&buf[13], w, 2); // Width
-    memcpy(&buf[15], h, 2); // Height
-    memcpy(&buf[17], cx, 2); // Centre (X)
-    memcpy(&buf[19], cy, 2); // Centre (Y)
-    for (SHAPE_POINT_T p: *path) {
+    memcpy(&buf[13], &seg->w, 2); // Width
+    memcpy(&buf[15], &seg->h, 2); // Height
+    memcpy(&buf[17], &seg->cx, 2); // Centre (X)
+    memcpy(&buf[19], &seg->cy, 2); // Centre (Y)
+    for (SHAPE_POINT_T p: seg->border) {
         memcpy(&buf[off], &p, shape_point_bytes); // Point {X, Y}
         off += shape_point_bytes;
     }
@@ -134,10 +129,10 @@ void VisualSTM::SaveIndices(map<INT, unordered_set<uint16_t>> *indexes, string *
     shf.close();
 
     // update the volatile indices
-    yi[(*m)[0]].insert(nextShapeId);
-    ui[(*m)[1]].insert(nextShapeId);
-    vi[(*m)[2]].insert(nextShapeId);
-    ri[*r].insert(nextShapeId);
+    yi[seg->m[0]].insert(nextShapeId);
+    ui[seg->m[1]].insert(nextShapeId);
+    vi[seg->m[2]].insert(nextShapeId);
+    ri[seg->r].insert(nextShapeId);
 
     // increment shape ID
     nextShapeId++;

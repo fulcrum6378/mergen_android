@@ -1,6 +1,20 @@
 #ifndef VIS_SEGMENT_H
 #define VIS_SEGMENT_H
 
+#include <array>
+#include <list>
+#include <unordered_set>
+
+// minimum allowed number of pixels for a segment to contain (only 1 or higher)
+#define MIN_SEG_SIZE 5
+
+// Shapes' paths can be saved in 2 ways:      8-bit     16-bit
+#define SHAPE_POINT_T uint32_t             // uint16_t  uint32_t
+static int8_t shape_point_bytes = 4;       // 2,        4
+static uint8_t shape_point_each_bits = 16; // 8,        16
+static float shape_point_max = 65535.0;    // 256.0,    65535.0
+// don't make them compiler-level constants, because of their types.
+
 struct Segment {
     // starting from 1
     uint32_t id;
@@ -23,12 +37,5 @@ struct Segment {
         cy = (min_y + max_y + 1) / 2;
     }
 };
-
-// Shapes' paths can be saved in 2 ways:      8-bit     16-bit
-#define SHAPE_POINT_T uint32_t             // uint16_t  uint32_t
-static int8_t shape_point_bytes = 4;       // 2,        4
-static uint8_t shape_point_each_bits = 16; // 8,        16
-static float shape_point_max = 65535.0;    // 256.0,    65535.0
-// don't make them compiler-level constants, because of their types.
 
 #endif //VIS_SEGMENT_H
