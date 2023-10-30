@@ -28,13 +28,13 @@ add_library(main SHARED
 
         scm/perception.hpp
 
-        vis/binary_integers.hpp
         vis/bitmap_stream.hpp
         vis/camera.cpp
         vis/camera.hpp
         vis/colouring.hpp
         vis/memory.cpp
         vis/memory.hpp
+        vis/segment.hpp
         vis/segmentation.cpp
         vis/segmentation.hpp
         vis/visual_stm.cpp

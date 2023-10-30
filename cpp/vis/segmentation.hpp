@@ -30,29 +30,6 @@
 // debug the results using VisualSTM
 #define VISUAL_STM true
 
-struct Segment {
-    // starting from 1
-    uint32_t id;
-    // pixel coordinates
-    std::list<uint32_t> p;
-#if MIN_SEG_SIZE == 1
-    // sum of colours
-    uint64_t ys, us, vs;
-#endif
-    // average colour
-    std::array<uint8_t, 3> m;
-    // boundaries and dimensions
-    uint16_t min_y, min_x, max_y, max_x, w, h, r, cx, cy;
-    // border pixels
-    std::unordered_set<SHAPE_POINT_T> border;
-
-    void ComputeRatioAndCentre() {
-        r = static_cast<uint16_t>(round((static_cast<float>(w) / static_cast<float>(h)) * 10.0));
-        cx = (min_x + max_x + 1) / 2;
-        cy = (min_y + max_y + 1) / 2;
-    }
-};
-
 /**
  * Image Segmentation, using a Region-Growing method
  *

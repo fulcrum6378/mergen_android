@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 
 #include "../global.hpp"
-#include "binary_integers.hpp"
+#include "segment.hpp"
 #include "memory.hpp"
 
 using namespace std;

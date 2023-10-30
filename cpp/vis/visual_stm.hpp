@@ -5,7 +5,7 @@
 #include <map>
 #include <unordered_set>
 
-#include "binary_integers.hpp"
+#include "segment.hpp"
 
 // maximum frames allowed to be present in memory at a time
 #define MAX_FRAMES_STORED 5
@@ -57,11 +57,12 @@ private:
 public:
     VisualSTM();
 
-    /** Inserts a new shape into memory. */
+    /** Inserts a new shape into memory.
+     * do not use Segment* since it cannot be imported! */
     [[maybe_unused]] void Insert(
             std::array<uint8_t, 3> *m, // average colour
-            uint16_t *w, uint16_t *h, // width and height
-            uint16_t cx, uint16_t cy, // central point
+            uint16_t *w, uint16_t *h, uint16_t *r, // width, height and their ratio
+            uint16_t *cx, uint16_t *cy, // central point
             std::unordered_set<SHAPE_POINT_T> *path
     );
 

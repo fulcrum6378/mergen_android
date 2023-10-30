@@ -230,24 +230,16 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     t0 = chrono::system_clock::now();
     sort(segments.begin(), segments.end(),
          [](const Segment &a, const Segment &b) { return a.p.size() > b.p.size(); });
-#if VISUAL_STM // store the segments for debugging
-    l_ = segments.size();
-    for (uint16_t seg = 0; seg < MAX_SEGS; seg++) {// Segment &seg: segments
-        if (seg >= l_) break;
-        stm->Insert(&segments[seg].m, &segments[seg].w, &segments[seg].h,
-                    (segments[seg].min_x + segments[seg].max_x + 1) / 2, // central point X
-                    (segments[seg].min_y + segments[seg].max_y + 1) / 2, // central point Y
-                    &segments[seg].border);
-    }
-    stm->OnFrameFinished();
-#endif
     float nearest_dist, dist;
     int32_t best;
     l_ = segments.size();
-    for (uint16_t sid = 0; sid < MAX_SEGS; sid++) {
+    for (uint16_t sid = 0; sid < MAX_SEGS; sid++) {// Segment &seg: segments
         if (sid >= l_) break;
         Segment *seg = &segments[sid];
         seg->ComputeRatioAndCentre();
+#if VISUAL_STM // store the segments for debugging
+        stm->Insert(&seg->m, &seg->w, &seg->h, &seg->r, &seg->cx, &seg->cy, &seg->border);
+#endif
         if (!prev_segments.empty()) {
             for (uint8_t y_ = seg->m[0] - Y_RADIUS; y_ < seg->m[0] + Y_RADIUS; y_++) {
                 auto it = yi.find(y_);
@@ -313,6 +305,9 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     ui = std::move(_ui);
     vi = std::move(_vi);
     ri = std::move(_ri);
+#if VISUAL_STM
+    stm->OnFrameFinished();
+#endif
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 

@@ -60,9 +60,6 @@ VisualSTM::VisualSTM() {
     }
 }
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "UnusedParameter" // true negative!
-
 template<class INT>
 void VisualSTM::ReadIndices(map<INT, unordered_set<uint16_t>> *indexes, string *dir) {
     struct stat sb{};
@@ -110,26 +107,22 @@ void VisualSTM::SaveIndices(map<INT, unordered_set<uint16_t>> *indexes, string *
     }
 }
 
-#pragma clang diagnostic pop
-
 [[maybe_unused]] void VisualSTM::Insert(
         array<uint8_t, 3> *m, // average colour
-        uint16_t *w, uint16_t *h,  // width and height
-        uint16_t cx, uint16_t cy, // central points
+        uint16_t *w, uint16_t *h, uint16_t *r,  // width, height and their ratio
+        uint16_t *cx, uint16_t *cy, // central points
         unordered_set<SHAPE_POINT_T> *path
 ) {
-    auto r = static_cast<uint16_t>(round((static_cast<float>(*w) / static_cast<float>(*h)) * 10.0));
-
     // put data in a buffer
     uint64_t off = 21;
     char buf[off + (shape_point_bytes * (*path).size())];
     memcpy(&buf[0], m, 3); // Mean Colour
-    memcpy(&buf[3], &r, 2); // Ratio
+    memcpy(&buf[3], r, 2); // Ratio
     memcpy(&buf[5], &nextFrameId, 8); // Frame ID
     memcpy(&buf[13], w, 2); // Width
     memcpy(&buf[15], h, 2); // Height
-    memcpy(&buf[17], &cx, 2); // Centre (X)
-    memcpy(&buf[19], &cy, 2); // Centre (Y)
+    memcpy(&buf[17], cx, 2); // Centre (X)
+    memcpy(&buf[19], cy, 2); // Centre (Y)
     for (SHAPE_POINT_T p: *path) {
         memcpy(&buf[off], &p, shape_point_bytes); // Point {X, Y}
         off += shape_point_bytes;
@@ -144,7 +137,7 @@ void VisualSTM::SaveIndices(map<INT, unordered_set<uint16_t>> *indexes, string *
     yi[(*m)[0]].insert(nextShapeId);
     ui[(*m)[1]].insert(nextShapeId);
     vi[(*m)[2]].insert(nextShapeId);
-    ri[r].insert(nextShapeId);
+    ri[*r].insert(nextShapeId);
 
     // increment shape ID
     nextShapeId++;
