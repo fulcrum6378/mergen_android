@@ -112,7 +112,7 @@ void VisualSTM::SaveIndices(map<INT, unordered_set<uint16_t>> *indexes, string *
 
 #pragma clang diagnostic pop
 
-void VisualSTM::Insert(
+[[maybe_unused]] void VisualSTM::Insert(
         array<uint8_t, 3> *m, // average colour
         uint16_t *w, uint16_t *h,  // width and height
         uint16_t cx, uint16_t cy, // central points
@@ -151,7 +151,7 @@ void VisualSTM::Insert(
     if (nextShapeId > 65535) nextShapeId = 0;
 }
 
-void VisualSTM::OnFrameFinished() {
+[[maybe_unused]] void VisualSTM::OnFrameFinished() {
     // index this frame
     fi[nextFrameId] = pair(firstShapeId, nextShapeId);
     firstShapeId = nextShapeId;
@@ -197,7 +197,7 @@ void VisualSTM::Forget() {
     framesStored -= FORGET_N_FRAMES;
 }
 
-void VisualSTM::SaveState() {
+[[maybe_unused]] void VisualSTM::SaveState() {
     // replace volatile indices
     DeleteIndices(&dirY);
     DeleteIndices(&dirU);

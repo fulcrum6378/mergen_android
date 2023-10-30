@@ -3,14 +3,15 @@
 #include <cstring>
 #include <fstream>
 #include <ios>
+#include <utility>
 
 #include "../global.hpp"
 #include "segmentation.hpp"
 
 using namespace std;
 
-Segmentation::Segmentation(VisualSTM *stm, JavaVM *jvm, jobject main, jmethodID *jmSignal) :
-        stm(stm), jvm_(jvm), main_(main), jmSignal_(jmSignal) {}
+Segmentation::Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal) :
+        jvm_(jvm), main_(main), jmSignal_(jmSignal) {}
 
 void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMode) {
     locked = true;
@@ -55,10 +56,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     int64_t last; // must be signed
     uint32_t nextSeg = 1;
     bool foundSthToAnalyse = true;
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "ConstantConditionsOC" // false positive
     while (foundSthToAnalyse) {
-#pragma clang diagnostic pop
         foundSthToAnalyse = false;
         for (uint16_t y = thisY; y < H; y++) {
             for (uint16_t x = (y == thisY) ? thisX : 0; x < W; x++)
@@ -102,14 +100,16 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
             }
             if (dr <= 2) { // right
                 stack[last][2]++;
-                if (x < (W - 1) && status[y][x + 1] == 0 && CompareColours(&arr[y][x], &arr[y][x + 1])) {
+                if (x < (W - 1) && status[y][x + 1] == 0 &&
+                    CompareColours(&arr[y][x], &arr[y][x + 1])) {
                     stack.push_back({y, static_cast<uint16_t>(x + 1), 0});
                     continue;
                 }
             }
             if (dr <= 3) { // bottom
                 stack[last][2]++;
-                if (y < (H - 1) && status[y + 1][x] == 0 && CompareColours(&arr[y][x], &arr[y + 1][x])) {
+                if (y < (H - 1) && status[y + 1][x] == 0 &&
+                    CompareColours(&arr[y][x], &arr[y + 1][x])) {
                     stack.push_back({static_cast<uint16_t>(y + 1), x, 0});
                     continue;
                 }
@@ -240,15 +240,82 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();*/
 
-    // 7. track objects and measure their differences
+    // 6. track objects and measure their differences
     t0 = chrono::system_clock::now();
     sort(segments.begin(), segments.end(),
          [](const Segment &a, const Segment &b) { return a.p.size() > b.p.size(); });
+    float nearest_dist, dist;
+    int32_t best;
     l_ = segments.size();
-    for (uint16_t seg = 0; seg < MAX_SEGS; seg++) {
-        if (seg >= l_) break;
-        // TODO TRANSLATE MyCV/perception/first.py
+    for (uint16_t sid = 0; sid < MAX_SEGS; sid++) {
+        if (sid >= l_) break;
+        Segment *seg = &segments[sid];
+        seg->ComputeRatioAndCentre();
+        if (!prev_segments.empty()) {
+            for (uint8_t y_ = seg->m[0] - Y_RADIUS; y_ < seg->m[0] + Y_RADIUS; y_++) {
+                auto it = yi.find(y_);
+                if (it == yi.end()) continue;
+                for (uint16_t i: (*it).second) a_y.insert(i);
+            }
+            for (uint8_t u_ = seg->m[1] - U_RADIUS; u_ < seg->m[1] + U_RADIUS; u_++) {
+                auto it = ui.find(u_);
+                if (it == ui.end()) continue;
+                for (uint16_t i: (*it).second) a_u.insert(i);
+            }
+            for (uint8_t v_ = seg->m[2] - V_RADIUS; v_ < seg->m[2] + V_RADIUS; v_++) {
+                auto it = vi.find(v_);
+                if (it == vi.end()) continue;
+                for (uint16_t i: (*it).second) a_v.insert(i);
+            }
+            for (uint16_t r_ = seg->r - R_RADIUS; r_ < seg->r + R_RADIUS; r_++) {
+                auto it = ri.find(r_);
+                if (it == ri.end()) continue;
+                for (uint16_t i: (*it).second) a_r.insert(i);
+            }
+            best = -1;
+            for (uint16_t can: a_y)
+                if (a_u.find(can) != a_u.end() && a_v.find(can) != a_v.end()
+                    && a_r.find(can) != a_r.end()) {
+                    Segment *prev_seg = &prev_segments[can];
+                    dist = static_cast<float>(sqrt(pow(seg->cx - prev_seg->cx, 2) +
+                                                   pow(seg->cy - prev_seg->cy, 2)));
+                    if (best == -1) { // NOLINT(bugprone-branch-clone)
+                        nearest_dist = dist;
+                        best = static_cast<int32_t>(can);
+                    } else if (dist < nearest_dist) {
+                        nearest_dist = dist;
+                        best = static_cast<int32_t>(can);
+                    } // else {don't set `best` here}
+                }
+            a_y.clear();
+            a_u.clear();
+            a_v.clear();
+            a_r.clear();
+            if (best != -1) {
+                Segment *prev_seg = &prev_segments[best];
+                diff[sid] = {
+                        best, static_cast<int32_t>(nearest_dist),
+                        prev_seg->w - seg->w, prev_seg->h - seg->h, prev_seg->r - seg->r,
+                        prev_seg->m[0] - seg->m[0], prev_seg->m[1] - seg->m[1],
+                        prev_seg->m[2] - seg->m[2],
+                };
+                /*LOGI("%u->%d : %d, %d, %d, %d, %d, %d, %d", sid, diff[sid][0], diff[sid][1],
+                     diff[sid][2], diff[sid][3], diff[sid][4],
+                     diff[sid][5], diff[sid][6], diff[sid][7]);*/
+            }/* else
+                LOGI("Segment %u was lost", sid);*/
+        }
+        // index segments of the current frame
+        _yi[seg->m[0]].insert(sid);
+        _ui[seg->m[1]].insert(sid);
+        _vi[seg->m[2]].insert(sid);
+        _ri[seg->r].insert(sid);
     }
+    // replace indexes of the previous frame with the current one
+    yi = std::move(_yi);
+    ui = std::move(_ui);
+    vi = std::move(_vi);
+    ri = std::move(_ri);
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
@@ -258,10 +325,10 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
          delta1 + delta2 + delta3 + delta4 + delta5 + delta6);
     LOGI("----------------------------------");
 
-    // if recording is over, save state of VisualSTM and...
+    // if recording is over, do the debugging related stuff if wanted...
     bool singleTime = debugMode > 10 && debugMode <= 20;
     if (!*recording || singleTime) {
-        stm->SaveState();
+        //stm->SaveState();
 
         // inform the user that they can close the app safely
         JNIEnv *env;
@@ -287,17 +354,12 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     // clear data and unlock the frame
     memset(status, 0, sizeof(status));
     s_index.clear();
-    segments.clear();
+    prev_segments = std::move(segments);
     locked = false;
 }
 
-/**
- * - `abs()` is much more efficient than `256 - static_cast<uint8_t>(a - b)`!
- * - There's no need for `static_cast<int16_t>`.
- * - `https://stackoverflow.com/questions/649454/what-is-the-best-way-to-average-two-colors-
- * that-define-a-linear-gradient` doesn't make a (big) difference.
- * - Geometric mean didn't work correctly (0,0,0).
- */
+// TODO https://stackoverflow.com/questions/649454/what-is-the-best-way-to-average-two-colors-that-
+// define-a-linear-gradient
 bool Segmentation::CompareColours(uint8_t (*a)[3], uint8_t (*b)[3]) {
     return abs((*a)[0] - (*b)[0]) <= 4 &&
            abs((*a)[1] - (*b)[1]) <= 4 &&

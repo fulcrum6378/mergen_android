@@ -8,7 +8,7 @@
  * its return value will be needed for Main::getCameraDimensions, then we should have some
  * configurations done and then we'll create a camera session.
  */
-Camera::Camera(VisualSTM *stm, JavaVM *jvm, jobject main) :
+Camera::Camera(JavaVM *jvm, jobject main) :
         jvm_(jvm), main_(main), captureSessionState_(CaptureSessionState::MAX_STATE) {
 
     // initialise ACameraManager and get ACameraDevice instances
@@ -74,7 +74,7 @@ Camera::Camera(VisualSTM *stm, JavaVM *jvm, jobject main) :
     jvm_->GetEnv((void **) &env, JNI_VERSION_1_6);
     jmSignal_ = env->GetMethodID(
             env->FindClass("ir/mahdiparastesh/mergen/Main"), "signal", "(B)V");
-    segmentation_ = new Segmentation(stm, jvm, main, &jmSignal_);
+    segmentation_ = new Segmentation(jvm, main, &jmSignal_);
 }
 
 /**

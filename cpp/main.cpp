@@ -12,7 +12,7 @@ static Perception *scm = nullptr;
 static Rewarder *rew = nullptr;
 
 static Camera *vis = nullptr;
-static Microphone *aud = nullptr;
+static Microphone *aud_in = nullptr;
 static Touchscreen *hpt = nullptr;
 
 extern "C" JNIEXPORT jlong JNICALL
@@ -38,8 +38,8 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     // ComputeVK().run(state->activity->assetManager);
 
     // initialise low-level components
-    vis = new Camera(nullptr, jvm, gMain);
-    aud = new Microphone();
+    vis = new Camera(jvm, gMain);
+    aud_in = new Microphone();
     hpt = new Touchscreen(rew);
 
     return reinterpret_cast<jlong>(vis);
@@ -48,8 +48,8 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
 extern "C" JNIEXPORT jbyte JNICALL
 Java_ir_mahdiparastesh_mergen_Main_start(JNIEnv *, jobject, jbyte debugMode) {
     int8_t ret = 0;
-    if (aud) {
-        if (!aud->Start()) ret = 1;
+    if (aud_in) {
+        if (!aud_in->Start()) ret = 1;
     } else ret = 2;
     if (ret > 0) return ret;
     if (vis) {
@@ -61,8 +61,8 @@ Java_ir_mahdiparastesh_mergen_Main_start(JNIEnv *, jobject, jbyte debugMode) {
 extern "C" JNIEXPORT jbyte JNICALL
 Java_ir_mahdiparastesh_mergen_Main_stop(JNIEnv *, jobject) {
     int8_t ret = 0;
-    if (aud) {
-        if (!aud->Stop()) ret = 1;
+    if (aud_in) {
+        if (!aud_in->Stop()) ret = 1;
     } else ret = 2;
     if (ret > 0) return ret;
     if (vis) {
@@ -73,8 +73,8 @@ Java_ir_mahdiparastesh_mergen_Main_stop(JNIEnv *, jobject) {
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
-    delete aud;
-    aud = nullptr;
+    delete aud_in;
+    aud_in = nullptr;
 
     delete rew;
     rew = nullptr;

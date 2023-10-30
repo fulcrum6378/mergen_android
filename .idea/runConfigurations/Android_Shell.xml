@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Android Shell" type="PowerShellRunType" factoryName="PowerShell" scriptUrl="$PROJECT_DIR$/android.ps1" workingDirectory="C:\Users\fulcr" executablePath="$PROJECT_DIR$/../../../../WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe">
+  <configuration default="false" name="Android Shell" type="PowerShellRunType" factoryName="PowerShell" scriptUrl="$PROJECT_DIR$/android.ps1" workingDirectory="$PROJECT_DIR$/" executablePath="C:/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe">
     <envs />
     <method v="2" />
   </configuration>

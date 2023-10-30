@@ -20,7 +20,7 @@
  * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/storage/sequence_files_2.py">
  * Sequence Files 2</a>
  */
-class VisualSTM {
+class [[maybe_unused]] VisualSTM {
 private:
     const std::string dirOut = "/data/data/ir.mahdiparastesh.mergen/files/vis/stm/";
     std::string dirShapes = "shapes", dirY = "y", dirU = "u", dirV = "v", dirR = "r",
@@ -33,9 +33,9 @@ private:
     uint16_t framesStored = 0;
     // frame index (8-bit)
     std::map<uint64_t, std::pair<uint16_t, uint16_t>> fi;
-    // 1-bit volatile indices
+    // 8-bit volatile indices
     std::map<uint8_t, std::unordered_set<uint16_t>> yi, ui, vi;
-    // 2-bit volatile indices
+    // 16-bit volatile indices
     std::map<uint16_t, std::unordered_set<uint16_t>> ri;
 
     /** Forgets N of oldest frames. */
@@ -57,7 +57,7 @@ public:
     VisualSTM();
 
     /** Inserts a new shape into memory. */
-    void Insert(
+    [[maybe_unused]] void Insert(
             std::array<uint8_t, 3> *m, // average colour
             uint16_t *w, uint16_t *h, // width and height
             uint16_t cx, uint16_t cy, // central point
@@ -65,11 +65,11 @@ public:
     );
 
     /** Anything that needs to be done at the end. */
-    void OnFrameFinished();
+    [[maybe_unused]] void OnFrameFinished();
 
     /** Saves current state { nextFrameId, firstFrameId, nextShapeId }
      * Don't save paths as variables in the constructor! */
-    void SaveState();
+    [[maybe_unused]] void SaveState();
 };
 
 #endif //VIS_VISUAL_STM_H

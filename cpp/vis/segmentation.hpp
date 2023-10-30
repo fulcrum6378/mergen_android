@@ -2,24 +2,31 @@
 #define VIS_SEGMENTATION_H
 
 #include <atomic>
+#include <cmath>
 #include <jni.h>
 #include <list>
+#include <map>
 #include <media/NdkImage.h>
 #include <unordered_map>
 #include <utility>
 #include <unordered_set>
 #include <vector>
 
-#include "visual_stm.hpp"
+#include "binary_integers.hpp"
 
 // height of an image frame
 #define H 1088
 // width of an image frame
 #define W 1088
 // minimum allowed number of pixels for a segment to contain
-#define MIN_SEG_SIZE 1
-// maximum allowed segments to be stored in the short-term memory
-#define MAX_SEGS 10
+#define MIN_SEG_SIZE 5
+// maximum allowed segments to be analysed extensively
+#define MAX_SEGS 20
+// radii for searching through Volatile Indices
+#define Y_RADIUS 15
+#define U_RADIUS 10
+#define V_RADIUS 10
+#define R_RADIUS 15
 
 struct Segment {
     // starting from 1
@@ -33,9 +40,15 @@ struct Segment {
     // average colour
     std::array<uint8_t, 3> m;
     // boundaries and dimensions
-    uint16_t min_y, min_x, max_y, max_x, w, h;
+    uint16_t min_y, min_x, max_y, max_x, w, h, r, cx, cy;
     // border pixels
     std::unordered_set<SHAPE_POINT_T> border;
+
+    void ComputeRatioAndCentre() {
+        r = static_cast<uint16_t>(round((static_cast<float>(w) / static_cast<float>(h)) * 10.0));
+        cx = (min_x + max_x + 1) / 2;
+        cy = (min_y + max_y + 1) / 2;
+    }
 };
 
 /**
@@ -54,14 +67,21 @@ private:
     uint32_t status[H][W]{};
     // maps pixels to their status of being border or not
     uint8_t b_status[H][W]{};
-    // a vector containing all Segments
-    std::vector<Segment> segments;
+    // a vector containing all Segments of { current frame | previous frame }
+    std::vector<Segment> segments, prev_segments;
     // simulates recursive programming (vector is always better for it than list!)
     std::vector<std::array<uint16_t, 3>> stack;
     // maps IDs of Segments to their pointers
     std::unordered_map<uint32_t, Segment *> s_index;
-    // visual short-term memory (output)
-    VisualSTM *stm;
+
+    // 8-bit volatile indices (those preceding with `_` temporarily contain indices of current frame)
+    std::map<uint8_t, std::unordered_set<uint16_t>> yi, _yi, ui, _ui, vi, _vi;
+    // 16-bit volatile indices
+    std::map<uint16_t, std::unordered_set<uint16_t>> ri, _ri;
+    // helper containers for finding nearest candidates while object tracking
+    std::unordered_set<uint16_t> a_y, a_u, a_v, a_r;
+    // a final map for tracking visual objects and explaining their differences
+    std::unordered_map<uint16_t, std::vector<int32_t>> diff;
 
     JavaVM *jvm_;
     jobject main_;
@@ -80,7 +100,7 @@ private:
 public:
     std::atomic<bool> locked = false;
 
-    Segmentation(VisualSTM *stm, JavaVM *jvm, jobject main, jmethodID *jmSignal);
+    Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal);
 
     /** Main processing function of Segmentation which execute all the necessary jobs.
      * do NOT refer to `debugMode_` in Camera. */
