@@ -1,9 +1,7 @@
 #include <chrono>
-#include <cmath>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
-#include <iterator>
 #include <sys/stat.h>
 
 #include "../global.hpp"

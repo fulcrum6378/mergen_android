@@ -3,12 +3,10 @@
 
 #include <array>
 #include <atomic>
-#include <cmath>
 #include <jni.h>
 #include <map>
 #include <media/NdkImage.h>
 #include <unordered_map>
-#include <utility>
 #include <unordered_set>
 #include <vector>
 

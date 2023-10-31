@@ -26,9 +26,9 @@ private:
     const std::string dirOut = "/data/data/ir.mahdiparastesh.mergen/files/vis/stm/";
     std::string dirShapes = "shapes", dirY = "y", dirU = "u", dirV = "v", dirR = "r",
             framesFile = "frames", numbersFile = "numbers";
-    // frame ID incrementor | ID of earliest frame which is STILL available in memory
+    // frame ID incrementer | ID of earliest frame which is STILL available in memory
     uint64_t nextFrameId = 0, firstFrameId = 0;
-    // shape ID incrementor | ID of first shape in THIS FRAME
+    // shape ID incrementer | ID of first shape in THIS FRAME
     uint16_t nextShapeId = 0, firstShapeId = 0;
     // total number of frames available in memory
     uint16_t framesStored = 0;
@@ -58,7 +58,7 @@ public:
     VisualSTM();
 
     /** Inserts a new shape into memory. */
-    [[maybe_unused]] void Insert(Segment* seg);
+    [[maybe_unused]] void Insert(Segment *seg);
 
     /** Anything that needs to be done at the end. */
     [[maybe_unused]] void OnFrameFinished();

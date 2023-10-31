@@ -1,10 +1,8 @@
-#include <cmath>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <sys/stat.h>
 
-#include "../global.hpp"
 #include "visual_stm.hpp"
 
 using namespace std;
@@ -88,6 +86,9 @@ void VisualSTM::DeleteIndices(string *dir) {
         remove(reinterpret_cast<const char *>(ent.path().c_str()));
 }
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "UnusedParameter" // false positive
+
 template<class INT>
 void VisualSTM::SaveIndices(map<INT, unordered_set<uint16_t>> *indexes, string *dir) {
     string path;
@@ -107,7 +108,9 @@ void VisualSTM::SaveIndices(map<INT, unordered_set<uint16_t>> *indexes, string *
     }
 }
 
-[[maybe_unused]] void VisualSTM::Insert(Segment* seg) {
+#pragma clang diagnostic pop
+
+[[maybe_unused]] void VisualSTM::Insert(Segment *seg) {
     // put data in a buffer
     uint64_t off = 21;
     char buf[off + (shape_point_bytes * seg->border.size())];

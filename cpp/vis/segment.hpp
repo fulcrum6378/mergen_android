@@ -2,6 +2,7 @@
 #define VIS_SEGMENT_H
 
 #include <array>
+#include <cmath>
 #include <list>
 #include <unordered_set>
 
@@ -26,7 +27,7 @@ struct Segment {
 #endif
     // average colour
     std::array<uint8_t, 3> m;
-    // boundaries and dimensions
+    // boundaries, dimensions, their ratio and coordinates of central point
     uint16_t min_y, min_x, max_y, max_x, w, h, r, cx, cy;
     // border pixels
     std::unordered_set<SHAPE_POINT_T> border;

@@ -1,9 +1,9 @@
 #include <algorithm> // std::sort
 #include <chrono>
+#include <cmath>
 #include <cstring>
 #include <fstream>
 #include <ios>
-#include <utility>
 
 #include "../global.hpp"
 #include "segmentation.hpp"
@@ -52,9 +52,9 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
 
     // 2. segmentation
     t0 = chrono::system_clock::now();
+    uint32_t nextSeg = 1;
     uint16_t thisY = 0, thisX = 0;
     int64_t last; // must be signed
-    uint32_t nextSeg = 1;
     bool foundSthToAnalyse = true;
     while (foundSthToAnalyse) {
         foundSthToAnalyse = false;
@@ -100,16 +100,14 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
             }
             if (dr <= 2) { // right
                 stack[last][2]++;
-                if (x < (W - 1) && status[y][x + 1] == 0 &&
-                    CompareColours(&arr[y][x], &arr[y][x + 1])) {
+                if (x < (W - 1) && status[y][x + 1] == 0 && CompareColours(&arr[y][x], &arr[y][x + 1])) {
                     stack.push_back({y, static_cast<uint16_t>(x + 1), 0});
                     continue;
                 }
             }
             if (dr <= 3) { // bottom
                 stack[last][2]++;
-                if (y < (H - 1) && status[y + 1][x] == 0 &&
-                    CompareColours(&arr[y][x], &arr[y + 1][x])) {
+                if (y < (H - 1) && status[y + 1][x] == 0 && CompareColours(&arr[y][x], &arr[y + 1][x])) {
                     stack.push_back({static_cast<uint16_t>(y + 1), x, 0});
                     continue;
                 }
@@ -347,6 +345,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
 
     // clear data and unlock the frame
     memset(status, 0, sizeof(status));
+    memset(b_status, 0, sizeof(b_status));
     s_index.clear();
     prev_segments = std::move(segments);
     diff.clear();
@@ -386,12 +385,12 @@ void Segmentation::SetAsBorder(uint16_t y, uint16_t x) {
     b_status[y][x] |= 1;
     Segment *seg = s_index[status[y][x]];
     seg->border.insert(
-            (static_cast<SHAPE_POINT_T>((shape_point_max / static_cast<float>(seg->w)) *
-                                        static_cast<float>(x - seg->min_x)) // fractional X
+            (static_cast<SHAPE_POINT_T>((shape_point_max / static_cast<float>(seg->h)) *
+                                        static_cast<float>(y - seg->min_y)) // fractional Y
                     << shape_point_each_bits) |
-            static_cast<SHAPE_POINT_T>((shape_point_max / static_cast<float>(seg->h)) *
-                                       static_cast<float>(y - seg->min_y))  // fractional Y
-    );
+            static_cast<SHAPE_POINT_T>((shape_point_max / static_cast<float>(seg->w)) *
+                                       static_cast<float>(x - seg->min_x))  // fractional X
+    ); // they get reversed in while writing to a file
 }
 
 Segmentation::~Segmentation() {

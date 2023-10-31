@@ -15,9 +15,9 @@ class [[maybe_unused]] VisMemory {
 private:
     const std::string dirOut = "/data/data/ir.mahdiparastesh.mergen/files/vis/mem/";
     std::string dirShapes = "shapes", dirY = "y", dirU = "u", dirV = "v", dirR = "r";
-    // frame ID incrementor | ID of earliest frame which is STILL available in memory
+    // frame ID incrementer | ID of earliest frame which is STILL available in memory
     uint64_t nextFrameId = 0, firstFrameId = 0;
-    // shape ID incrementor
+    // shape ID incrementer
     uint16_t nextShapeId = 0;
     // helper maps for altering 'uint8_t' indexes
     std::unordered_map<uint8_t, std::list<uint16_t>> ym, um, vm;
