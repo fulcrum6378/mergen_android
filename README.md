@@ -48,7 +48,7 @@ Mergen is intended to have 2 aspects:
 | [**HPT**](cpp/hpt) | controlling **Touch** (haptic) inputs       |
 | [**MOV**](cpp/mov) | controlling **Movements**                   |
 | [**REW**](cpp/rew) | **Reward System** (reinforcement learning)  |
-| [**SCM**](cpp/scm) | Simulation of the **Subconscious Mind**     |
+| [**SCM**](cpp/scm) | simulation of the **Subconscious Mind**     |
 | [**VIS**](cpp/vis) | controlling **Visual** inputs               |
 
 - [VLK](cpp/vlk) : contains two practices of the *Vulkan* API and might be removed later.
@@ -102,7 +102,7 @@ I preferred a more advanced method in Mergen III, see below.
 #### Mergen III (v0.3)
 
 The third version of Mergen, started at 29 March 2021 after many researches, had the same server-client model,
-this time *temporarily* on a [**Local Area Network (LAN)**](https://en.wikipedia.org/wiki/Local_area_network),
+this time "temporarily" on a [**Local Area Network (LAN)**](https://en.wikipedia.org/wiki/Local_area_network),
 instead of a server thousands of kilometres away!
 
 Since my smartphone couldn't handle such heavy jobs and my laptop couldn't move,
@@ -138,22 +138,23 @@ with a CPU of Intel Core i7!!
 At 16 October 2023, I started another subproject, called it [**MergenLinux**](
 https://github.com/fulcrum6378/mergen_linux), which runs Mergen on the Linux OS,
 so that I could learn how to implement them in a more difficult and lesser known OS, such as *FreeBSD*.
+But ironically, with few modifications it could run it on FreeBSD at 1 November!
 
 ### Timeline of development
 
 This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
-(updated as of 6402.08.09)
+(updated as of 6402.08.10)
 
-| # | Starting date          | Duration | Active days | %  |     Version      |
-|---|:-----------------------|:---------|:-----------:|:--:|:----------------:|
-| 1 | 2020/12/13, 6399/09/23 | 43 days  |     20      | 47 |     0.1..0.2     |
-| 2 | 2021/01/25, 6399/11/06 | 264 days |     ~33     | 13 |     0.2..0.3     |
-| 3 | 2021/10/16, 6400/07/24 | 145 days |     18      | 12 |       0.3        |
-| 4 | 2022/03/10, 6400/12/19 | 137 days |      0      | 0  |        -         |
-| 5 | 2022/07/26, 6401/05/04 | 109 days |     7+8     | 14 |       0.4        |
-| 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    | 32 |       0.4        |
-| 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     | 2  |        -         |
-| 8 | 2023/04/29, 6402/02/09 | 184 days |    70+11    | 44 | 0.4, mycv, linux |
+| # | Starting date          | Duration | Active days | %  |        Version         |
+|---|:-----------------------|:---------|:-----------:|:--:|:----------------------:|
+| 1 | 2020/12/13, 6399/09/23 | 43 days  |     20      | 47 |  0.1..0.2, pronouncer  |
+| 2 | 2021/01/25, 6399/11/06 | 264 days |     ~33     | 13 |          0.3           |
+| 3 | 2021/10/16, 6400/07/24 | 145 days |     18      | 12 |          0.3           |
+| 4 | 2022/03/10, 6400/12/19 | 137 days |      0      | 0  |           -            |
+| 5 | 2022/07/26, 6401/05/04 | 109 days |     7+8     | 14 |          0.4           |
+| 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    | 32 |          0.4           |
+| 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     | 2  |           -            |
+| 8 | 2023/04/29, 6402/02/09 | 185 days |    71+11    | 44 | 0.4, mycv, linux, echo |
 
 - Periods 1, 2 and 3 include days of researches which are not recorded.
 - Period 5 includes a few days of researching/practicing about/on a new programming language

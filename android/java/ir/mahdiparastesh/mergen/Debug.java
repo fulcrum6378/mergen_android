@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+/** @noinspection ResultOfMethodCallIgnored */
 public class Debug extends Thread {
     boolean active = true, recorded = true;
     Main c;
@@ -65,6 +66,17 @@ public class Debug extends Thread {
                     } else out.write(1);
                     break;
 
+                case 10: // wipe visual STM
+                    truncateDir(new File(c.getFilesDir(), "vis/stm/shapes"));
+                    truncateDir(new File(c.getFilesDir(), "vis/stm/y"));
+                    truncateDir(new File(c.getFilesDir(), "vis/stm/u"));
+                    truncateDir(new File(c.getFilesDir(), "vis/stm/v"));
+                    truncateDir(new File(c.getFilesDir(), "vis/stm/r"));
+                    new File(c.getFilesDir(), "vis/stm/frames").delete();
+                    new File(c.getFilesDir(), "vis/stm/numbers").delete();
+                    out.write(0);
+                    break;
+
                 case 11: // send `arr` and `b_status`
                     Files.copy(new File(c.getCacheDir(), "arr").toPath(), out);
                     Files.copy(new File(c.getCacheDir(), "b_status").toPath(), out);
@@ -86,14 +98,14 @@ public class Debug extends Thread {
                     stm.flush();
                     stm.close(); // both necessary!
                     break;
-                case 22: // send 'ltm.zip'
+                case 22: // send 'mem.zip'
                     out.write(0);
                     ZipOutputStream ltm = new ZipOutputStream(out);
-                    addFileToZip(ltm, new File(c.getFilesDir(), "vis/ltm/shapes"), null);
-                    addFileToZip(ltm, new File(c.getFilesDir(), "vis/ltm/y"), null);
-                    addFileToZip(ltm, new File(c.getFilesDir(), "vis/ltm/u"), null);
-                    addFileToZip(ltm, new File(c.getFilesDir(), "vis/ltm/v"), null);
-                    addFileToZip(ltm, new File(c.getFilesDir(), "vis/ltm/r"), null);
+                    addFileToZip(ltm, new File(c.getFilesDir(), "vis/mem/shapes"), null);
+                    addFileToZip(ltm, new File(c.getFilesDir(), "vis/mem/y"), null);
+                    addFileToZip(ltm, new File(c.getFilesDir(), "vis/mem/u"), null);
+                    addFileToZip(ltm, new File(c.getFilesDir(), "vis/mem/v"), null);
+                    addFileToZip(ltm, new File(c.getFilesDir(), "vis/mem/r"), null);
                     ltm.flush();
                     ltm.close();
                     break;
@@ -112,7 +124,8 @@ public class Debug extends Thread {
         }
     }
 
-    public static void addFileToZip(ZipOutputStream zos, File fileToZip, String parentDirName)
+    /** Adds a File to a ZipOutputStream. */
+    public void addFileToZip(ZipOutputStream zos, File fileToZip, String parentDirName)
             throws IOException {
         if (fileToZip == null || !fileToZip.exists()) return;
 
@@ -133,6 +146,13 @@ public class Debug extends Thread {
             zos.closeEntry();
             fis.close();
         }
+    }
+
+    /** Removes all files in a directory (assuming there are no other sub-directories). */
+    public void truncateDir(File folder) {
+        if (!folder.exists()) return;
+        File[] files = folder.listFiles(); // some JVMs return null for empty dirs
+        if (files != null) for (File f : files) f.delete();
     }
 
     @Override
