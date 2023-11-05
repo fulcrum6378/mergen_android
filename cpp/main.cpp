@@ -13,7 +13,7 @@ static Rewarder *rew = nullptr;
 
 static Microphone *aud_in = nullptr;
 static Touchscreen *hpt = nullptr;
-static Camera *vis = nullptr;
+static Camera *vis = nullptr; // temporarily disabled in start, stop and onSurfaceStatusChanged
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
@@ -46,15 +46,15 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
 }
 
 extern "C" JNIEXPORT jbyte JNICALL
-Java_ir_mahdiparastesh_mergen_Main_start(JNIEnv *, jobject, jbyte debugMode) {
+Java_ir_mahdiparastesh_mergen_Main_start(JNIEnv *, jobject, jbyte /*debugMode*/) {
     int8_t ret = 0;
     if (aud_in) {
         if (!aud_in->Start()) ret = 1;
     } else ret = 2;
     if (ret > 0) return ret;
-    if (vis) {
+    /*if (vis) {
         if (!vis->SetRecording(true, debugMode)) ret = 3;
-    } else ret = 4;
+    } else ret = 4;*/
     return ret;
 }
 
@@ -65,9 +65,9 @@ Java_ir_mahdiparastesh_mergen_Main_stop(JNIEnv *, jobject) {
         if (!aud_in->Stop()) ret = 1;
     } else ret = 2;
     if (ret > 0) return ret;
-    if (vis) {
+    /*if (vis) {
         if (!vis->SetRecording(false, 0)) ret = 3;
-    } else ret = 4;
+    } else ret = 4;*/
     return ret;
 }
 
@@ -99,14 +99,14 @@ Java_ir_mahdiparastesh_mergen_Main_getCameraDimensions(
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
-        JNIEnv *env, jobject, jlong cameraObj, jobject surface, jboolean available) {
+        JNIEnv */*env*/, jobject, jlong cameraObj, jobject /*surface*/, jboolean /*available*/) {
     auto *cam = reinterpret_cast<Camera *>(cameraObj);
     assert(cam == vis);
-    if (available) cam->CreateSession(ANativeWindow_fromSurface(env, surface));
+    /*if (available) cam->CreateSession(ANativeWindow_fromSurface(env, surface));
     else { // don't put these in Main.destroy()
         delete cam;
         vis = nullptr;
-    }
+    }*/
 }
 
 extern "C" JNIEXPORT void JNICALL

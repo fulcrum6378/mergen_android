@@ -10,7 +10,7 @@
 #include "../global.hpp" // do not include "recorder.hpp" here!
 
 // Audio Sample Controls (frame = sample, bytes < sample < buffer)
-#define SAMPLE_RATE 48000000 // millihertz
+#define SAMPLE_RATE 48000000 // millihertz, SL_SAMPLINGRATE_48
 #define FRAMES_PER_BUF 192
 #define AUDIO_SAMPLE_CHANNELS 1
 #define BITS_PER_SAMPLE SL_PCMSAMPLEFORMAT_FIXED_16 // name BIT_DEPTH or BITS_PER_FRAME
@@ -24,7 +24,7 @@
 struct SampleFormat {
     uint32_t sampleRate_;
     uint32_t framesPerBuf_;
-    uint16_t pcmFormat_;  // 8 bit, 16 bit, 24 bit ...
+    uint16_t pcmFormat_;  // 8 bit, 16, 20, 24, 28 and 32 bit, gets from BITS_PER_SAMPLE
     uint32_t representation_;  // android extensions
 };
 
