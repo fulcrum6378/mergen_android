@@ -37,20 +37,21 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
             mkdir(dir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     }
 
+    Manifest::init();
+
     // initialise low-level components
     aud_in = new Microphone();
     aud_out = new Speaker();
-    hpt = new Touchscreen(rew);
-    mov = new Vibrator(env, main);
+    hpt = new Touchscreen(&rew);
+    mov = new Vibrator(env, gMain);
     vis_in = new Camera(jvm, gMain);
-    vis_out = new Colouring(env, main);
+    vis_out = new Colouring(env, gMain);
 
     // initialise high-level components
-    Manifest::init();
-    scm = new Perception();
     rew = new Rewarder(mov, vis_out);
-    // ComputeVK().run(state->activity->assetManager);
+    scm = new Perception();
 
+    // ComputeVK().run(state->activity->assetManager);
     return reinterpret_cast<jlong>(vis_in);
 }
 
@@ -85,10 +86,10 @@ Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
     delete vis_out;
     vis_out = nullptr;
 
-    delete rew;
-    rew = nullptr;
     delete scm;
     scm = nullptr;
+    delete rew;
+    rew = nullptr;
 }
 
 

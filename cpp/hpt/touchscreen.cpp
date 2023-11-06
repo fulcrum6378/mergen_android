@@ -3,7 +3,7 @@
 #include "../global.hpp"
 #include "touchscreen.hpp"
 
-Touchscreen::Touchscreen(Rewarder *rew) : rew_(rew) {}
+Touchscreen::Touchscreen(Rewarder **rew) : rew_(rew) {}
 
 /** Device ID (dev) is always 3 in my phone. */
 void Touchscreen::OnTouchEvent(int16_t /*dev*/, int8_t act, int16_t id, float x, float y,
@@ -52,7 +52,7 @@ void Touchscreen::CheckForRewards() {
         score -= 0.03;
         if (score < -1.0) score = -1.0;
     } else score = 0.0;
-    rew_->SetScore(0, score);
+    (*rew_)->SetScore(0, score);
 }
 
 Touchscreen::~Touchscreen() = default;

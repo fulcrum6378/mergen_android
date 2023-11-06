@@ -24,7 +24,7 @@ void Rewarder::AddExpression(Expression *expression) {
 void Rewarder::SetScore(uint8_t criterionId, double score) {
     // ASSERT(score >= -1.0 && score <= 1.0, "Invalid reward score!")
     if (scores[criterionId] == score) return;
-    scores[criterionId] = score; // TODO why does this crash when Rewarder in initialised after the senses?!?
+    scores[criterionId] = score;
     Compute();
 }
 

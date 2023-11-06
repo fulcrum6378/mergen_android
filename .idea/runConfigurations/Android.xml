@@ -15,7 +15,7 @@
     <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
     <option name="INSPECTION_WITHOUT_ACTIVITY_RESTART" value="false" />
     <option name="TARGET_SELECTION_MODE" value="DEVICE_AND_SNAPSHOT_COMBO_BOX" />
-    <option name="DEBUGGER_TYPE" value="Hybrid" />
+    <option name="DEBUGGER_TYPE" value="Native" />
     <Auto>
       <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
       <option name="SHOW_STATIC_VARS" value="true" />
