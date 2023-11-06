@@ -11,9 +11,7 @@ Microphone::Microphone() {
     AAudioStreamBuilder_setChannelCount(builder, 1);
     AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_I16);
     AAudioStreamBuilder_setBufferCapacityInFrames(builder, 192);
-    //AAudioStreamBuilder_setPerformanceMode(builder, AAUDIO_PERFORMANCE_MODE_NONE);
-    // or AAUDIO_PERFORMANCE_MODE_LOW_LATENCY or AAUDIO_PERFORMANCE_MODE_POWER_SAVING
-    AAudioStreamBuilder_setDataCallback(builder, Microphone::Callback, nullptr);
+    AAudioStreamBuilder_setDataCallback(builder, Microphone::Callback, this);
     AAudioStreamBuilder_openStream(builder, &stream);
     AAudioStreamBuilder_delete(builder);
 }
@@ -31,12 +29,12 @@ bool Microphone::Start() {
 }
 
 aaudio_data_callback_result_t Microphone::Callback(
-        AAudioStream */*stream*/, void */*userData*/, void *audioData, int32_t numFrames) {
-    // Write samples directly into the audioData array.
-    // generateSineWave(static_cast<int16_t *>(audioData), numFrames);
+        AAudioStream */*stream*/, void *microphone, void *buf, int32_t numFrames) {
+    auto *aud_in = static_cast<Microphone *>(microphone);
 #if AUD_IN_SAVE
-    testPCM.write((char *) audioData, numFrames * 2);
+    aud_in->testPCM.write((char *) buf, numFrames * 2);
 #endif
+    // pass `static_cast<int16_t *>(buf), numFrames` to the next step
     return AAUDIO_CALLBACK_RESULT_CONTINUE;
 }
 
@@ -52,8 +50,5 @@ bool Microphone::Stop() {
 }
 
 Microphone::~Microphone() {
-    AAudioStream_requestStop(stream);
-    AAudioStream_waitForStateChange(
-            stream, AAUDIO_STREAM_STATE_STOPPING, &state, waitTimeout);
     AAudioStream_close(stream);
 }
