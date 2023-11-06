@@ -15,7 +15,7 @@ Segmentation::Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal) :
 
 void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMode) {
     locked = true;
-    //ofstream test("/data/data/ir.mahdiparastesh.mergen/cache/test.yuv", ios::binary);
+    //ofstream test(cacheDir + "test.yuv", ios::binary);
 
     // 1. loading; bring separate YUV data into the multidimensional array of pixels `arr`
     auto t0 = chrono::system_clock::now();
@@ -330,10 +330,10 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
 
         // save files for debugging if wanted
         if (debugMode == 11) {
-            ofstream arrFile("/data/data/ir.mahdiparastesh.mergen/cache/arr", ios::binary);
+            ofstream arrFile(cacheDir + "arr", ios::binary);
             arrFile.write(reinterpret_cast<char *>(&arr), sizeof(arr));
             arrFile.close();
-            ofstream bstFile("/data/data/ir.mahdiparastesh.mergen/cache/b_status", ios::binary);
+            ofstream bstFile(cacheDir + "b_status", ios::binary);
             bstFile.write(reinterpret_cast<char *>(&b_status), sizeof(b_status));
             bstFile.close();
         }

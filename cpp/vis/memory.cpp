@@ -4,7 +4,6 @@
 #include <fstream>
 #include <sys/stat.h>
 
-#include "../global.hpp"
 #include "segment.hpp"
 #include "memory.hpp"
 

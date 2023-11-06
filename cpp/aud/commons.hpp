@@ -8,7 +8,7 @@
 
 #include "../global.hpp" // do not include "recorder.hpp" here!
 
-// bytes < sample < buffer
+// bytes < sample/frame < buffer
 #define FRAMES_PER_BUF 192
 
 // Sample Buffer Controls

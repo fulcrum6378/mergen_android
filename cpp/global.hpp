@@ -13,6 +13,8 @@
     __android_log_assert(#cond, LOG_TAG, fmt, ##__VA_ARGS__); \
   }
 
-static const std::string cacheDirPath("/data/data/ir.mahdiparastesh.mergen/cache/");
+static const std::string
+        filesDir("/data/data/ir.mahdiparastesh.mergen/files/"),
+        cacheDir("/data/data/ir.mahdiparastesh.mergen/cache/");
 
 #endif //GLOBAL_H

@@ -27,7 +27,6 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     jobject gMain = env->NewGlobalRef(main);
 
     // ensure that /files/ dir exists
-    std::string filesDir = "/data/data/ir.mahdiparastesh.mergen/files/";
     struct stat sb{};
     for (std::string dirN: {""/*, "aud"*//*, "hpt"*/, "vis"}) {
         const char *dir = (filesDir + dirN).c_str();

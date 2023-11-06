@@ -5,6 +5,7 @@
 #include <map>
 #include <unordered_set>
 
+#include "../global.hpp"
 #include "segment.hpp"
 
 // maximum frames allowed to be present in memory at a time
@@ -23,7 +24,7 @@
  */
 class VisualSTM {
 private:
-    const std::string dirOut = "/data/data/ir.mahdiparastesh.mergen/files/vis/stm/";
+    const std::string dirOut = filesDir + "vis/stm/";
     std::string dirShapes = "shapes", dirY = "y", dirU = "u", dirV = "v", dirR = "r",
             framesFile = "frames", numbersFile = "numbers";
     // frame ID incrementer | ID of earliest frame which is STILL available in memory

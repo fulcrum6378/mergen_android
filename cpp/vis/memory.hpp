@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "../global.hpp"
+
 /**
  * Visual Memory
  *
@@ -13,7 +15,7 @@
  */
 class [[maybe_unused]] VisMemory {
 private:
-    const std::string dirOut = "/data/data/ir.mahdiparastesh.mergen/files/vis/mem/";
+    const std::string dirOut = filesDir + "vis/mem/";
     std::string dirShapes = "shapes", dirY = "y", dirU = "u", dirV = "v", dirR = "r";
     // frame ID incrementer | ID of earliest frame which is STILL available in memory
     uint64_t nextFrameId = 0, firstFrameId = 0;

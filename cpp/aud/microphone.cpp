@@ -15,7 +15,6 @@ Microphone::Microphone(AudEngine *engine) :
     // configure audio sink
     SLDataLocator_AndroidSimpleBufferQueue loc_bq = {
             SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, DEVICE_SHADOW_BUFFER_QUEUE_LEN};
-
     SLDataSink audioSnk = {&loc_bq, &pcmFormat};
 
     // create audio recorder (requires the RECORD_AUDIO permission)
@@ -110,7 +109,7 @@ bool Microphone::Start() {
     result = (*recItf_)->SetRecordState(recItf_, SL_RECORDSTATE_RECORDING);
 
 #if AUD_SAVE
-    std::string path = cacheDirPath + "aud.pcm";
+    std::string path = cacheDir + "aud.pcm";
     remove(path.c_str());
     test = std::ofstream(path, std::ios::binary | std::ios::out);
 #endif

@@ -60,7 +60,7 @@ private:
 
 public:
     BitmapStream(std::pair<int16_t, int16_t> dimensions) {
-        store.open((cacheDirPath + std::string("vis.rgb")).c_str(), std::ios::binary);
+        store.open((cacheDir + std::string("vis.rgb")).c_str(), std::ios::binary);
         dimensions_ = dimensions;
     }
 
@@ -68,7 +68,7 @@ public:
         int32_t width = dimensions_.first;
         int32_t height = dimensions_.second;
         std::ofstream metadata(
-                cacheDirPath + std::to_string(width) + "x" + std::to_string(height),
+                cacheDir + std::to_string(width) + "x" + std::to_string(height),
                 std::ios::out | std::ios::binary);
 
         bmpfile_magic magic{'B', 'M'};
