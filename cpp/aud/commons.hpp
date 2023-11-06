@@ -3,16 +3,13 @@
 
 #include <atomic>
 #include <cassert>
-#include <limits>
 #include <memory>
 #include <SLES/OpenSLES_Android.h>
 
 #include "../global.hpp" // do not include "recorder.hpp" here!
 
-// Audio Sample Controls (frame = sample, bytes < sample < buffer)
-#define SAMPLE_RATE 48000000 // millihertz, SL_SAMPLINGRATE_48
+// bytes < sample < buffer
 #define FRAMES_PER_BUF 192
-#define AUDIO_SAMPLE_CHANNELS 1
 
 // Sample Buffer Controls
 #define RECORD_DEVICE_KICKSTART_BUF_COUNT 2
@@ -29,9 +26,10 @@
 class Engine {
 private:
     SLObjectItf slEngineObj_{};
-    SLEngineItf slEngineItf_{};
 
 public:
+    SLEngineItf slEngineItf{};
+
     Engine() {
         SLresult result;
         result = slCreateEngine(
@@ -40,19 +38,15 @@ public:
         SLASSERT(result);
         result = (*slEngineObj_)->Realize(slEngineObj_, SL_BOOLEAN_FALSE);
         SLASSERT(result);
-        result = (*slEngineObj_)->GetInterface(slEngineObj_, SL_IID_ENGINE, &slEngineItf_);
+        result = (*slEngineObj_)->GetInterface(slEngineObj_, SL_IID_ENGINE, &slEngineItf);
         SLASSERT(result);
-    }
-
-    SLEngineItf GetSlEngineItf() {
-        return slEngineItf_;
     }
 
     ~Engine() {
         if (slEngineObj_ == nullptr) return;
         (*slEngineObj_)->Destroy(slEngineObj_);
         slEngineObj_ = nullptr;
-        slEngineItf_ = nullptr;
+        slEngineItf = nullptr;
     }
 };
 

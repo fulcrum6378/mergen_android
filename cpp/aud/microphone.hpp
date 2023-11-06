@@ -12,6 +12,19 @@ private:
     std::ofstream test;
     Engine *slEngine_;
 
+    SLAndroidDataFormat_PCM_EX pcmFormat{
+            SL_DATAFORMAT_PCM,
+            1,
+            SL_SAMPLINGRATE_48, // 48000000 millihertz
+            SL_PCMSAMPLEFORMAT_FIXED_16, // namely "bit depth"
+            SL_PCMSAMPLEFORMAT_FIXED_16, // change both together
+            SL_SPEAKER_FRONT_LEFT,
+            SL_BYTEORDER_LITTLEENDIAN, // FIXME
+            SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT, // TODO
+            // SL_ANDROID_PCM_REPRESENTATION_UNSIGNED_INT, SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT,
+            // SL_ANDROID_PCM_REPRESENTATION_FLOAT
+    };
+
     SLObjectItf recObjectItf_{};
     SLRecordItf recItf_{};
     SLAndroidSimpleBufferQueueItf recBufQueueItf_{};

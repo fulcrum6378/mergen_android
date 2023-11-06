@@ -16,30 +16,13 @@ Microphone::Microphone() : freeQueue_(nullptr), recQueue_(nullptr), devShadowQue
     SLDataLocator_AndroidSimpleBufferQueue loc_bq = {
             SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, DEVICE_SHADOW_BUFFER_QUEUE_LEN};
 
-    // configure PCM properties
-    SLAndroidDataFormat_PCM_EX pcm{};
-    memset(&pcm, 0, sizeof(pcm));
-
-    pcm.formatType = SL_DATAFORMAT_PCM;
-    pcm.numChannels = 1;
-    pcm.channelMask = SL_SPEAKER_FRONT_LEFT;
-    pcm.sampleRate = SAMPLE_RATE;
-
-    pcm.endianness = SL_BYTEORDER_LITTLEENDIAN; // FIXME
-    pcm.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
-    pcm.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16; // change both together
-    pcm.formatType = SL_ANDROID_DATAFORMAT_PCM_EX;
-    pcm.representation = SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT; // TODO
-    // SL_ANDROID_PCM_REPRESENTATION_UNSIGNED_INT, SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT,
-    // SL_ANDROID_PCM_REPRESENTATION_FLOAT
-
-    SLDataSink audioSnk = {&loc_bq, &pcm};
+    SLDataSink audioSnk = {&loc_bq, &pcmFormat};
 
     // create audio recorder (requires the RECORD_AUDIO permission)
     const SLInterfaceID id[2] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE, SL_IID_ANDROIDCONFIGURATION};
     const SLboolean req[2] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
-    result = (*slEngine_->GetSlEngineItf())->CreateAudioRecorder(
-            slEngine_->GetSlEngineItf(), &recObjectItf_, &audioSrc, &audioSnk, 1, id, req);
+    result = (*slEngine_->slEngineItf)->CreateAudioRecorder(
+            slEngine_->slEngineItf, &recObjectItf_, &audioSrc, &audioSnk, 1, id, req);
     SLASSERT(result);
 
     // Configure the voice recognition preset which has no signal processing for lower latency.
@@ -71,7 +54,7 @@ Microphone::Microphone() : freeQueue_(nullptr), recQueue_(nullptr), devShadowQue
     devShadowQueue_ = new ProducerConsumerQueue<sample_buf *>(DEVICE_SHADOW_BUFFER_QUEUE_LEN);
     assert(devShadowQueue_);
 
-    silentBuf_.cap_ = (pcm.containerSize >> 3) * pcm.numChannels * FRAMES_PER_BUF;
+    silentBuf_.cap_ = (pcmFormat.containerSize >> 3) * pcmFormat.numChannels * FRAMES_PER_BUF;
     silentBuf_.buf_ = new uint8_t[silentBuf_.cap_];
     memset(silentBuf_.buf_, 0, silentBuf_.cap_);
     silentBuf_.size_ = silentBuf_.cap_;
@@ -87,7 +70,7 @@ Microphone::Microphone() : freeQueue_(nullptr), recQueue_(nullptr), devShadowQue
  * Adjust the bufSize here to fit your bill [before it busts]
  */
 void Microphone::SetBufQueues() {
-    uint32_t bufSize = FRAMES_PER_BUF * AUDIO_SAMPLE_CHANNELS * BITS_PER_SAMPLE;
+    uint32_t bufSize = FRAMES_PER_BUF * pcmFormat.numChannels * pcmFormat.bitsPerSample;
     bufSize = (bufSize + 7) >> 3;  // bits --> byte
     bufCount_ = BUF_COUNT;
     bufs_ = allocateSampleBufs(bufCount_, bufSize);
