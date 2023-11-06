@@ -13,7 +13,6 @@
 #define SAMPLE_RATE 48000000 // millihertz, SL_SAMPLINGRATE_48
 #define FRAMES_PER_BUF 192
 #define AUDIO_SAMPLE_CHANNELS 1
-#define BITS_PER_SAMPLE SL_PCMSAMPLEFORMAT_FIXED_16 // name BIT_DEPTH or BITS_PER_FRAME
 
 // Sample Buffer Controls
 #define RECORD_DEVICE_KICKSTART_BUF_COUNT 2
@@ -21,12 +20,11 @@
 #define DEVICE_SHADOW_BUFFER_QUEUE_LEN 4
 #define BUF_COUNT 16
 
-struct SampleFormat {
-    uint32_t sampleRate_;
-    uint32_t framesPerBuf_;
-    uint16_t pcmFormat_;  // 8 bit, 16, 20, 24, 28 and 32 bit, gets from BITS_PER_SAMPLE
-    uint32_t representation_;  // android extensions
-};
+#define SLASSERT(x)                   \
+  do {                                \
+    assert(SL_RESULT_SUCCESS == (x)); \
+    (void)(x);                        \
+  } while (0)
 
 class Engine {
 private:
@@ -34,21 +32,29 @@ private:
     SLEngineItf slEngineItf_{};
 
 public:
-    Engine();
+    Engine() {
+        SLresult result;
+        result = slCreateEngine(
+                &slEngineObj_, 0, nullptr, 0,
+                nullptr, nullptr);
+        SLASSERT(result);
+        result = (*slEngineObj_)->Realize(slEngineObj_, SL_BOOLEAN_FALSE);
+        SLASSERT(result);
+        result = (*slEngineObj_)->GetInterface(slEngineObj_, SL_IID_ENGINE, &slEngineItf_);
+        SLASSERT(result);
+    }
 
-    SLEngineItf GetSlEngineItf();
+    SLEngineItf GetSlEngineItf() {
+        return slEngineItf_;
+    }
 
-    ~Engine();
+    ~Engine() {
+        if (slEngineObj_ == nullptr) return;
+        (*slEngineObj_)->Destroy(slEngineObj_);
+        slEngineObj_ = nullptr;
+        slEngineItf_ = nullptr;
+    }
 };
-
-void ConvertToSLSampleFormat(SLAndroidDataFormat_PCM_EX *pFormat, SampleFormat *format);
-
-#define SLASSERT(x)                   \
-  do {                                \
-    assert(SL_RESULT_SUCCESS == (x)); \
-    (void)(x);                        \
-  } while (0)
-
 
 #define CACHE_ALIGN 64
 

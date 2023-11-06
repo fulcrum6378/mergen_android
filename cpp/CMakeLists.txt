@@ -10,7 +10,6 @@ add_library(main SHARED
         global.hpp
         manifest.hpp
 
-        aud/commons.cpp
         aud/commons.hpp
         aud/microphone.cpp
         aud/microphone.hpp

@@ -6,14 +6,6 @@ Microphone::Microphone() : freeQueue_(nullptr), recQueue_(nullptr), devShadowQue
     SLresult result;
     slEngine_ = new Engine();
 
-    // configure audio properties
-    sampleInfo_ = {
-            SAMPLE_RATE, FRAMES_PER_BUF,
-            static_cast<uint16_t>(BITS_PER_SAMPLE), 0
-    };
-    SLAndroidDataFormat_PCM_EX format_pcm;
-    ConvertToSLSampleFormat(&format_pcm, &sampleInfo_);
-
     // configure audio source
     SLDataLocator_IODevice loc_dev = {SL_DATALOCATOR_IODEVICE,
                                       SL_IODEVICE_AUDIOINPUT,
@@ -24,7 +16,24 @@ Microphone::Microphone() : freeQueue_(nullptr), recQueue_(nullptr), devShadowQue
     SLDataLocator_AndroidSimpleBufferQueue loc_bq = {
             SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, DEVICE_SHADOW_BUFFER_QUEUE_LEN};
 
-    SLDataSink audioSnk = {&loc_bq, &format_pcm};
+    // configure PCM properties
+    SLAndroidDataFormat_PCM_EX pcm{};
+    memset(&pcm, 0, sizeof(pcm));
+
+    pcm.formatType = SL_DATAFORMAT_PCM;
+    pcm.numChannels = 1;
+    pcm.channelMask = SL_SPEAKER_FRONT_LEFT;
+    pcm.sampleRate = SAMPLE_RATE;
+
+    pcm.endianness = SL_BYTEORDER_LITTLEENDIAN; // FIXME
+    pcm.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
+    pcm.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16; // change both together
+    pcm.formatType = SL_ANDROID_DATAFORMAT_PCM_EX;
+    pcm.representation = SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT; // TODO
+    // SL_ANDROID_PCM_REPRESENTATION_UNSIGNED_INT, SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT,
+    // SL_ANDROID_PCM_REPRESENTATION_FLOAT
+
+    SLDataSink audioSnk = {&loc_bq, &pcm};
 
     // create audio recorder (requires the RECORD_AUDIO permission)
     const SLInterfaceID id[2] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE, SL_IID_ANDROIDCONFIGURATION};
@@ -62,8 +71,7 @@ Microphone::Microphone() : freeQueue_(nullptr), recQueue_(nullptr), devShadowQue
     devShadowQueue_ = new ProducerConsumerQueue<sample_buf *>(DEVICE_SHADOW_BUFFER_QUEUE_LEN);
     assert(devShadowQueue_);
 
-    silentBuf_.cap_ = (format_pcm.containerSize >> 3) * format_pcm.numChannels *
-                      sampleInfo_.framesPerBuf_;
+    silentBuf_.cap_ = (pcm.containerSize >> 3) * pcm.numChannels * FRAMES_PER_BUF;
     silentBuf_.buf_ = new uint8_t[silentBuf_.cap_];
     memset(silentBuf_.buf_, 0, silentBuf_.cap_);
     silentBuf_.size_ = silentBuf_.cap_;
@@ -118,11 +126,11 @@ bool Microphone::Start() {
 
     result = (*recItf_)->SetRecordState(recItf_, SL_RECORDSTATE_RECORDING);
 
-    if (AUD_SAVE) {
-        std::string path = cacheDirPath + "aud.pcm";
-        remove(path.c_str());
-        test = std::ofstream(path, std::ios::binary | std::ios::out);
-    }
+#if AUD_SAVE
+    std::string path = cacheDirPath + "aud.pcm";
+    remove(path.c_str());
+    test = std::ofstream(path, std::ios::binary | std::ios::out);
+#endif
 
     return result == SL_RESULT_SUCCESS;
 }
@@ -151,8 +159,10 @@ void Microphone::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq, int64_t) {
     devShadowQueue_->pop();
 
     if (buf != &silentBuf_) {
+#if AUD_SAVE
         //LOGE("%s", ("AUD: " + std::to_string(buf->size_)).c_str());
         test.write((char *) buf->buf_, buf->size_); // size=384 (FRAMES_PER_BUF*2)
+#endif
 
         buf->size_ = 0;
         freeQueue_->push(buf);
@@ -182,11 +192,10 @@ void Microphone::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq, int64_t) {
     }
 }
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "ConstantFunctionResult"
-
 bool Microphone::Stop() {
-    if (AUD_SAVE) test.close();
+#if AUD_SAVE
+    test.close();
+#endif
 
     // In case already recording, stop recording and clear buffer queue.
     SLuint32 curState;
@@ -201,8 +210,6 @@ bool Microphone::Stop() {
     SLASSERT(result);
     return true;
 }
-
-#pragma clang diagnostic pop
 
 Microphone::~Microphone() {
     // destroy audio recorder object, and invalidate all associated interfaces

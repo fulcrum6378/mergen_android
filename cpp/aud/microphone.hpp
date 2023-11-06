@@ -5,7 +5,7 @@
 
 #include "commons.hpp"
 
-static const bool AUD_SAVE = true;
+#define AUD_SAVE true
 
 class Microphone {
 private:
@@ -18,7 +18,6 @@ private:
 
     sample_buf *bufs_{};
     uint32_t bufCount_{};
-    SampleFormat sampleInfo_{};
     ProducerConsumerQueue<sample_buf *> *freeQueue_;       // user
     ProducerConsumerQueue<sample_buf *> *recQueue_;        // user
     // recBufQueue_ is recQueue_ for the recorder and playQueue_ for the player.

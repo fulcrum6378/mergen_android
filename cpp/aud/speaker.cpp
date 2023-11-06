@@ -56,11 +56,9 @@ void Speaker::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq) {
     }
 }
 
-Speaker::Speaker(SampleFormat *sampleFormat, SLEngineItf slEngine)
+Speaker::Speaker(SLEngineItf slEngine)
         : freeQueue_(nullptr), playQueue_(nullptr), devShadowQueue_(nullptr) {
     SLresult result;
-    assert(sampleFormat);
-    sampleInfo_ = *sampleFormat;
 
     result = (*slEngine)->CreateOutputMix(
             slEngine, &outputMixObjectItf_, 0, nullptr, nullptr);
@@ -74,9 +72,24 @@ Speaker::Speaker(SampleFormat *sampleFormat, SLEngineItf slEngine)
     SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {
             SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, DEVICE_SHADOW_BUFFER_QUEUE_LEN};
 
-    SLAndroidDataFormat_PCM_EX format_pcm;
-    ConvertToSLSampleFormat(&format_pcm, &sampleInfo_);
-    SLDataSource audioSrc = {&loc_bufq, &format_pcm};
+    // configure PCM properties
+    SLAndroidDataFormat_PCM_EX pcm{};
+    memset(&pcm, 0, sizeof(pcm));
+
+    pcm.formatType = SL_DATAFORMAT_PCM;
+    pcm.numChannels = 1;
+    pcm.channelMask = SL_SPEAKER_FRONT_LEFT;
+    pcm.sampleRate = SAMPLE_RATE;
+
+    pcm.endianness = SL_BYTEORDER_LITTLEENDIAN; // FIXME
+    pcm.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
+    pcm.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16; // change both together
+    pcm.formatType = SL_ANDROID_DATAFORMAT_PCM_EX;
+    pcm.representation = SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT; // TODO
+    // SL_ANDROID_PCM_REPRESENTATION_UNSIGNED_INT, SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT,
+    // SL_ANDROID_PCM_REPRESENTATION_FLOAT
+
+    SLDataSource audioSrc = {&loc_bufq, &pcm};
 
     // configure audio sink
     SLDataLocator_OutputMix loc_outmix = {SL_DATALOCATOR_OUTPUTMIX,
@@ -120,8 +133,7 @@ Speaker::Speaker(SampleFormat *sampleFormat, SLEngineItf slEngine)
     devShadowQueue_ = new ProducerConsumerQueue<sample_buf *>(DEVICE_SHADOW_BUFFER_QUEUE_LEN);
     assert(devShadowQueue_);
 
-    silentBuf_.cap_ = (format_pcm.containerSize >> 3) * format_pcm.numChannels *
-                      sampleInfo_.framesPerBuf_;
+    silentBuf_.cap_ = (pcm.containerSize >> 3) * pcm.numChannels * FRAMES_PER_BUF;
     silentBuf_.buf_ = new uint8_t[silentBuf_.cap_];
     memset(silentBuf_.buf_, 0, silentBuf_.cap_);
     silentBuf_.size_ = silentBuf_.cap_;
