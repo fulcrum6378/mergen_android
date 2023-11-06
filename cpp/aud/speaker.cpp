@@ -2,12 +2,12 @@
 
 #include "speaker.hpp"
 
-Speaker::Speaker(SLEngineItf slEngine)
-        : freeQueue_(nullptr), playQueue_(nullptr), devShadowQueue_(nullptr) {
+Speaker::Speaker(AudEngine *slEngine) :
+        freeQueue_(nullptr), playQueue_(nullptr), devShadowQueue_(nullptr) {
     SLresult result;
 
-    result = (*slEngine)->CreateOutputMix(
-            slEngine, &outputMixObjectItf_, 0, nullptr, nullptr);
+    result = (*slEngine->interface)->CreateOutputMix(
+            slEngine->interface, &outputMixObjectItf_, 0, nullptr, nullptr);
     SLASSERT(result);
 
     // realize the output mix
@@ -29,8 +29,8 @@ Speaker::Speaker(SLEngineItf slEngine)
      */
     SLInterfaceID ids[2] = {SL_IID_BUFFERQUEUE, SL_IID_VOLUME};
     SLboolean req[2] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
-    result = (*slEngine)->CreateAudioPlayer(
-            slEngine, &playerObjectItf_, &audioSrc, &audioSnk,
+    result = (*slEngine->interface)->CreateAudioPlayer(
+            slEngine->interface, &playerObjectItf_, &audioSrc, &audioSnk,
             sizeof(ids) / sizeof(ids[0]), ids, req);
     SLASSERT(result);
 
@@ -69,10 +69,10 @@ Speaker::Speaker(SLEngineItf slEngine)
     memset(silentBuf_.buf_, 0, silentBuf_.cap_);
     silentBuf_.size_ = silentBuf_.cap_;
 
-    SetBufQueue(playQueue_, freeQueue_);
+    //SetBufQueues(); // FIXME playQueue_ and freeQueue_ are not set
 }
 
-void Speaker::SetBufQueue(
+void Speaker::SetBufQueues(
         ProducerConsumerQueue<sample_buf *> *playQ, ProducerConsumerQueue<sample_buf *> *freeQ) {
     playQueue_ = playQ;
     freeQueue_ = freeQ;

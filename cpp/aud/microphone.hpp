@@ -9,9 +9,6 @@
 
 class Microphone {
 private:
-    std::ofstream test;
-    Engine *slEngine_;
-
     SLAndroidDataFormat_PCM_EX pcmFormat{
             SL_DATAFORMAT_PCM,
             1,
@@ -38,12 +35,14 @@ private:
     uint32_t audioBufCount{};
     sample_buf silentBuf_{};
 
+    std::ofstream test;
+
     void SetBufQueues();
 
     void ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq, int64_t time);
 
 public:
-    Microphone();
+    Microphone(AudEngine *engine);
 
     bool Start();
 

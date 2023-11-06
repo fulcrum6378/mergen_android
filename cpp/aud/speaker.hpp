@@ -35,9 +35,9 @@ class Speaker {
     std::mutex stopMutex_;
 
 public:
-    Speaker(SLEngineItf engine);
+    Speaker(AudEngine *engine);
 
-    void SetBufQueue(ProducerConsumerQueue<sample_buf *> *playQ, ProducerConsumerQueue<sample_buf *> *freeQ);
+    void SetBufQueues(ProducerConsumerQueue<sample_buf *> *playQ, ProducerConsumerQueue<sample_buf *> *freeQ);
 
     SLresult Start(void);
 

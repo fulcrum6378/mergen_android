@@ -23,30 +23,29 @@
     (void)(x);                        \
   } while (0)
 
-class Engine {
+class AudEngine {
 private:
-    SLObjectItf slEngineObj_{};
+    SLObjectItf object{}; // TODDO shouldn't it be a pointer?
 
 public:
-    SLEngineItf slEngineItf{};
+    SLEngineItf interface{};
 
-    Engine() {
+    AudEngine() {
         SLresult result;
         result = slCreateEngine(
-                &slEngineObj_, 0, nullptr, 0,
+                &object, 0, nullptr, 0,
                 nullptr, nullptr);
         SLASSERT(result);
-        result = (*slEngineObj_)->Realize(slEngineObj_, SL_BOOLEAN_FALSE);
+        result = (*object)->Realize(object, SL_BOOLEAN_FALSE);
         SLASSERT(result);
-        result = (*slEngineObj_)->GetInterface(slEngineObj_, SL_IID_ENGINE, &slEngineItf);
+        result = (*object)->GetInterface(object, SL_IID_ENGINE, &interface);
         SLASSERT(result);
     }
 
-    ~Engine() {
-        if (slEngineObj_ == nullptr) return;
-        (*slEngineObj_)->Destroy(slEngineObj_);
-        slEngineObj_ = nullptr;
-        slEngineItf = nullptr;
+    ~AudEngine() {
+        if (object == nullptr) return;
+        (*object)->Destroy(object);
+        object = nullptr;
     }
 };
 

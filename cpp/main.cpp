@@ -2,7 +2,9 @@
 #include <jni.h>
 #include <sys/stat.h>
 
+#include "aud/commons.hpp"
 #include "aud/microphone.hpp"
+#include "aud/speaker.hpp"
 #include "hpt/touchscreen.hpp"
 #include "rew/rewarder.hpp"
 #include "scm/perception.hpp"
@@ -11,7 +13,9 @@
 static Perception *scm = nullptr;
 static Rewarder *rew = nullptr;
 
+static AudEngine *aud = nullptr;
 static Microphone *aud_in = nullptr;
+static Speaker *aud_out = nullptr;
 static Touchscreen *hpt = nullptr;
 static Camera *vis = nullptr; // temporarily disabled in start, stop and onSurfaceStatusChanged
 
@@ -38,7 +42,9 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     // ComputeVK().run(state->activity->assetManager);
 
     // initialise low-level components
-    aud_in = new Microphone();
+    aud = new AudEngine();
+    aud_in = new Microphone(aud);
+    aud_out = new Speaker(aud);
     hpt = new Touchscreen(rew);
     vis = new Camera(jvm, gMain);
 
@@ -75,6 +81,10 @@ extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
     delete aud_in;
     aud_in = nullptr;
+    delete aud_out;
+    aud_out = nullptr;
+    delete aud;
+    aud = nullptr;
     delete hpt;
     hpt = nullptr;
 

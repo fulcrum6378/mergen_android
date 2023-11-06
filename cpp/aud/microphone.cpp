@@ -2,9 +2,9 @@
 
 #include "microphone.hpp"
 
-Microphone::Microphone() : freeQueue_(nullptr), recQueue_(nullptr), devShadowQueue_(nullptr) {
+Microphone::Microphone(AudEngine *engine) :
+        freeQueue_(nullptr), recQueue_(nullptr), devShadowQueue_(nullptr) {
     SLresult result;
-    slEngine_ = new Engine();
 
     // configure audio source
     SLDataLocator_IODevice loc_dev = {SL_DATALOCATOR_IODEVICE,
@@ -21,8 +21,8 @@ Microphone::Microphone() : freeQueue_(nullptr), recQueue_(nullptr), devShadowQue
     // create audio recorder (requires the RECORD_AUDIO permission)
     const SLInterfaceID id[2] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE, SL_IID_ANDROIDCONFIGURATION};
     const SLboolean req[2] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
-    result = (*slEngine_->slEngineItf)->CreateAudioRecorder(
-            slEngine_->slEngineItf, &recObjectItf_, &audioSrc, &audioSnk, 1, id, req);
+    result = (*engine->interface)->CreateAudioRecorder(
+            engine->interface, &recObjectItf_, &audioSrc, &audioSnk, 1, id, req);
     SLASSERT(result);
 
     // Configure the voice recognition preset which has no signal processing for lower latency.
@@ -217,7 +217,4 @@ Microphone::~Microphone() {
     delete recQueue_;
     delete freeQueue_;
     releaseSampleBufs(bufs_, bufCount_);
-
-    delete slEngine_;
-    slEngine_ = nullptr;
 }
