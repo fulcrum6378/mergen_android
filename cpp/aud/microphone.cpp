@@ -3,7 +3,7 @@
 #include "microphone.hpp"
 
 Microphone::Microphone(AudEngine *engine) :
-        freeQueue_(nullptr), recQueue_(nullptr), devShadowQueue_(nullptr) {
+        freeQueue_(nullptr), devShadowQueue_(nullptr) {
     SLresult result;
 
     // configure audio source
@@ -75,14 +75,13 @@ void Microphone::SetBufQueues() {
     bufs_ = allocateSampleBufs(bufCount_, bufSize);
     assert(bufs_);
     freeQueue_ = new ProducerConsumerQueue<sample_buf *>(bufCount_);
-    recQueue_ = new ProducerConsumerQueue<sample_buf *>(bufCount_);
     for (uint32_t i = 0; i < bufCount_; i++)
         freeQueue_->push(&bufs_[i]);
 }
 
 bool Microphone::Start() {
-    ASSERT(freeQueue_ && recQueue_ && devShadowQueue_, "Some of the queues are NULL: (%p, %p, %p)",
-           freeQueue_, recQueue_, devShadowQueue_)
+    ASSERT(freeQueue_ && devShadowQueue_, "Some of the queues are NULL: (%p, %p)",
+           freeQueue_, devShadowQueue_)
     audioBufCount = 0;
 
     SLresult result;
@@ -111,7 +110,7 @@ bool Microphone::Start() {
 #if AUD_SAVE
     std::string path = cacheDir + "aud.pcm";
     remove(path.c_str());
-    test = std::ofstream(path, std::ios::binary | std::ios::out);
+    test = std::ofstream(path, std::ios::binary);
 #endif
 
     return result == SL_RESULT_SUCCESS;
@@ -123,7 +122,6 @@ void Microphone::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq, int64_t) {
     devShadowQueue_->front(&buf);
     devShadowQueue_->pop();
     buf->size_ = buf->cap_;  // device only calls us when it is really full
-    recQueue_->push(buf);
 
     sample_buf *freeBuf;
     while (freeQueue_->front(&freeBuf) && devShadowQueue_->push(freeBuf)) {
@@ -149,26 +147,21 @@ void Microphone::ProcessSLCallback(SLAndroidSimpleBufferQueueItf bq, int64_t) {
         buf->size_ = 0;
         freeQueue_->push(buf);
 
-        if (!recQueue_->front(&buf)) return;
-
         devShadowQueue_->push(buf);
         //(*bq)->Enqueue(bq, buf->buf_, buf->size_);
         // Caused  W  Leaving BufferQueue::Enqueue (SL_RESULT_PARAMETER_INVALID)
-        recQueue_->pop();
         return;
     }
 
-    if (recQueue_->size() < PLAY_KICKSTART_BUFFER_COUNT) {
+    /*if (recQueue_->size() < PLAY_KICKSTART_BUFFER_COUNT) {
         (*bq)->Enqueue(bq, buf->buf_, buf->size_);
         devShadowQueue_->push(&silentBuf_);
         return;
-    }
+    }*/
 
     assert(PLAY_KICKSTART_BUFFER_COUNT <=
            (DEVICE_SHADOW_BUFFER_QUEUE_LEN - devShadowQueue_->size()));
     for (int32_t idx = 0; idx < PLAY_KICKSTART_BUFFER_COUNT; idx++) {
-        recQueue_->front(&buf);
-        recQueue_->pop();
         devShadowQueue_->push(buf);
         (*bq)->Enqueue(bq, buf->buf_, buf->size_);
     }
@@ -207,13 +200,7 @@ Microphone::~Microphone() {
             if (buf != &silentBuf_) freeQueue_->push(buf);
         }
         delete (devShadowQueue_);
-        while (recQueue_->front(&buf)) {
-            buf->size_ = 0;
-            recQueue_->pop();
-            freeQueue_->push(buf);
-        }
     }
-    delete recQueue_;
     delete freeQueue_;
     releaseSampleBufs(bufs_, bufCount_);
 }

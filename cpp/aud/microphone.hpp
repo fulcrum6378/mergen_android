@@ -29,8 +29,6 @@ private:
     sample_buf *bufs_{};
     uint32_t bufCount_{};
     ProducerConsumerQueue<sample_buf *> *freeQueue_;       // user
-    ProducerConsumerQueue<sample_buf *> *recQueue_;        // user
-    // recBufQueue_ is recQueue_ for the recorder and playQueue_ for the player.
     ProducerConsumerQueue<sample_buf *> *devShadowQueue_;  // owner
     uint32_t audioBufCount{};
     sample_buf silentBuf_{};
