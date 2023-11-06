@@ -1,8 +1,6 @@
 #ifndef AUD_SPEAKER_H
 #define AUD_SPEAKER_H
 
-#include "commons.hpp"
-
 class Speaker {
 public:
     Speaker();

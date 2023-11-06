@@ -10,7 +10,6 @@ add_library(main SHARED
         global.hpp
         manifest.hpp
 
-        aud/commons.hpp
         aud/microphone.cpp
         aud/microphone.hpp
         aud/speaker.cpp
@@ -52,10 +51,10 @@ target_include_directories(main PUBLIC
 )
 
 target_link_libraries(main
-        android      # for ANativeWindow
-        camera2ndk
-        log          # for <android/log.h>
-        mediandk     # for AImageReader
-        OpenSLES
+        aaudio       # AAudioXXXXX
+        android      # ANativeWindow
+        camera2ndk   # ACameraXXXXX
+        log          # <android/log.h>::__android_log_assert
+        mediandk     # AImageReader
         #vulkan
 )
