@@ -1,18 +1,14 @@
 #include "../global.hpp"
-#include "../mov/vibrator.hpp"
-#include "../vis/colouring.hpp"
 #include "rewarder.hpp"
 
-Rewarder::Rewarder(JNIEnv *env, jobject main) {
+Rewarder::Rewarder(Vibrator *mov, Colouring *vis_out) {
     // define criterions
-    AddCriterion(Criterion{
-            0, 4, 4, "Painful point"});
-    AddCriterion(Criterion{
-            1, 0, 1, "Normality"});
+    AddCriterion({0, 4, 4, "Painful point"});
+    AddCriterion({1, 0, 1, "Normality"});
 
     // define expressions
-    AddExpression(new Vibrator(env, main));
-    AddExpression(new Colouring(env, main));
+    AddExpression(mov);
+    AddExpression(vis_out);
 }
 
 void Rewarder::AddCriterion(Criterion criterion) {
@@ -28,11 +24,11 @@ void Rewarder::AddExpression(Expression *expression) {
 void Rewarder::SetScore(uint8_t criterionId, double score) {
     // ASSERT(score >= -1.0 && score <= 1.0, "Invalid reward score!")
     if (scores[criterionId] == score) return;
-    scores[criterionId] = score;
+    scores[criterionId] = score; // TODO why does this crash when Rewarder in initialised after the senses?!?
     Compute();
 }
 
-/** Computes the "fortuna" score. */
+/** Computes the `fortuna` score. */
 void Rewarder::Compute() {
     double sum = 0.0;
     double totalWeights = 0.0;
@@ -45,6 +41,4 @@ void Rewarder::Compute() {
     for (auto exp: expressions) exp.second->OnReward(fortuna);
 }
 
-Rewarder::~Rewarder() {
-    for (auto &exp: expressions) delete exp.second;
-}
+Rewarder::~Rewarder() = default;
