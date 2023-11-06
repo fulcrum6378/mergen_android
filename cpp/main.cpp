@@ -1,8 +1,8 @@
 #include <android/native_window_jni.h>
+#include <cassert>
 #include <jni.h>
 #include <sys/stat.h>
 
-#include "aud/commons.hpp"
 #include "aud/microphone.hpp"
 #include "aud/speaker.hpp"
 #include "hpt/touchscreen.hpp"
@@ -13,7 +13,6 @@
 static Perception *scm = nullptr;
 static Rewarder *rew = nullptr;
 
-static AudEngine *aud = nullptr;
 static Microphone *aud_in = nullptr;
 static Speaker *aud_out = nullptr;
 static Touchscreen *hpt = nullptr;
@@ -41,9 +40,8 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     // ComputeVK().run(state->activity->assetManager);
 
     // initialise low-level components
-    aud = new AudEngine();
-    aud_in = new Microphone(aud);
-    aud_out = new Speaker(aud);
+    aud_in = new Microphone();
+    aud_out = new Speaker();
     hpt = new Touchscreen(rew);
     vis = new Camera(jvm, gMain);
 
@@ -82,8 +80,6 @@ Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
     aud_in = nullptr;
     delete aud_out;
     aud_out = nullptr;
-    delete aud;
-    aud = nullptr;
     delete hpt;
     hpt = nullptr;
 
