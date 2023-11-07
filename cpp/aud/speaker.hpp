@@ -15,6 +15,8 @@ private:
 public:
     Speaker();
 
+    bool IsStarted() const;
+
     void Start();
 
     void Stop();

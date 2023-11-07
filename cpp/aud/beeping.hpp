@@ -9,7 +9,6 @@
 class Beeping : public Expression {
 private:
     Speaker *aud_out_;
-    bool secondFuck = false;
 
 public:
     explicit Beeping(Speaker *aud_out) :
@@ -17,10 +16,10 @@ public:
             aud_out_(aud_out) {}
 
     void OnReward(double fortuna) override {
-        if (secondFuck) return;
-        secondFuck = true;
-        aud_out_->Start();
-        //aud_out_->Stop();
+        bool qualified = fortuna < -0.33 || fortuna > 0.33;
+        if (qualified == aud_out_->IsStarted()) return;
+        if (qualified) aud_out_->Start();
+        else aud_out_->Stop();
     }
 
     ~Beeping() override = default;
