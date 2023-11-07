@@ -19,8 +19,7 @@ static Microphone *aud_in = nullptr;
 static Speaker *aud_out = nullptr;
 static Touchscreen *hpt = nullptr;
 static Vibrator *mov = nullptr;
-static Camera *vis_in = nullptr; // temporarily disabled in start, stop and onSurfaceStatusChanged
-static Colouring *vis_out = nullptr;
+static Camera *vis = nullptr; // temporarily disabled via start, stop and onSurfaceStatusChanged
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
@@ -37,22 +36,20 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
             mkdir(dir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     }
 
-    Manifest::init();
-
     // initialise low-level components
     aud_in = new Microphone();
     aud_out = new Speaker();
     hpt = new Touchscreen(&rew);
     mov = new Vibrator(env, gMain);
-    vis_in = new Camera(jvm, gMain);
-    vis_out = new Colouring(env, gMain);
+    vis = new Camera(jvm, gMain);
 
     // initialise high-level components
-    rew = new Rewarder(mov, vis_out);
+    Manifest::init();
+    rew = new Rewarder(aud_out, mov, env, gMain);
     scm = new Perception();
 
     // ComputeVK().run(state->activity->assetManager);
-    return reinterpret_cast<jlong>(vis_in);
+    return reinterpret_cast<jlong>(vis);
 }
 
 extern "C" JNIEXPORT jbyte JNICALL
@@ -83,13 +80,11 @@ Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
     hpt = nullptr;
     delete mov;
     mov = nullptr;
-    delete vis_out;
-    vis_out = nullptr;
 
-    delete scm;
-    scm = nullptr;
     delete rew;
     rew = nullptr;
+    delete scm;
+    scm = nullptr;
 }
 
 
@@ -109,7 +104,7 @@ extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
         JNIEnv */*env*/, jobject, jlong cameraObj, jobject /*surface*/, jboolean /*available*/) {
     auto *cam = reinterpret_cast<Camera *>(cameraObj);
-    assert(cam == vis_in);
+    assert(cam == vis);
     /*if (available) cam->CreateSession(ANativeWindow_fromSurface(env, surface));
     else { // don't put these in Main.destroy()
         delete cam;

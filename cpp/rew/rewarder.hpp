@@ -1,10 +1,12 @@
 #ifndef REW_REWARDER_H
 #define REW_REWARDER_H
 
+#include <jni.h>
+
+#include "../aud/speaker.hpp"
 #include "../manifest.hpp"
 #include "../mov/vibrator.hpp"
 #include "../rew/expression.hpp"
-#include "../vis/colouring.hpp"
 
 struct Criterion {
     uint8_t id;
@@ -33,7 +35,7 @@ private:
     void Compute();
 
 public:
-    Rewarder(Vibrator *mov, Colouring *vis_out);
+    Rewarder(Speaker *aud_out, Vibrator *mov, JNIEnv *env, jobject main);
 
     void SetScore(uint8_t criterionId, double score);
 

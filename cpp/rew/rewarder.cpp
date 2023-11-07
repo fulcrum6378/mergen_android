@@ -1,14 +1,18 @@
+#include "../aud/beeping.hpp"
 #include "../global.hpp"
+#include "../mov/shaking.hpp"
+#include "../vis/colouring.hpp"
 #include "rewarder.hpp"
 
-Rewarder::Rewarder(Vibrator *mov, Colouring *vis_out) {
+Rewarder::Rewarder(Speaker *aud_out, Vibrator *mov, JNIEnv *env, jobject main) {
     // define criterions
     AddCriterion({0, 4, 4, "Painful point"});
     AddCriterion({1, 0, 1, "Normality"});
 
     // define expressions
-    AddExpression(mov);
-    AddExpression(vis_out);
+    AddExpression(new Shaking(mov));
+    AddExpression(new Beeping(aud_out));
+    AddExpression(new Colouring(env, main));
 }
 
 void Rewarder::AddCriterion(Criterion criterion) {
@@ -41,4 +45,6 @@ void Rewarder::Compute() {
     for (auto exp: expressions) exp.second->OnReward(fortuna);
 }
 
-Rewarder::~Rewarder() = default;
+Rewarder::~Rewarder() {
+    for (auto &exp: expressions) delete exp.second;
+}

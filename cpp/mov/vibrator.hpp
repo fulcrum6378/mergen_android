@@ -1,25 +1,27 @@
 #ifndef MOV_VIBRATOR_H
 #define MOV_VIBRATOR_H
 
+#include <jni.h>
+
 #include "../rew/expression.hpp"
 
 #define OUTPUT_ID_VIBRATOR (-3)
 
-class Vibrator : public Expression {
-public:
-    Vibrator(JNIEnv *env, jobject main) :
-            Expression(EXPRESSION_ID_VIBRATOR_1, OUTPUT_ID_VIBRATOR, env, main) {}
+class Vibrator {
+private:
+    JNIEnv *env_;
+    jobject main_;
 
-    void OnReward(double fortuna) override {
-        jint amplitude_;
-        if (fortuna >= -0.75 && fortuna < 0.75) amplitude_ = 0;
-        else amplitude_ = 1 + (int32_t) (((fortuna + 1.0) / 2.0) * 254);
+public:
+    Vibrator(JNIEnv *env, jobject main) : env_(env), main_(main) {}
+
+    void SetAmplitude(int32_t amplitude) {
         jmethodID method = env_->GetMethodID(
                 env_->FindClass("ir/mahdiparastesh/mergen/Main"), "vibrate", "(I)V");
-        env_->CallVoidMethod(main_, method, amplitude_);
+        env_->CallVoidMethod(main_, method, amplitude);
     }
 
-    ~Vibrator() override = default;
+    ~Vibrator() = default;
 };
 
 #endif //MOV_VIBRATOR_H

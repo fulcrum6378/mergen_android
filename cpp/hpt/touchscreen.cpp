@@ -49,7 +49,7 @@ void Touchscreen::CheckForRewards() {
         if (distance < 150.0) inRange = true;
     }
     if (inRange) {
-        score -= 0.03;
+        score -= 0.04;
         if (score < -1.0) score = -1.0;
     } else score = 0.0;
     (*rew_)->SetScore(0, score);

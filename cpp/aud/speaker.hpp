@@ -15,11 +15,11 @@ private:
 public:
     Speaker();
 
-    void Start(void);
+    void Start();
 
-    void Stop(void);
+    void Stop();
 
     ~Speaker();
 };
 
-#endif  // AUD_SPEAKER_H
+#endif //AUD_SPEAKER_H

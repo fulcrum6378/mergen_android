@@ -18,6 +18,7 @@ add_library(main SHARED
         hpt/touchscreen.cpp
         hpt/touchscreen.hpp
 
+        mov/shaking.hpp
         mov/vibrator.hpp
 
         rew/expression.hpp
@@ -37,6 +38,7 @@ add_library(main SHARED
         vis/segmentation.hpp
         vis/visual_stm.cpp
         vis/visual_stm.hpp
+        aud/beeping.hpp
 
         #vlk/compute_vk.cpp
         #vlk/compute_vk.h
