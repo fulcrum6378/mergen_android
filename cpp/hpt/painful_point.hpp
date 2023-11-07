@@ -10,6 +10,9 @@
 #define INPUT_ID_TOUCH 4
 
 class PainfulPoint : public Criterion {
+private:
+    std::thread elasticity;
+
 public:
     explicit PainfulPoint(float weight) :
             Criterion(CRITERION_ID_PAINFUL_POINT, INPUT_ID_TOUCH, weight) {}
@@ -32,9 +35,14 @@ public:
             if (score < -1.0) score = -1.0;
             return score;
         } else if (score != 0) {
-            // TODO gradual decrease in pain (Elasticity)
-            return 0/*-2.0*/;
+            elasticity = std::thread(&PainfulPoint::Elasticity, this);
+            elasticity.detach();
+            return -2.0;
         } else return -2.0;
+    }
+
+    void Elasticity() {
+        // TODO gradual decrease in pain
     }
 
     ~PainfulPoint() override = default;
