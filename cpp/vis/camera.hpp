@@ -22,13 +22,13 @@
 #define IMAGE_NEAREST_HEIGHT 1088
 // maximum image buffers
 #define MAX_BUF_COUNT 4
-
-static bool VIS_SAVE = false;
+// whether ot not save all image frames as a single bitmap stream, or do the segmentation instead
+#define VIS_SAVE false
 
 enum class CaptureSessionState : int8_t {
     READY,      // session is ready
     ACTIVE,     // session is busy
-    CLOSED,     // session is closed(by itself or a new session evicts)
+    CLOSED,     // session is closed (by itself or a new session evicts)
     MAX_STATE
 };
 

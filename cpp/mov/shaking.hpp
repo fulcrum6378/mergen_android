@@ -19,8 +19,8 @@ public:
 
     void OnReward(double fortuna) override {
         jint amplitude_;
-        if (fortuna >= -0.75 && fortuna < 0.75) amplitude_ = 0;
-        else amplitude_ = 1 + (int32_t) (((fortuna + 1.0) / 2.0) * 254);
+        if (fortuna >= -0.5 && fortuna < 0.5) amplitude_ = 0;
+        else amplitude_ = 1 + static_cast<int32_t>(((fortuna + 1.0) / 2.0) * 254);
         mov_->SetAmplitude(amplitude_);
     }
 

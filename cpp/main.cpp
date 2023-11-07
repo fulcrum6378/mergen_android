@@ -10,7 +10,6 @@
 #include "rew/rewarder.hpp"
 #include "scm/perception.hpp"
 #include "vis/camera.hpp"
-#include "vis/colouring.hpp"
 
 static Perception *scm = nullptr;
 static Rewarder *rew = nullptr;
@@ -23,7 +22,7 @@ static Camera *vis = nullptr; // temporarily disabled via start, stop and onSurf
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
-    // retrieve necessary JNI references
+    // retrieve necessary JNI references (don't put them in static variables)
     JavaVM *jvm = nullptr;
     env->GetJavaVM(&jvm);
     jobject gMain = env->NewGlobalRef(main);

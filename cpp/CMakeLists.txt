@@ -10,17 +10,20 @@ add_library(main SHARED
         global.hpp
         manifest.hpp
 
+        aud/beeping.hpp
         aud/microphone.cpp
         aud/microphone.hpp
         aud/speaker.cpp
         aud/speaker.hpp
 
+        hpt/painful_point.hpp
         hpt/touchscreen.cpp
         hpt/touchscreen.hpp
 
         mov/shaking.hpp
         mov/vibrator.hpp
 
+        rew/criterion.hpp
         rew/expression.hpp
         rew/rewarder.cpp
         rew/rewarder.hpp
@@ -38,7 +41,6 @@ add_library(main SHARED
         vis/segmentation.hpp
         vis/visual_stm.cpp
         vis/visual_stm.hpp
-        aud/beeping.hpp
 
         #vlk/compute_vk.cpp
         #vlk/compute_vk.h
@@ -54,7 +56,7 @@ target_include_directories(main PUBLIC
 
 target_link_libraries(main
         aaudio       # AAudioXXXXX
-        android      # ANativeWindow
+        android      # <android/native_window(_jni).h>::ANativeWindow(_fromSurface)
         camera2ndk   # ACameraXXXXX
         log          # <android/log.h>::__android_log_assert
         mediandk     # AImageReader

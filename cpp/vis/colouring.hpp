@@ -2,8 +2,8 @@
 #define VIS_COLOURING_H
 
 #include <cmath>
-#include <jni.h>
 
+#include "../global.hpp"
 #include "../rew/expression.hpp"
 
 #define OUTPUT_ID_SCREEN (-1)

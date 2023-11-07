@@ -230,9 +230,11 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     @SuppressWarnings("unused")
     void vibrate(int amplitude) {
         shakeAmplitude = amplitude;
-        if (shaker == null) shaker = new Thread(() -> {
+        if (shaker != null) return;
+        shaker = new Thread(() -> {
             while (shakeAmplitude != 0) {
-                if (amplitude > 0) vib.vibrate(VibrationEffect.createOneShot(200, amplitude));
+                if (shakeAmplitude > 0)
+                    vib.vibrate(VibrationEffect.createOneShot(200, shakeAmplitude));
                 try { //noinspection BusyWait
                     Thread.sleep(200);
                 } catch (InterruptedException e) {
@@ -241,6 +243,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
             }
             shaker = null;
         });
+        shaker.start();
     }
 
     /** Effect for expressing simulated pleasure & pain. */

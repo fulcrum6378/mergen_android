@@ -233,13 +233,14 @@ void Camera::ImageCallback(AImageReader *reader) {
     if (AImageReader_acquireNextImage(reader, &image) != AMEDIA_OK || !image) return;
     bool used = false;
     if (recording_) {
-        if (!VIS_SAVE) {
-            used = !segmentation_->locked;
-            if (used)
-                std::thread(&Segmentation::Process, segmentation_,
-                            image, &recording_, debugMode_).detach();
-        } else
-            used = bmp_stream_->HandleImage(image);
+#if VIS_SAVE
+        used = bmp_stream_->HandleImage(image);
+#else
+        used = !segmentation_->locked;
+        if (used)
+            std::thread(&Segmentation::Process, segmentation_,
+                        image, &recording_, debugMode_).detach();
+#endif
     }
     if (!used) AImage_delete(image);
     else { // don't move this to Segmentation thread. (for performance)

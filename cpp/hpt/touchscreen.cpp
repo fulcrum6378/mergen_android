@@ -1,9 +1,6 @@
-#include <cmath>
-
-#include "../global.hpp"
 #include "touchscreen.hpp"
 
-Touchscreen::Touchscreen(Rewarder **rew) : rew_(rew) {}
+Touchscreen::Touchscreen(Rewarder **rew) : rew_(rew), painfulPoint() {}
 
 /** Device ID (dev) is always 3 in my phone. */
 void Touchscreen::OnTouchEvent(int16_t /*dev*/, int8_t act, int16_t id, float x, float y,
@@ -35,24 +32,16 @@ void Touchscreen::OnTouchEvent(int16_t /*dev*/, int8_t act, int16_t id, float x,
         y_ = y;
     }
 
-    CheckForRewards();
-}
-
-void Touchscreen::CheckForRewards() {
-    bool anyOn = false;
-    for (auto o: on) if (o.second) anyOn = true;
-    auto screen = Manifest::interactions[INPUT_ID_TOUCH];
-    bool inRange = false;
-    if (anyOn) {
-        double xM = (double) screen.width / 2.0, yM = 10.0 * ((double) screen.height / 100.0);
-        double distance = sqrt(pow(x_ - xM, 2) + pow(y_ - yM, 2));
-        if (distance < 150.0) inRange = true;
+    if (!painfulPoint)
+        painfulPoint = dynamic_cast<PainfulPoint *>(
+                (*rew_)->GetCriterion(CRITERION_ID_PAINFUL_POINT));
+    double score = painfulPoint->CheckForRewards(
+            (*rew_)->GetScore(CRITERION_ID_PAINFUL_POINT),
+            (void *[3]) {&on, &x_, &y_});
+    if (score != -2.0) {
+        (*rew_)->SetScore(CRITERION_ID_PAINFUL_POINT, score);
+        (*rew_)->Compute();
     }
-    if (inRange) {
-        score -= 0.04;
-        if (score < -1.0) score = -1.0;
-    } else score = 0.0;
-    (*rew_)->SetScore(0, score);
 }
 
 Touchscreen::~Touchscreen() = default;

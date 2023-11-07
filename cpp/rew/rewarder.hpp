@@ -6,14 +6,8 @@
 #include "../aud/speaker.hpp"
 #include "../manifest.hpp"
 #include "../mov/vibrator.hpp"
-#include "../rew/expression.hpp"
-
-struct Criterion {
-    uint8_t id;
-    [[maybe_unused]] int8_t interaction_id;
-    float weight;
-    [[maybe_unused]] char const *desc;
-};
+#include "criterion.hpp"
+#include "expression.hpp"
 
 /**
  * Each SENSE can have multiple criteria with their importance values.
@@ -24,20 +18,24 @@ private:
     /** Range -1..+1 */
     double fortuna{0.0};
 
-    std::unordered_map<uint8_t, Criterion> criteria;
+    std::unordered_map<uint8_t, Criterion *> criteria;
     std::unordered_map<uint8_t, double> scores;
     std::unordered_map<uint8_t, Expression *> expressions;
 
-    void AddCriterion(Criterion criterion);
+    void AddCriterion(Criterion *criterion);
 
     void AddExpression(Expression *expression);
-
-    void Compute();
 
 public:
     Rewarder(Speaker *aud_out, Vibrator *mov, JNIEnv *env, jobject main);
 
+    Criterion *GetCriterion(uint8_t criterionId);
+
+    double GetScore(uint8_t criterionId);
+
     void SetScore(uint8_t criterionId, double score);
+
+    void Compute();
 
     ~Rewarder();
 };

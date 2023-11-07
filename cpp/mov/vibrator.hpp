@@ -16,9 +16,12 @@ public:
     Vibrator(JNIEnv *env, jobject main) : env_(env), main_(main) {}
 
     void SetAmplitude(int32_t amplitude) {
-        jmethodID method = env_->GetMethodID(
-                env_->FindClass("ir/mahdiparastesh/mergen/Main"), "vibrate", "(I)V");
-        env_->CallVoidMethod(main_, method, amplitude);
+        env_->CallVoidMethod(
+                main_,
+                env_->GetMethodID(
+                        env_->FindClass("ir/mahdiparastesh/mergen/Main"),
+                        "vibrate", "(I)V"),
+                amplitude);
     }
 
     ~Vibrator() = default;
