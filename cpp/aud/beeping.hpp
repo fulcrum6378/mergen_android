@@ -26,7 +26,7 @@ public:
 
     static void AudCallback(int16_t *buf, int32_t numFrames, void */*data*/) {
         int togval = 0, togmax = 20, overval = 0, overmax = 400;
-        float x, overadd = 0.1;
+        float x, overadd = 0.1f;
         bool togg = true, over = false;
         for (int f = 0; f < numFrames; f++) {
 
@@ -38,7 +38,7 @@ public:
                 x += (float) abs(f - numFrames);
             //x *= 0.000001;
 
-            if (over) x += (float) (overadd * (x + 0.1));
+            if (over) x += overadd * (x + 0.1f);
             if (overval >= overmax) {
                 over = !over;
                 overval = 0;

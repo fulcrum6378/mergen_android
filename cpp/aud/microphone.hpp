@@ -10,7 +10,7 @@ class Microphone {
 private:
     AAudioStream *stream{};
     aaudio_stream_state_t state{AAUDIO_STREAM_STATE_UNINITIALIZED};
-    int64_t waitTimeout{300000000L}; // nanoseconds (billionth), 300 milliseconds
+    int64_t waitTimeout{300000000ll}; // nanoseconds (billionth), 300 milliseconds
 
     static aaudio_data_callback_result_t
     Callback(AAudioStream *stream, void *microphone, void *buf, int32_t numFrames);

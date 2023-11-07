@@ -7,8 +7,8 @@
 
 Rewarder::Rewarder(Speaker *aud_out, Vibrator *mov, JNIEnv *env, jobject main) {
     // define criterions
-    AddCriterion(new Criterion(0, 0, 1.0));
-    AddCriterion(new PainfulPoint(3.0));
+    AddCriterion(new PainfulPoint(3.0f));
+    AddCriterion(new Criterion(255u, 0, 1.0f));
 
     // define expressions
     AddExpression(new Shaking(mov));
@@ -16,39 +16,28 @@ Rewarder::Rewarder(Speaker *aud_out, Vibrator *mov, JNIEnv *env, jobject main) {
     AddExpression(new Colouring(env, main));
 }
 
-Criterion *Rewarder::GetCriterion(uint8_t criterionId) {
-    return criteria[criterionId];
-}
-
 void Rewarder::AddCriterion(Criterion *criterion) {
     criteria[criterion->id] = criterion;
-    scores[criterion->id] = 0.0;
+}
+
+Criterion *Rewarder::GetCriterion(uint8_t criterionId) {
+    return criteria[criterionId];
 }
 
 void Rewarder::AddExpression(Expression *expression) {
     expressions[expression->id] = expression;
 }
 
-/** Retrieves the score of this criterion. */
-double Rewarder::GetScore(uint8_t criterionId) {
-    return scores[criterionId];
-}
-
-/** An interface for any sense to declare its own score. */
-void Rewarder::SetScore(uint8_t criterionId, double score) {
-    if (scores[criterionId] != score) scores[criterionId] = score;
-}
-
 /** Computes the `fortuna` score. */
 void Rewarder::Compute() {
     double sum = 0.0;
-    double totalWeights = 0.0;
-    for (auto score: scores) {
-        sum += score.second * criteria[score.first]->weight;
-        totalWeights += criteria[score.first]->weight;
+    float totalWeights = 0.0f;
+    for (auto cri: criteria) {
+        sum += cri.second->score * cri.second->weight;
+        totalWeights += cri.second->weight;
     }
     fortuna = sum / totalWeights;
-    LOGI("Fortuna is %f", fortuna);
+    LOGI("Fortuna is %f", fortuna.load());
     for (auto exp: expressions) exp.second->OnReward(fortuna);
 }
 

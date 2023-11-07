@@ -13,11 +13,11 @@
 #include "visual_stm.hpp"
 
 // height of an image frame
-#define H 1088
+#define H 1088u
 // width of an image frame
-#define W 1088
+#define W 1088u
 // maximum allowed segments to be analysed extensively
-#define MAX_SEGS 20
+#define MAX_SEGS 20u
 // radii for searching through Volatile Indices
 #define Y_RADIUS 15
 #define U_RADIUS 10

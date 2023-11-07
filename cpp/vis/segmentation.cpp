@@ -78,7 +78,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
             y = stack[last][0], x = stack[last][1], dr = stack[last][2];
             if (dr == 0) {
                 seg.p.push_back((y << 16) | x);
-#if MIN_SEG_SIZE == 1 // add colours in order to compute their mean value later
+#if MIN_SEG_SIZE == 1u // add colours in order to compute their mean value later
                 seg.ys += arr[y][x][0] * arr[y][x][0];
                 seg.us += arr[y][x][1] * arr[y][x][1];
                 seg.vs += arr[y][x][2] * arr[y][x][2];
@@ -121,7 +121,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
 
     // 3. dissolution
     t0 = chrono::system_clock::now();
-#if MIN_SEG_SIZE != 1
+#if MIN_SEG_SIZE != 1u
     uint32_t absorber_i, size_bef = segments.size(), removal = 1;
     Segment *absorber;
     for (int32_t seg = static_cast<int32_t>(size_bef) - 1; seg > -1; seg--)
@@ -147,7 +147,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     // 4. average colours + detect boundaries
     t0 = chrono::system_clock::now();
     uint32_t l_;
-#if MIN_SEG_SIZE != 1
+#if MIN_SEG_SIZE != 1u
     array<uint8_t, 3> *col;
     uint64_t ys, us, vs;
 #endif
@@ -156,7 +156,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     for (Segment &seg: segments) {
         // average colours of each segment
         l_ = seg.p.size();
-#if MIN_SEG_SIZE != 1
+#if MIN_SEG_SIZE != 1u
         ys = 0, us = 0, vs = 0;
         for (uint32_t p: seg.p) {
             col = reinterpret_cast<array<uint8_t, 3> *>(&arr[p >> 16][p & 0xFFFF]);
@@ -385,10 +385,10 @@ void Segmentation::SetAsBorder(uint16_t y, uint16_t x) {
     b_status[y][x] |= 1;
     Segment *seg = s_index[status[y][x]];
     seg->border.insert(
-            (static_cast<SHAPE_POINT_T>((shape_point_max / static_cast<float>(seg->h)) *
+            (static_cast<SHAPE_POINT_T>((SHAPE_POINT_MAX / static_cast<float>(seg->h)) *
                                         static_cast<float>(y - seg->min_y)) // fractional Y
-                    << shape_point_each_bits) |
-            static_cast<SHAPE_POINT_T>((shape_point_max / static_cast<float>(seg->w)) *
+                    << SHAPE_POINT_EACH_BITS) |
+            static_cast<SHAPE_POINT_T>((SHAPE_POINT_MAX / static_cast<float>(seg->w)) *
                                        static_cast<float>(x - seg->min_x))  // fractional X
     ); // they get reversed in while writing to a file
 }

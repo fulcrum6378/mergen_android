@@ -1,6 +1,7 @@
+#include "../rew/rewarder.hpp"
 #include "touchscreen.hpp"
 
-Touchscreen::Touchscreen(Rewarder **rew) : rew_(rew), painfulPoint() {}
+Touchscreen::Touchscreen() : painfulPoint() {}
 
 /** Device ID (dev) is always 3 in my phone. */
 void Touchscreen::OnTouchEvent(int16_t /*dev*/, int8_t act, int16_t id, float x, float y,
@@ -32,16 +33,11 @@ void Touchscreen::OnTouchEvent(int16_t /*dev*/, int8_t act, int16_t id, float x,
         y_ = y;
     }
 
+    // PainfulPoint
     if (!painfulPoint)
         painfulPoint = dynamic_cast<PainfulPoint *>(
-                (*rew_)->GetCriterion(CRITERION_ID_PAINFUL_POINT));
-    double score = painfulPoint->CheckForRewards(
-            (*rew_)->GetScore(CRITERION_ID_PAINFUL_POINT),
-            (void *[3]) {&on, &x_, &y_});
-    if (score != -2.0) {
-        (*rew_)->SetScore(CRITERION_ID_PAINFUL_POINT, score);
-        (*rew_)->Compute();
-    }
+                Rewarder::GetCriterion(CRITERION_ID_PAINFUL_POINT));
+    painfulPoint->CheckForRewards((void *[3]) {&on, &x_, &y_});
 }
 
 Touchscreen::~Touchscreen() = default;

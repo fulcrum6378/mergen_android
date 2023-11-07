@@ -113,7 +113,7 @@ void VisualSTM::SaveIndices(map<INT, unordered_set<uint16_t>> *indexes, string *
 [[maybe_unused]] void VisualSTM::Insert(Segment *seg) {
     // put data in a buffer
     uint64_t off = 21;
-    char buf[off + (shape_point_bytes * seg->border.size())];
+    char buf[off + (SHAPE_POINT_BYTES * seg->border.size())];
     memcpy(&buf[0], &seg->m, 3); // Mean Colour
     memcpy(&buf[3], &seg->r, 2); // Ratio
     memcpy(&buf[5], &nextFrameId, 8); // Frame ID
@@ -122,8 +122,8 @@ void VisualSTM::SaveIndices(map<INT, unordered_set<uint16_t>> *indexes, string *
     memcpy(&buf[17], &seg->cx, 2); // Centre (X)
     memcpy(&buf[19], &seg->cy, 2); // Centre (Y)
     for (SHAPE_POINT_T p: seg->border) {
-        memcpy(&buf[off], &p, shape_point_bytes); // Point {X, Y}
-        off += shape_point_bytes;
+        memcpy(&buf[off], &p, SHAPE_POINT_BYTES); // Point {X, Y}
+        off += SHAPE_POINT_BYTES;
     }
 
     // write buffer to shape file

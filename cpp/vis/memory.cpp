@@ -28,11 +28,11 @@ VisMemory::VisMemory() {
         uint16_t cx, uint16_t cy, // central points
         unordered_set<uint16_t> *path
 ) {
-    auto r = static_cast<uint16_t>(round((static_cast<float>(*w) / static_cast<float>(*h)) * 10.0));
+    auto r = static_cast<uint16_t>(round((static_cast<float>(*w) / static_cast<float>(*h)) * 10.0f));
 
     // put data in a buffer
     uint64_t off = 21;
-    char buf[off + (shape_point_bytes * (*path).size())];
+    char buf[off + (SHAPE_POINT_BYTES * (*path).size())];
     memcpy(&buf[0], m, 3); // Mean Colour
     memcpy(&buf[3], &r, 2); // Ratio
     memcpy(&buf[5], &nextFrameId, 8); // Frame ID
@@ -41,8 +41,8 @@ VisMemory::VisMemory() {
     memcpy(&buf[17], &cx, 2); // Centre (X)
     memcpy(&buf[19], &cy, 2); // Centre (Y)
     for (uint16_t p: *path) {
-        memcpy(&buf[off], &p, shape_point_bytes); // Point {X, Y}
-        off += shape_point_bytes;
+        memcpy(&buf[off], &p, SHAPE_POINT_BYTES); // Point {X, Y}
+        off += SHAPE_POINT_BYTES;
     }
 
     // write buffer to shape file

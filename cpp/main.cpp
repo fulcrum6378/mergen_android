@@ -38,7 +38,7 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     // initialise low-level components
     aud_in = new Microphone();
     aud_out = new Speaker();
-    hpt = new Touchscreen(&rew);
+    hpt = new Touchscreen();
     mov = new Vibrator(env, gMain);
     vis = new Camera(jvm, gMain);
 
