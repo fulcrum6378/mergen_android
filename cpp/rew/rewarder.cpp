@@ -4,6 +4,7 @@
 #include "../mov/shaking.hpp"
 #include "../vis/colouring.hpp"
 #include "rewarder.hpp"
+#include "criterion.hpp"
 
 Rewarder::Rewarder(Speaker *aud_out, Vibrator *mov, JNIEnv *env, jobject main) {
     // define criterions
@@ -44,4 +45,16 @@ void Rewarder::Compute() {
 Rewarder::~Rewarder() {
     for (auto &exp: expressions) delete exp.second;
     for (auto &cri: criteria) delete cri.second;
+}
+
+/* --- CRITERION --- */
+
+/** do NOT move this to the header file;
+ * apparently C++ doesn't allow direct circular import, but allows an indirect one! */
+void Criterion::Elasticity() {
+    // TODO score <= 0.0f
+    while (score != 0.0f) {
+        Rewarder::Compute();
+    }
+    elasticity = nullptr;
 }

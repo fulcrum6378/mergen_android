@@ -25,6 +25,7 @@ public:
 protected:
     std::thread *elasticity = nullptr;
 
+    /** Implemented at the bottom of `rewarder.cpp`. */
     void Elasticity();
 };
 

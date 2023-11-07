@@ -23,7 +23,6 @@ add_library(main SHARED
         mov/shaking.hpp
         mov/vibrator.hpp
 
-        rew/criterion.cpp
         rew/criterion.hpp
         rew/expression.hpp
         rew/rewarder.cpp
