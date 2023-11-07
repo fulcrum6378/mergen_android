@@ -32,7 +32,7 @@ public:
             if (score < -1.0) score = -1.0;
             return score;
         } else if (score != 0) {
-            // TODO
+            // TODO gradual decrease in pain (Elasticity)
             return 0/*-2.0*/;
         } else return -2.0;
     }

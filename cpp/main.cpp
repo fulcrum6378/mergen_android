@@ -27,7 +27,7 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     env->GetJavaVM(&jvm);
     jobject gMain = env->NewGlobalRef(main);
 
-    // ensure that /files/ dir exists
+    // ensure that /files/ and its required subdirectories exist
     struct stat sb{};
     for (std::string dirN: {""/*, "aud"*//*, "hpt"*/, "vis"}) {
         const char *dir = (filesDir + dirN).c_str();

@@ -1,3 +1,5 @@
+#include <cstdlib>
+
 #include "speaker.hpp"
 
 Speaker::Speaker() {
@@ -26,8 +28,10 @@ void Speaker::Start() {
 
 aaudio_data_callback_result_t Speaker::Callback(
         AAudioStream */*stream*/, void *microphone, void *buf, int32_t numFrames) {
-    auto *aud_out = static_cast<Speaker *>(microphone);
-    // control `static_cast<int16_t *>(buf), numFrames` to make noises
+    auto *buf_ = static_cast<int16_t *>(buf);
+    for (int f = 0; f < numFrames; f++)
+        buf_[f] = (rand() % 65535) - 32768;
+    //auto *aud_out = static_cast<Speaker *>(microphone);
     return AAUDIO_CALLBACK_RESULT_CONTINUE;
 }
 
