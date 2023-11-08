@@ -32,13 +32,13 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     int32_t uvPixelStride;
     AImage_getPlanePixelStride(image, 1, &uvPixelStride);
 
-    for (uint16_t y = 0; y < H; y++) {
+    for (uint16_t y = 0u; y < H; y++) {
         const uint8_t *pY = yPixel + yStride * (y + srcRect.top) + srcRect.left;
         int32_t uv_row_start = uvStride * ((y + srcRect.top) >> 1);
         const uint8_t *pU = uPixel + uv_row_start + (srcRect.left >> 1);
         const uint8_t *pV = vPixel + uv_row_start + (srcRect.left >> 1);
 
-        for (uint16_t x = 0; x < W; x++) {
+        for (uint16_t x = 0u; x < W; x++) {
             const int32_t uv_offset = (x >> 1) * uvPixelStride;
             arr[y][x][0] = pY[x];
             arr[y][x][1] = pU[uv_offset];
@@ -52,15 +52,15 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
 
     // 2. segmentation
     t0 = chrono::system_clock::now();
-    uint32_t nextSeg = 1;
-    uint16_t thisY = 0, thisX = 0;
+    uint32_t nextSeg = 1u;
+    uint16_t thisY = 0u, thisX = 0u;
     int64_t last; // must be signed
     bool foundSthToAnalyse = true;
     while (foundSthToAnalyse) {
         foundSthToAnalyse = false;
         for (uint16_t y = thisY; y < H; y++) {
-            for (uint16_t x = (y == thisY) ? thisX : 0; x < W; x++)
-                if (status[y][x] == 0) {
+            for (uint16_t x = (y == thisY) ? thisX : 0u; x < W; x++)
+                if (status[y][x] == 0u) {
                     foundSthToAnalyse = true;
                     thisY = y;
                     thisX = x;
@@ -71,7 +71,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
         if (!foundSthToAnalyse) break;
 
         Segment seg{nextSeg};
-        stack.push_back({thisY, thisX, 0});
+        stack.push_back({thisY, thisX, 0u});
         nextSeg++;
         uint16_t y, x, dr;
         while ((last = static_cast<int64_t>(stack.size()) - 1) != -1) {
@@ -86,29 +86,29 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                 status[y][x] = seg.id;
                 // left
                 stack[last][2]++;
-                if (x > 0 && status[y][x - 1] == 0 && CompareColours(&arr[y][x], &arr[y][x - 1])) {
-                    stack.push_back({y, static_cast<uint16_t>(x - 1), 0});
+                if (x > 0u && status[y][x - 1u] == 0 && CompareColours(&arr[y][x], &arr[y][x - 1u])) {
+                    stack.push_back({y, static_cast<uint16_t>(x - 1u), 0u});
                     continue;
                 }
             }
-            if (dr <= 1) { // top
+            if (dr <= 1u) { // top
                 stack[last][2]++;
-                if (y > 0 && status[y - 1][x] == 0 && CompareColours(&arr[y][x], &arr[y - 1][x])) {
-                    stack.push_back({static_cast<uint16_t>(y - 1), x, 0});
+                if (y > 0u && status[y - 1u][x] == 0 && CompareColours(&arr[y][x], &arr[y - 1u][x])) {
+                    stack.push_back({static_cast<uint16_t>(y - 1u), x, 0u});
                     continue;
                 }
             }
-            if (dr <= 2) { // right
+            if (dr <= 2u) { // right
                 stack[last][2]++;
-                if (x < (W - 1) && status[y][x + 1] == 0 && CompareColours(&arr[y][x], &arr[y][x + 1])) {
-                    stack.push_back({y, static_cast<uint16_t>(x + 1), 0});
+                if (x < (W - 1u) && status[y][x + 1u] == 0 && CompareColours(&arr[y][x], &arr[y][x + 1u])) {
+                    stack.push_back({y, static_cast<uint16_t>(x + 1u), 0u});
                     continue;
                 }
             }
-            if (dr <= 3) { // bottom
+            if (dr <= 3u) { // bottom
                 stack[last][2]++;
-                if (y < (H - 1) && status[y + 1][x] == 0 && CompareColours(&arr[y][x], &arr[y + 1][x])) {
-                    stack.push_back({static_cast<uint16_t>(y + 1), x, 0});
+                if (y < (H - 1u) && status[y + 1u][x] == 0 && CompareColours(&arr[y][x], &arr[y + 1u][x])) {
+                    stack.push_back({static_cast<uint16_t>(y + 1u), x, 0u});
                     continue;
                 }
             }
@@ -122,13 +122,13 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     // 3. dissolution
     t0 = chrono::system_clock::now();
 #if MIN_SEG_SIZE != 1u
-    uint32_t absorber_i, size_bef = segments.size(), removal = 1;
+    uint32_t absorber_i, size_bef = segments.size(), removal = 1u;
     Segment *absorber;
     for (int32_t seg = static_cast<int32_t>(size_bef) - 1; seg > -1; seg--)
         if (segments[seg].p.size() < MIN_SEG_SIZE) {
             absorber_i = FindPixelOfASegmentToDissolveIn(&segments[seg]);
             if (absorber_i == 0xFFFFFFFF) continue;
-            absorber = &segments[status[absorber_i >> 16][absorber_i & 0xFFFF] - 1];
+            absorber = &segments[status[absorber_i >> 16][absorber_i & 0xFFFF] - 1u];
             for (uint32_t &p: segments[seg].p) {
                 absorber->p.push_back(p); // merge()
                 status[p >> 16][p & 0xFFFF] = absorber->id;
@@ -148,7 +148,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     t0 = chrono::system_clock::now();
     uint32_t l_;
 #if MIN_SEG_SIZE != 1u
-    array<uint8_t, 3> *col;
+    array<uint8_t, 3u> *col;
     uint64_t ys, us, vs;
 #endif
     bool isFirst;
@@ -157,9 +157,9 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
         // average colours of each segment
         l_ = seg.p.size();
 #if MIN_SEG_SIZE != 1u
-        ys = 0, us = 0, vs = 0;
+        ys = 0ull, us = 0ull, vs = 0ull;
         for (uint32_t p: seg.p) {
-            col = reinterpret_cast<array<uint8_t, 3> *>(&arr[p >> 16][p & 0xFFFF]);
+            col = reinterpret_cast<array<uint8_t, 3u> *>(&arr[p >> 16][p & 0xFFFF]);
             ys += (*col)[0] * (*col)[0]; // pow(, 2)
             us += (*col)[1] * (*col)[1];
             vs += (*col)[2] * (*col)[2];
@@ -193,8 +193,8 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                 if (x > seg.max_x) seg.max_x = x;
             }
         }
-        seg.w = (seg.max_x + 1) - seg.min_x;
-        seg.h = (seg.max_y + 1) - seg.min_y;
+        seg.w = (seg.max_x + 1u) - seg.min_x;
+        seg.h = (seg.max_y + 1u) - seg.min_y;
 
         // index the Segments by their IDs
         s_index[seg.id] = &seg;
@@ -204,21 +204,21 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
 
     // 5. trace border pixels
     t0 = chrono::system_clock::now();
-    for (y = 0; y < H; y++) {
-        if (y == 0 || y == H - 1)
-            for (x = 0; x < W; x++)
+    for (y = 0u; y < H; y++) {
+        if (y == 0u || y == H - 1u)
+            for (x = 0u; x < W; x++)
                 SetAsBorder(y, x);
         else
-            for (x = 0; x < W; x++) {
-                if (x == 0 or x == W - 1) {
+            for (x = 0u; x < W; x++) {
+                if (x == 0u or x == W - 1u) {
                     SetAsBorder(y, x);
                     continue;
                 }
                 if (b_status[y][x] == 1) continue;
-                CheckIfBorder(y, x, y, x + 1); //     eastern
-                CheckIfBorder(y, x, y + 1, x + 1); // south-eastern
-                CheckIfBorder(y, x, y + 1, x); //     southern
-                CheckIfBorder(y, x, y + 1, x - 1); // south-western
+                CheckIfBorder(y, x, y, x + 1u); //     eastern
+                CheckIfBorder(y, x, y + 1u, x + 1u); // south-eastern
+                CheckIfBorder(y, x, y + 1u, x); //     southern
+                CheckIfBorder(y, x, y + 1u, x - 1u); // south-western
             }
     }
     auto delta5 = chrono::duration_cast<chrono::milliseconds>(
@@ -231,7 +231,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     float nearest_dist, dist;
     int32_t best;
     l_ = segments.size();
-    for (uint16_t sid = 0; sid < MAX_SEGS; sid++) {// Segment &seg: segments
+    for (uint16_t sid = 0u; sid < MAX_SEGS; sid++) {// Segment &seg: segments
         if (sid >= l_) break;
         Segment *seg = &segments[sid];
         seg->ComputeRatioAndCentre();
@@ -264,8 +264,8 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                 if (a_u.find(can) != a_u.end() && a_v.find(can) != a_v.end()
                     && a_r.find(can) != a_r.end()) {
                     Segment *prev_seg = &prev_segments[can];
-                    dist = static_cast<float>(sqrt(pow(seg->cx - prev_seg->cx, 2) +
-                                                   pow(seg->cy - prev_seg->cy, 2)));
+                    dist = sqrt(std::pow(seg->cx - prev_seg->cx, 2) +
+                                std::pow(seg->cy - prev_seg->cy, 2));
                     if (best == -1) { // NOLINT(bugprone-branch-clone)
                         nearest_dist = dist;
                         best = static_cast<int32_t>(can);
@@ -362,15 +362,15 @@ uint32_t Segmentation::FindPixelOfASegmentToDissolveIn(Segment *seg) {
     uint32_t cor = seg->p.front();
     uint16_t a = cor >> 16, b = cor & 0xFFFF;
     if (a > 0)
-        return ((a - 1) << 16) | b;
+        return ((a - 1u) << 16) | b;
     if (b > 0)
-        return (a << 16) | (b - 1);
+        return (a << 16) | (b - 1u);
     cor = seg->p.back();
     a = cor >> 16, b = cor & 0xFFFF;
-    if (a < H - 1)
-        return ((a + 1) << 16) | b;
-    if (b < W - 1)
-        return (a << 16) | (b + 1);
+    if (a < H - 1u)
+        return ((a + 1u) << 16) | b;
+    if (b < W - 1u)
+        return (a << 16) | (b + 1u);
     return 0xFFFFFFFF;
 }
 
@@ -382,7 +382,7 @@ void Segmentation::CheckIfBorder(uint16_t y1, uint16_t x1, uint16_t y2, uint16_t
 }
 
 void Segmentation::SetAsBorder(uint16_t y, uint16_t x) {
-    b_status[y][x] |= 1;
+    b_status[y][x] |= 1u;
     Segment *seg = s_index[status[y][x]];
     seg->border.insert(
             (static_cast<SHAPE_POINT_T>((SHAPE_POINT_MAX / static_cast<float>(seg->h)) *

@@ -15,7 +15,7 @@ VisMemory::VisMemory() {
     string root;
     for (string *dir: {&root, &dirShapes, &dirY, &dirU, &dirV, &dirR}) {
         string branch = *dir;
-        dir->insert(0, dirOut);
+        dir->insert(0u, dirOut);
         if (!branch.empty()) dir->append("/");
         auto path = (*dir).c_str();
         if (stat(path, &sb) != 0) mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -31,15 +31,15 @@ VisMemory::VisMemory() {
     auto r = static_cast<uint16_t>(round((static_cast<float>(*w) / static_cast<float>(*h)) * 10.0f));
 
     // put data in a buffer
-    uint64_t off = 21;
+    uint64_t off = 21ull;
     char buf[off + (SHAPE_POINT_BYTES * (*path).size())];
-    memcpy(&buf[0], m, 3); // Mean Colour
-    memcpy(&buf[3], &r, 2); // Ratio
-    memcpy(&buf[5], &nextFrameId, 8); // Frame ID
-    memcpy(&buf[13], w, 2); // Width
-    memcpy(&buf[15], h, 2); // Height
-    memcpy(&buf[17], &cx, 2); // Centre (X)
-    memcpy(&buf[19], &cy, 2); // Centre (Y)
+    memcpy(&buf[0], m, 3u); // Mean Colour
+    memcpy(&buf[3], &r, 2u); // Ratio
+    memcpy(&buf[5], &nextFrameId, 8u); // Frame ID
+    memcpy(&buf[13], w, 2u); // Width
+    memcpy(&buf[15], h, 2u); // Height
+    memcpy(&buf[17], &cx, 2u); // Centre (X)
+    memcpy(&buf[19], &cy, 2u); // Centre (Y)
     for (uint16_t p: *path) {
         memcpy(&buf[off], &p, SHAPE_POINT_BYTES); // Point {X, Y}
         off += SHAPE_POINT_BYTES;
@@ -52,28 +52,28 @@ VisMemory::VisMemory() {
 
     // update Y indexes
     ofstream y_f((dirY + to_string((*m)[0])).c_str(), ios::app | ios::binary);
-    y_f.write((char *) &nextShapeId, 2);
+    y_f.write((char *) &nextShapeId, 2u);
     y_f.close();
 
     // update U indexes
     ofstream u_f((dirU + to_string((*m)[1])).c_str(), ios::app | ios::binary);
-    u_f.write((char *) &nextShapeId, 2);
+    u_f.write((char *) &nextShapeId, 2u);
     u_f.close();
 
     // update V indexes
     ofstream v_f((dirV + to_string((*m)[2])).c_str(), ios::app | ios::binary);
-    v_f.write((char *) &nextShapeId, 2);
+    v_f.write((char *) &nextShapeId, 2u);
     v_f.close();
 
     // update Ratio indexes
     ofstream rtf((dirR + to_string(r)).c_str(), ios::app | ios::binary);
-    rtf.write((char *) &nextShapeId, 2);
+    rtf.write((char *) &nextShapeId, 2u);
     rtf.close();
 }
 
 [[maybe_unused]] void VisMemory::Forget() {
     auto t = chrono::system_clock::now();
-    for (uint64_t f = firstFrameId; f < firstFrameId + 1; f++) {
+    for (uint64_t f = firstFrameId; f < firstFrameId + 1ull; f++) {
         IterateIndex((/*dirFrame + */to_string(f)).c_str(), [](VisMemory *ltm, uint16_t sid) -> void {
             uint8_t y, u, v;
             uint16_t r;
@@ -84,10 +84,10 @@ VisMemory::VisMemory() {
             ifstream shf(sPath, ios::binary);
             shf.read(b_s, sizeof(b_s));
             shf.close();
-            memcpy(&y, &b_s[0], 1);
-            memcpy(&u, &b_s[1], 1);
-            memcpy(&v, &b_s[2], 1);
-            memcpy(&r, &b_s[3], 2);
+            memcpy(&y, &b_s[0], 1u);
+            memcpy(&u, &b_s[1], 1u);
+            memcpy(&v, &b_s[2], 1u);
+            memcpy(&r, &b_s[3], 2u);
             remove(sPath.c_str());
 
             // read unread indices
@@ -126,8 +126,8 @@ void VisMemory::IterateIndex(const char *path, void onEach(VisMemory *, uint16_t
     sff.read(buf, sb.st_size);
     sff.close();
     uint16_t i;
-    for (off_t off = 0; off < sb.st_size; off += 2) {
-        memcpy(&i, &buf[off], 2);
+    for (off_t off = 0; off < static_cast<off_t>(sb.st_size); off += 2) {
+        memcpy(&i, &buf[off], 2u);
         onEach(this, i);
     }
 }
@@ -141,8 +141,8 @@ list<uint16_t> VisMemory::ReadIndex(const char *path) {
     sff.close();
     list<uint16_t> l;
     uint16_t i;
-    for (off_t off = 0; off < sb.st_size; off += 2) {
-        memcpy(&i, &buf[off], 2);
+    for (off_t off = 0; off < static_cast<off_t>(sb.st_size); off += 2) {
+        memcpy(&i, &buf[off], 2u);
         l.push_back(i);
     }
     return l;
@@ -167,10 +167,10 @@ void VisMemory::SaveIndexes(unordered_map<INT, list<uint16_t>> *indexes, string 
     for (pair<const INT, list<uint16_t>> &index: (*indexes)) {
         if (!index.second.empty()) {
             char buf[index.second.size() * 2];
-            off = 0;
+            off = 0u;
             for (uint16_t sid: index.second) {
-                memcpy(&buf[off], &sid, 2);
-                off += 2;
+                memcpy(&buf[off], &sid, 2u);
+                off += 2u;
             }
             path = (*dir) + to_string(index.first);
             ofstream sff(path, ios::binary);

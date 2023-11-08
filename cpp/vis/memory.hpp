@@ -46,7 +46,7 @@ private:
     const std::string dirOut = filesDir + "vis/mem/";
     std::string dirShapes = "shapes", dirY = "y", dirU = "u", dirV = "v", dirR = "r";
     // frame ID incrementer | ID of earliest frame which is STILL available in memory
-    uint64_t nextFrameId = 0u, firstFrameId = 0u;
+    uint64_t nextFrameId = 0ull, firstFrameId = 0ull;
     // shape ID incrementer
     uint16_t nextShapeId = 0u;
     // helper maps for altering 'uint8_t' indexes

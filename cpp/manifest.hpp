@@ -1,5 +1,5 @@
-#ifndef MEM_MANIFEST_H
-#define MEM_MANIFEST_H
+#ifndef MANIFEST_H
+#define MANIFEST_H
 
 #include <unordered_map>
 
@@ -31,28 +31,28 @@ public:
     // Interaction ID `0` is reserved for Normality.
     static void init() {
         interactions[1] = Interaction{ // back camera
-                1, ActType::VIS, .7, .75, -1, 30, 80, 6
+                1, ActType::VIS, .7f, .75f, -1.0f, 30u, 80u, 6u
         };
         interactions[2] = Interaction{ // selfie camera
-                2, ActType::VIS, 0, .9, 1, 6, 6, 3
+                2, ActType::VIS, 0.0f, .9f, 1.0f, 6u, 6u, 3u
         };
         interactions[3] = Interaction{ // microphone
-                3, ActType::AUD, .4, 1, 0, 2, 4, 2
+                3, ActType::AUD, .4f, 1.0f, 0.0f, 2u, 4u, 2u
         };
         interactions[4] = Interaction{ // touchscreen
-                4, ActType::HPT, 0, 0, 1, 1080, 2340, 2
+                4, ActType::HPT, 0.0f, 0.0f, 1.0f, 1080u, 2340u, 2u
         };
 
         interactions[-1] = Interaction{ // monitor screen
-                -1, ActType::VIS, 0, 0, 1, 1080, 2131, 2
+                -1, ActType::VIS, 0.0f, 0.0f, 1.0f, 1080u, 2131u, 2u
         };
         interactions[-2] = Interaction{ // speaker
-                -2, ActType::AUD, .55, 1, 0, 10, 4, 5
+                -2, ActType::AUD, .55f, 1.0f, 0.0f, 10u, 4u, 5u
         };
         interactions[-3] = Interaction{ // vibration motor (inaccurate)
-                -3, ActType::MOV, -.5, -.75, 0, 15, 15, 5
+                -3, ActType::MOV, -.5f, -.75f, 0.0f, 15u, 15u, 5u
         };
     }
 };
 
-#endif //MEM_MANIFEST_H
+#endif //MANIFEST_H

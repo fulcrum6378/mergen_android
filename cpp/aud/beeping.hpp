@@ -27,7 +27,7 @@ public:
         bool togg = true, over = false;
         for (int f = 0; f < numFrames; f++) {
 
-            x = 0;
+            x = 0.0f;
             int median = numFrames / 2;
             if (f < median)
                 x += (float) f;

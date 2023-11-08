@@ -33,7 +33,7 @@ protected:
         if (elasticity && elasticity->joinable()) {
             elasticise = false;
             elasticity->join();
-        }
+        } // FIXME
     }
 
 private:

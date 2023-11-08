@@ -33,8 +33,7 @@ void Rewarder::AddExpression(Expression *expression) {
 
 /** Computes the `fortuna` score. */
 void Rewarder::Compute() {
-    double sum = 0.0;
-    float totalWeights = 0.0f;
+    double sum = 0.0, totalWeights = 0.0f;
     for (auto cri: criteria) {
         sum += cri.second->score * cri.second->weight;
         totalWeights += cri.second->weight;

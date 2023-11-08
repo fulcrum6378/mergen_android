@@ -14,7 +14,7 @@ public:
 
 private:
     std::unordered_map<int16_t, bool> on;
-    float x_{0.0}, y_{0.0};
+    float x_{0.0f}, y_{0.0f};
     PainfulPoint *painfulPoint{};
 };
 

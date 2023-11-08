@@ -70,7 +70,7 @@ private:
     // a vector containing all Segments of { current frame | previous frame }
     std::vector<Segment> segments, prev_segments;
     // simulates recursive programming (vector is always better for it than list!)
-    std::vector<std::array<uint16_t, 3>> stack;
+    std::vector<std::array<uint16_t, 3u>> stack;
     // maps IDs of Segments to their pointers
     std::unordered_map<uint32_t, Segment *> s_index;
 

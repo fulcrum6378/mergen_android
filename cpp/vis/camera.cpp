@@ -112,7 +112,7 @@ void Camera::EnumerateCamera() {
     }
 
     ASSERT(!cameras_.empty(), "No Camera Available on the device")
-    if (activeCameraId_.length() == 0) {
+    if (activeCameraId_.length() == 0u) {
         // if no back facing camera found, pick up the first one to use...
         activeCameraId_ = cameras_.begin()->second.id_;
     }
@@ -130,7 +130,7 @@ void Camera::DetermineCaptureDimensions() {
     bool foundIt = false;
     dimensions = std::pair<int16_t, int16_t>(720, 720);
 
-    for (uint32_t i = 0; i < entry.count; i += 4) {
+    for (uint32_t i = 0u; i < entry.count; i += 4u) {
         int32_t input = entry.data.i32[i + 3];
         int32_t format = entry.data.i32[i + 0];
         if (input || format != IMAGE_FORMAT) continue;
@@ -213,10 +213,10 @@ bool Camera::SetRecording(bool b, int8_t debugMode) {
     if (captureSessionState_ != CaptureSessionState::ACTIVE || b == recording_) return false;
     recording_ = b;
     debugMode_ = debugMode;
-    if (VIS_SAVE) {
-        if (b) bmp_stream_ = new BitmapStream(dimensions); else delete bmp_stream_;
-        // if (bmp_stream_) bmp_stream_->BakeMetadata();
-    }
+#if VIS_SAVE
+    if (b) bmp_stream_ = new BitmapStream(dimensions); else delete bmp_stream_;
+    // if (bmp_stream_) bmp_stream_->BakeMetadata();
+#endif
     return true;
 }
 

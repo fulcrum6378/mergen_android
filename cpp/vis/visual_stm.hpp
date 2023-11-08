@@ -27,14 +27,14 @@ public:
     VisualSTM();
 
     /** Inserts a new shape into memory. */
-    [[maybe_unused]] void Insert(Segment *seg);
+    void Insert(Segment *seg);
 
     /** Anything that needs to be done at the end. */
-    [[maybe_unused]] void OnFrameFinished();
+    void OnFrameFinished();
 
     /** Saves current state { nextFrameId, firstFrameId, nextShapeId }
      * Don't save paths as variables in the constructor! */
-    [[maybe_unused]] void SaveState();
+    void SaveState();
 
 private:
     /** Forgets N of oldest frames. */
@@ -57,7 +57,7 @@ private:
     std::string dirShapes = "shapes", dirY = "y", dirU = "u", dirV = "v", dirR = "r",
             framesFile = "frames", numbersFile = "numbers";
     // frame ID incrementer | ID of earliest frame which is STILL available in memory
-    uint64_t nextFrameId = 0u, firstFrameId = 0u;
+    uint64_t nextFrameId = 0ull, firstFrameId = 0ull;
     // shape ID incrementer | ID of first shape in THIS FRAME
     uint16_t nextShapeId = 0u, firstShapeId = 0u;
     // total number of frames available in memory

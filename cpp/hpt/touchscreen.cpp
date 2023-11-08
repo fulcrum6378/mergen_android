@@ -37,7 +37,7 @@ void Touchscreen::OnTouchEvent(int16_t /*dev*/, int8_t act, int16_t id, float x,
     if (!painfulPoint)
         painfulPoint = dynamic_cast<PainfulPoint *>(
                 Rewarder::GetCriterion(CRITERION_ID_PAINFUL_POINT));
-    painfulPoint->CheckForRewards((void *[3]) {&on, &x_, &y_});
+    painfulPoint->CheckForRewards((void *[3u]) {&on, &x_, &y_});
 }
 
 Touchscreen::~Touchscreen() = default;

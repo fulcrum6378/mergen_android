@@ -22,7 +22,7 @@ private:
 
     AAudioStream *stream{};
     aaudio_stream_state_t state{AAUDIO_STREAM_STATE_UNINITIALIZED};
-    int64_t waitTimeout{300000000L}; // nanoseconds (billionth), 300 milliseconds
+    int64_t waitTimeout{300000000ll}; // nanoseconds (billionth), 300 milliseconds
     void (*callback_)(int16_t *, int32_t, void *){nullptr};
 
     void *callbackData_ = nullptr;

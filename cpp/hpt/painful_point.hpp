@@ -21,11 +21,11 @@ public:
         auto screen = Manifest::interactions[INPUT_ID_TOUCH];
         bool inRange = false;
         if (anyOn) {
-            double xM = (double) screen.width / 2.0, yM = 10.0 * ((double) screen.height / 100.0),
+            float xM = screen.width / 2.0f, yM = 10.0f * (screen.height / 100.0f),
                     x_ = *static_cast<float *>(data[1]),
                     y_ = *static_cast<float *>(data[2]);
-            double distance = sqrt(pow(x_ - xM, 2) + pow(y_ - yM, 2));
-            if (distance < 150.0) inRange = true;
+            float distance = sqrt(std::pow(x_ - xM, 2) + pow(y_ - yM, 2));
+            if (distance < 150.0f) inRange = true;
         }
         if (inRange) {
             StopElasticity();

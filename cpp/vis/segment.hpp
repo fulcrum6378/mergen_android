@@ -11,7 +11,7 @@
 
 // Shapes' paths can be saved as:     8-bit   or 16-bit
 #define SHAPE_POINT_T uint32_t     // uint16_t   uint32_t
-#define SHAPE_POINT_BYTES 4        // 2,         4
+#define SHAPE_POINT_BYTES 4u       // 2u,        4u
 #define SHAPE_POINT_EACH_BITS 16u  // 8u,        16u
 #define SHAPE_POINT_MAX 65535.0f   // 256.0f,    65535.0f
 
@@ -32,9 +32,9 @@ struct Segment {
     std::unordered_set<SHAPE_POINT_T> border;
 
     void ComputeRatioAndCentre() {
-        r = static_cast<uint16_t>(round((static_cast<float>(w) / static_cast<float>(h)) * 10.0));
-        cx = (min_x + max_x + 1) / 2;
-        cy = (min_y + max_y + 1) / 2;
+        r = static_cast<uint16_t>(std::round((static_cast<float>(w) / static_cast<float>(h)) * 10.0f));
+        cx = (min_x + max_x + 1u) / 2u;
+        cy = (min_y + max_y + 1u) / 2u;
     }
 };
 
