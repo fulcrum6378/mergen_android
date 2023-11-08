@@ -14,18 +14,18 @@
  * Sequence Files 2</a>
  */
 class [[maybe_unused]] VisMemory {
-private:
-    const std::string dirOut = filesDir + "vis/mem/";
-    std::string dirShapes = "shapes", dirY = "y", dirU = "u", dirV = "v", dirR = "r";
-    // frame ID incrementer | ID of earliest frame which is STILL available in memory
-    uint64_t nextFrameId = 0, firstFrameId = 0;
-    // shape ID incrementer
-    uint16_t nextShapeId = 0;
-    // helper maps for altering 'uint8_t' indexes
-    std::unordered_map<uint8_t, std::list<uint16_t>> ym, um, vm;
-    // helper maps for altering 'uint16_t' indexes
-    std::unordered_map<uint16_t, std::list<uint16_t>> rm;
+public:
+    VisMemory();
 
+    /** Inserts a new shape into memory. */
+    [[maybe_unused]] void Insert(
+            uint8_t **m, // average colour
+            uint16_t *w, uint16_t *h, // width and height
+            uint16_t cx, uint16_t cy, // central point
+            std::unordered_set<uint16_t> *path
+    );
+
+private:
     /** Forgets N of oldest frames. */
     [[maybe_unused]] void Forget();
 
@@ -42,16 +42,17 @@ private:
     template<class INT>
     void SaveIndexes(std::unordered_map<INT, std::list<uint16_t>> *indexes, std::string *dir);
 
-public:
-    VisMemory();
 
-    /** Inserts a new shape into memory. */
-    [[maybe_unused]] void Insert(
-            uint8_t **m, // average colour
-            uint16_t *w, uint16_t *h, // width and height
-            uint16_t cx, uint16_t cy, // central point
-            std::unordered_set<uint16_t> *path
-    );
+    const std::string dirOut = filesDir + "vis/mem/";
+    std::string dirShapes = "shapes", dirY = "y", dirU = "u", dirV = "v", dirR = "r";
+    // frame ID incrementer | ID of earliest frame which is STILL available in memory
+    uint64_t nextFrameId = 0u, firstFrameId = 0u;
+    // shape ID incrementer
+    uint16_t nextShapeId = 0u;
+    // helper maps for altering 'uint8_t' indexes
+    std::unordered_map<uint8_t, std::list<uint16_t>> ym, um, vm;
+    // helper maps for altering 'uint16_t' indexes
+    std::unordered_map<uint16_t, std::list<uint16_t>> rm;
 };
 
 #endif //VIS_MEMORY_H

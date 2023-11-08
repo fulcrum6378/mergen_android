@@ -4,11 +4,6 @@
 #include "painful_point.hpp"
 
 class Touchscreen {
-private:
-    std::unordered_map<int16_t, bool> on;
-    float x_{0.0}, y_{0.0};
-    PainfulPoint *painfulPoint{};
-
 public:
     Touchscreen();
 
@@ -16,6 +11,11 @@ public:
     void OnTouchEvent(int16_t dev, int8_t act, int16_t id, float x, float y, float size);
 
     ~Touchscreen();
+
+private:
+    std::unordered_map<int16_t, bool> on;
+    float x_{0.0}, y_{0.0};
+    PainfulPoint *painfulPoint{};
 };
 
 #endif //HPT_TOUCHSCREEN_H

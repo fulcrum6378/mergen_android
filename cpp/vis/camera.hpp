@@ -35,7 +35,29 @@ enum class CaptureSessionState : int8_t {
 class CameraId;
 
 class Camera {
+public:
+    std::pair<int16_t, int16_t> dimensions;
+
+    Camera(JavaVM *jvm, jobject main);
+
+    void CreateSession(ANativeWindow *displayWindow);
+
+    bool SetRecording(bool b, int8_t debugMode);
+
+    ~Camera();
+
 private:
+    void EnumerateCamera();
+
+    void DetermineCaptureDimensions();
+
+    //int32_t GetCameraSensorOrientation(int8_t facing);
+
+    void Preview(bool start);
+
+    void ImageCallback(AImageReader *reader);
+
+
     /**
      * AImageReader creates an IGraphicBufferProducer (input) and an IGraphicBufferConsumer (output),
      * then it creates a BufferQueue from them, then it listens data from that IGraphicBufferConsumer,
@@ -76,41 +98,20 @@ private:
 
     // Image Analysis
     Segmentation *segmentation_;
-
-
-    void EnumerateCamera();
-
-    void DetermineCaptureDimensions();
-
-    //int32_t GetCameraSensorOrientation(int8_t facing);
-
-    void Preview(bool start);
-
-    void ImageCallback(AImageReader *reader);
-
-public:
-    std::pair<int16_t, int16_t> dimensions;
-
-    Camera(JavaVM *jvm, jobject main);
-
-    void CreateSession(ANativeWindow *displayWindow);
-
-    bool SetRecording(bool b, int8_t debugMode);
-
-    ~Camera();
 };
 
 class CameraId {
 public:
-    ACameraDevice *device_;
-    std::string id_;
-    acamera_metadata_enum_android_lens_facing_t facing_;
-
     explicit CameraId(const char *id) : device_(nullptr), facing_(ACAMERA_LENS_FACING_FRONT) {
         id_ = id;
     }
 
     explicit CameraId() : CameraId("") {}
+
+
+    ACameraDevice *device_;
+    std::string id_;
+    acamera_metadata_enum_android_lens_facing_t facing_;
 };
 
 #endif //VIS_CAMERA_H

@@ -9,9 +9,6 @@
 #define OUTPUT_ID_VIBRATOR (-3)
 
 class Shaking : public Expression {
-private:
-    Vibrator *mov_;
-
 public:
     explicit Shaking(Vibrator *mov) :
             Expression(EXPRESSION_ID_SHAKING, OUTPUT_ID_VIBRATOR),
@@ -25,6 +22,9 @@ public:
     }
 
     ~Shaking() override = default;
+
+private:
+    Vibrator *mov_;
 };
 
 #endif //MOV_SHAKING_H

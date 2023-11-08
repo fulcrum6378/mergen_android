@@ -9,9 +9,6 @@
 #define OUTPUT_ID_SPEAKER (-2)
 
 class Beeping : public Expression {
-private:
-    Speaker *aud_out_;
-
 public:
     explicit Beeping(Speaker *aud_out) :
             Expression(EXPRESSION_ID_BEEPING, OUTPUT_ID_SPEAKER),
@@ -56,6 +53,9 @@ public:
     }
 
     ~Beeping() override = default;
+
+private:
+    Speaker *aud_out_;
 };
 
 #endif //AUD_BEEPING_H

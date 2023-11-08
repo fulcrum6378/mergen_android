@@ -9,11 +9,6 @@
 #define OUTPUT_ID_SCREEN (-1)
 
 class Colouring : public Expression {
-private:
-    JavaVM *jvm_;
-    jobject main_;
-    jmethodID jmColouring;
-
 public:
     Colouring(JavaVM *jvm, jobject main) :
             Expression(EXPRESSION_ID_COLOURING, OUTPUT_ID_SCREEN),
@@ -38,6 +33,11 @@ public:
     }
 
     ~Colouring() override = default;
+
+private:
+    JavaVM *jvm_;
+    jobject main_;
+    jmethodID jmColouring;
 };
 
 #endif //VIS_COLOURING_H

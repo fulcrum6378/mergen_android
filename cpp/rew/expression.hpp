@@ -7,14 +7,15 @@
 
 class Expression {
 public:
-    uint8_t id;
-    [[maybe_unused]] int8_t interactionId;
-
     Expression(uint16_t _id, [[maybe_unused]] int8_t interactionId) : id(_id), interactionId() {}
 
     virtual void OnReward(double fortuna) {}
 
     virtual ~Expression() = default;
+
+
+    uint8_t id;
+    [[maybe_unused]] int8_t interactionId;
 };
 
 #endif //MOV_EXPRESSION_H

@@ -8,11 +8,6 @@
 #define OUTPUT_ID_VIBRATOR (-3)
 
 class Vibrator {
-private:
-    JavaVM *jvm_;
-    jobject main_;
-    jmethodID jmVibrate;
-
 public:
     Vibrator(JavaVM *jvm, jobject main) : jvm_(jvm), main_(main) {
         JNIEnv *env;
@@ -30,6 +25,11 @@ public:
     }
 
     ~Vibrator() = default;
+
+private:
+    JavaVM *jvm_;
+    jobject main_;
+    jmethodID jmVibrate;
 };
 
 #endif //MOV_VIBRATOR_H

@@ -51,13 +51,6 @@ struct bmpfile_dib_info {
  * RGB to Bitmap</a>
  */
 class BitmapStream {
-private:
-    std::ofstream store;
-    std::mutex store_mutex;
-    int skipped_count = 0;
-    std::pair<int16_t, int16_t> dimensions_;
-    const int kMaxChannelValue = 262143;
-
 public:
     BitmapStream(std::pair<int16_t, int16_t> dimensions) {
         store.open((cacheDir + std::string("vis.rgb")).c_str(), std::ios::binary);
@@ -175,6 +168,13 @@ public:
     ~BitmapStream() {
         store.close();
     }
+
+private:
+    std::ofstream store;
+    std::mutex store_mutex;
+    int skipped_count = 0;
+    std::pair<int16_t, int16_t> dimensions_;
+    const int kMaxChannelValue = 262143;
 };
 
 #endif //VIS_BITMAP_STREAM_H

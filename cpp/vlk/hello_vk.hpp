@@ -50,6 +50,7 @@ public:
 
     void reset(ANativeWindow *newWindow, AAssetManager *newManager);
 
+
     bool initialized = false;
 
 private:

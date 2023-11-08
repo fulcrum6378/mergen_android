@@ -37,7 +37,30 @@
  * Tracking (object tracking)</a>
  */
 class Segmentation {
+public:
+    Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal);
+
+    /** Main processing function of Segmentation which execute all the necessary jobs.
+     * do NOT refer to `debugMode_` in Camera. */
+    void Process(AImage *image, const bool *recording, int8_t debugMode);
+
+    ~Segmentation();
+
+
+    std::atomic<bool> locked = false;
+
 private:
+    static bool CompareColours(uint8_t (*a)[3], uint8_t (*b)[3]);
+
+    static uint32_t FindPixelOfASegmentToDissolveIn(Segment *seg);
+
+    // Checks if this pixel is in border.
+    void CheckIfBorder(uint16_t y1, uint16_t x1, uint16_t y2, uint16_t x2);
+
+    // Recognises this pixel as border.
+    void SetAsBorder(uint16_t y, uint16_t x);
+
+
     // multidimensional array of pixels
     uint8_t arr[H][W][3]{};
     // maps pixels to their Segment IDs
@@ -66,27 +89,6 @@ private:
     JavaVM *jvm_;
     jobject main_;
     jmethodID *jmSignal_;
-
-    static bool CompareColours(uint8_t (*a)[3], uint8_t (*b)[3]);
-
-    static uint32_t FindPixelOfASegmentToDissolveIn(Segment *seg);
-
-    // Checks if this pixel is in border.
-    void CheckIfBorder(uint16_t y1, uint16_t x1, uint16_t y2, uint16_t x2);
-
-    // Recognises this pixel as border.
-    void SetAsBorder(uint16_t y, uint16_t x);
-
-public:
-    std::atomic<bool> locked = false;
-
-    Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal);
-
-    /** Main processing function of Segmentation which execute all the necessary jobs.
-     * do NOT refer to `debugMode_` in Camera. */
-    void Process(AImage *image, const bool *recording, int8_t debugMode);
-
-    ~Segmentation();
 };
 
 #endif //VIS_SEGMENTATION_H
