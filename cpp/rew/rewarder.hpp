@@ -26,7 +26,7 @@ private:
     static void AddExpression(Expression *expression);
 
 public:
-    Rewarder(Speaker *aud_out, Vibrator *mov, JNIEnv *env, jobject main);
+    Rewarder(Speaker *aud_out, Vibrator *mov, JavaVM *jvm, jobject main);
 
     static Criterion *GetCriterion(uint8_t criterionId);
 

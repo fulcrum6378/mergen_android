@@ -23,7 +23,23 @@ public:
     virtual ~Criterion() = default;
 
 protected:
+    void StartElasticity() {
+        elasticity = new std::thread(&Criterion::Elasticity, this);
+        elasticity->detach();
+    }
+
+    void StopElasticity() {
+        if (elasticity && elasticity->joinable()) {
+            elasticise = false;
+            elasticity->join();
+        }
+    }
+
+private:
+    constexpr static const float elasticityApproach = 0.02f;
+    constexpr static const int64_t elasticityFrame = 20ll;
     std::thread *elasticity = nullptr;
+    std::atomic<bool> elasticise = false;
 
     /** Implemented at the bottom of `rewarder.cpp`. */
     void Elasticity();

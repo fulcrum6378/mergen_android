@@ -10,7 +10,6 @@
 #define INPUT_ID_TOUCH 4
 
 class PainfulPoint : public Criterion {
-
 public:
     explicit PainfulPoint(float weight) :
             Criterion(CRITERION_ID_PAINFUL_POINT, INPUT_ID_TOUCH, weight) {}
@@ -29,14 +28,13 @@ public:
             if (distance < 150.0) inRange = true;
         }
         if (inRange) {
-            // TODO cancel elasticity
+            StopElasticity();
             score = score - 0.03f;
             if (score < -1.0f) score = -1.0f;
             Rewarder::Compute();
-        } else if (score != 0.0f) {
-            elasticity = new std::thread(&PainfulPoint::Elasticity, this);
-            elasticity->detach();
-        }
+        } else if (score != 0.0f)
+            StartElasticity();
+        // else {}
     }
 
     ~PainfulPoint() override = default;

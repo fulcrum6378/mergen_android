@@ -1,3 +1,5 @@
+#include <chrono>
+
 #include "../aud/beeping.hpp"
 #include "../global.hpp"
 #include "../hpt/painful_point.hpp"
@@ -6,7 +8,7 @@
 #include "rewarder.hpp"
 #include "criterion.hpp"
 
-Rewarder::Rewarder(Speaker *aud_out, Vibrator *mov, JNIEnv *env, jobject main) {
+Rewarder::Rewarder(Speaker *aud_out, Vibrator *mov, JavaVM *jvm, jobject main) {
     // define criterions
     AddCriterion(new PainfulPoint(3.0f));
     AddCriterion(new Criterion(255u, 0, 1.0f));
@@ -14,7 +16,7 @@ Rewarder::Rewarder(Speaker *aud_out, Vibrator *mov, JNIEnv *env, jobject main) {
     // define expressions
     AddExpression(new Shaking(mov));
     AddExpression(new Beeping(aud_out));
-    AddExpression(new Colouring(env, main));
+    AddExpression(new Colouring(jvm, main));
 }
 
 void Rewarder::AddCriterion(Criterion *criterion) {
@@ -52,9 +54,18 @@ Rewarder::~Rewarder() {
 /** do NOT move this to the header file;
  * apparently C++ doesn't allow direct circular import, but allows an indirect one! */
 void Criterion::Elasticity() {
-    // TODO score <= 0.0f
-    while (score != 0.0f) {
+    elasticise = true;
+    bool negativity;
+    while (elasticise) {
+        negativity = score <= 0.0f;
+        score = negativity ? (score + elasticityApproach) : (score - elasticityApproach);
+        if (negativity != score <= 0.0f)
+            score = 0.0f;
+        if (score == 0.0f)
+            break;
         Rewarder::Compute();
+        std::this_thread::sleep_for(std::chrono::milliseconds(elasticityFrame));
     }
+    elasticise = false;
     elasticity = nullptr;
 }

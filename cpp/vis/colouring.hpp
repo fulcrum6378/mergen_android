@@ -10,13 +10,19 @@
 
 class Colouring : public Expression {
 private:
-    JNIEnv *env_;
+    JavaVM *jvm_;
     jobject main_;
+    jmethodID jmColouring;
 
 public:
-    Colouring(JNIEnv *env, jobject main) :
+    Colouring(JavaVM *jvm, jobject main) :
             Expression(EXPRESSION_ID_COLOURING, OUTPUT_ID_SCREEN),
-            env_(env), main_(main) {}
+            jvm_(jvm), main_(main) {
+        JNIEnv *env;
+        jvm_->GetEnv((void **) &env, JNI_VERSION_1_6);
+        jmColouring = env->GetMethodID(
+                env->FindClass("ir/mahdiparastesh/mergen/Main"), "colouring", "(I)V");
+    }
 
     void OnReward(double fortuna) override {
         int32_t ret;
@@ -25,9 +31,10 @@ public:
         else ret = 0x00000000;
         if (ret != 0x00000000)
             ret = ret | static_cast<int8_t>(ceil(std::abs(fortuna) * 255.0)) << 24;
-        jmethodID method = env_->GetMethodID(
-                env_->FindClass("ir/mahdiparastesh/mergen/Main"), "colouring", "(I)V");
-        env_->CallVoidMethod(main_, method, ret);
+        JNIEnv *env;
+        if (jvm_->GetEnv((void **) &env, JNI_VERSION_1_6) == JNI_EDETACHED)
+            jvm_->AttachCurrentThread(&env, nullptr);
+        env->CallVoidMethod(main_, jmColouring, ret);
     }
 
     ~Colouring() override = default;

@@ -18,7 +18,7 @@ public:
             aud_out_(aud_out) {}
 
     void OnReward(double fortuna) override {
-        bool qualified = fortuna < -0.33 || fortuna > 0.33;
+        bool qualified = fortuna < -0.5 || fortuna > 0.5;
         if (qualified == aud_out_->IsStarted()) return;
         if (qualified) aud_out_->Start(&Beeping::AudCallback, this);
         else aud_out_->Stop();

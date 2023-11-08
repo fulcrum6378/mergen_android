@@ -9,19 +9,24 @@
 
 class Vibrator {
 private:
-    JNIEnv *env_;
+    JavaVM *jvm_;
     jobject main_;
+    jmethodID jmVibrate;
 
 public:
-    Vibrator(JNIEnv *env, jobject main) : env_(env), main_(main) {}
+    Vibrator(JavaVM *jvm, jobject main) : jvm_(jvm), main_(main) {
+        JNIEnv *env;
+        jvm_->GetEnv((void **) &env, JNI_VERSION_1_6);
+        jmVibrate = env->GetMethodID(
+                env->FindClass("ir/mahdiparastesh/mergen/Main"),
+                "vibrate", "(I)V");
+    }
 
     void SetAmplitude(int32_t amplitude) {
-        env_->CallVoidMethod(
-                main_,
-                env_->GetMethodID(
-                        env_->FindClass("ir/mahdiparastesh/mergen/Main"),
-                        "vibrate", "(I)V"),
-                amplitude);
+        JNIEnv *env;
+        if (jvm_->GetEnv((void **) &env, JNI_VERSION_1_6) == JNI_EDETACHED)
+            jvm_->AttachCurrentThread(&env, nullptr);
+        env->CallVoidMethod(main_, jmVibrate, amplitude);
     }
 
     ~Vibrator() = default;

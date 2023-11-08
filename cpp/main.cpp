@@ -39,12 +39,12 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     aud_in = new Microphone();
     aud_out = new Speaker();
     hpt = new Touchscreen();
-    mov = new Vibrator(env, gMain);
+    mov = new Vibrator(jvm, gMain);
     vis = new Camera(jvm, gMain);
 
     // initialise high-level components
     Manifest::init();
-    rew = new Rewarder(aud_out, mov, env, gMain);
+    rew = new Rewarder(aud_out, mov, jvm, gMain);
     scm = new Perception();
 
     // ComputeVK().run(state->activity->assetManager);
