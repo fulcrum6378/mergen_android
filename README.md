@@ -1,7 +1,6 @@
 # Mergen
 
-Mergen is a [free and open-source](https://en.wikipedia.org/wiki/Free_and_open-source_software)
-logical real-time robot, in other words an "**Artificial Mind**",
+Mergen is a logical real-time robot, in other words an "**Artificial Mind**",
 written in C++ language, which is temporarily mounted on Android.
 
 The main C++ library located in the [/cpp/](cpp) is intended to be mounted on real robots with the
@@ -47,7 +46,7 @@ Mergen is intended to have 2 aspects:
 | [**AUD**](cpp/aud) | controlling **Auditory** inputs and outputs |
 | [**HPT**](cpp/hpt) | controlling **Touch** (haptic) inputs       |
 | [**MOV**](cpp/mov) | controlling **Movements**                   |
-| [**REW**](cpp/rew) | **Reward System** (reinforcement learning)  |
+| [**REW**](cpp/rew) | simulation of the **Reward System**         |
 | [**SCM**](cpp/scm) | simulation of the **Subconscious Mind**     |
 | [**VIS**](cpp/vis) | controlling **Visual** inputs               |
 
@@ -143,7 +142,7 @@ But ironically, with few modifications it could run it on FreeBSD at 1 November!
 ### Timeline of development
 
 This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
-(updated as of 6402.08.10)
+(updated as of 6402.08.17)
 
 | # | Starting date          | Duration | Active days | %  |        Version         |
 |---|:-----------------------|:---------|:-----------:|:--:|:----------------------:|
@@ -154,7 +153,7 @@ This table shows how much I've worked on Mergen and when. The timeline is divide
 | 5 | 2022/07/26, 6401/05/04 | 109 days |     7+8     | 14 |          0.4           |
 | 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    | 32 |          0.4           |
 | 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     | 2  |           -            |
-| 8 | 2023/04/29, 6402/02/09 | 185 days |    71+11    | 44 | 0.4, mycv, linux, echo |
+| 8 | 2023/04/29, 6402/02/09 | 193 days |    77+11    | 46 | 0.4, mycv, linux, echo |
 
 - Periods 1, 2 and 3 include days of researches which are not recorded.
 - Period 5 includes a few days of researching/practicing about/on a new programming language

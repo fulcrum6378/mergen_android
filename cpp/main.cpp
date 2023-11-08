@@ -11,14 +11,14 @@
 #include "scm/perception.hpp"
 #include "vis/camera.hpp"
 
-static Perception *scm = nullptr;
-static Rewarder *rew = nullptr;
+static Perception *scm;
+static Rewarder *rew;
 
-static Microphone *aud_in = nullptr;
-static Speaker *aud_out = nullptr;
-static Touchscreen *hpt = nullptr;
-static Vibrator *mov = nullptr;
-static Camera *vis = nullptr; // temporarily disabled via start, stop and onSurfaceStatusChanged
+static Microphone *aud_in;
+static Speaker *aud_out;
+static Touchscreen *hpt;
+static Vibrator *mov;
+static Camera *vis; // temporarily disabled via start, stop and onSurfaceStatusChanged
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {

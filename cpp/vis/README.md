@@ -3,6 +3,10 @@
 Vision is, without doubt, the most crucial sense (data input) of an intelligent being
 for their knowledge and information to be based upon.
 
+Mergen uses the default color model outputted by many cameras called [**Y′UV**](
+https://en.wikipedia.org/wiki/Y%E2%80%B2UV), instead of RGB or etc.
+In terms of hexadecimal, *YUV* is no different from [YCbCr](https://en.wikipedia.org/wiki/YCbCr).
+
 This component contains the following steps:
 
 1. [**Camera**](camera.cpp) : responsible for dealing with Android's camera API,
@@ -21,7 +25,7 @@ This component contains the following steps:
 
 - [BitmapStream](bitmap_stream.hpp) : it stores image frames in BMP image format for testing in *MyCV*.
 - [Colouring](colouring.hpp) : it makes a very simple effect in the UI of the Android app,
-  indicating pleasure (in green) or pain (in red).
+  indicating pleasure (in green) or pain (in red). (subclass of [Criterion](../rew/criterion.hpp))
 - [segment.hpp](segment.hpp) : it defines struct Segment and the type of path points in shapes.
 - [VisualSTM](visual_stm.cpp) : *Visual Short-Term Memory*; it stores shapes (segments)
   temporarily on a non-volatile (persistent) memory for debugging.
