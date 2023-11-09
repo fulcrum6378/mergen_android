@@ -3,7 +3,6 @@
 
 #include <atomic>
 #include <cstdint>
-#include <future>
 #include <thread>
 
 #define CRITERION_ID_PAINFUL_POINT 0u
@@ -26,19 +25,11 @@ public:
 
 protected:
     void StartElasticity() {
-        /*elsPromise = new std::promise<void>();
-        elsFuture = elsPromise->get_future();*/
         elasticity = new std::thread(&Criterion::Elasticity, this);
         elasticity->detach();
     }
 
     void StopElasticity() {
-        /*if (!elasticity) return;
-        elsFuture.wait();
-        delete elasticity;
-        elasticity = nullptr;
-        delete elsPromise;
-        elsPromise = nullptr;*/
         elasticise = false;
     }
 
@@ -51,8 +42,6 @@ private:
     constexpr static const int64_t elsFrame = 20ll;
     std::thread *elasticity = nullptr;
     std::atomic<bool> elasticise = false;
-    /*std::promise<void> *elsPromise;
-    std::future<void> elsFuture;*/
 };
 
 #endif //REW_CRITERION_H

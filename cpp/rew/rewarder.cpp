@@ -65,7 +65,6 @@ void Criterion::Elasticity() {
         Rewarder::Compute();
         std::this_thread::sleep_for(std::chrono::milliseconds(elsFrame));
     }
-    //elsPromise->set_value();
-    elasticity = nullptr;
     delete elasticity;
+    elasticity = nullptr;
 }
