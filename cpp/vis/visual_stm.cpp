@@ -13,7 +13,7 @@ VisualSTM::VisualSTM() {
     string root;
     for (string *dir: {&root, &dirShapes, &dirY, &dirU, &dirV, &dirR}) {
         string branch = *dir;
-        dir->insert(0, dirOut);
+        dir->insert(0u, dirOut);
         if (!branch.empty()) dir->append("/");
         auto path = (*dir).c_str();
         if (stat(path, &sb) != 0) mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -138,7 +138,7 @@ void VisualSTM::Insert(Segment *seg) {
     ri[seg->r].insert(nextShapeId);
 
     // increment shape ID
-    nextShapeId++; // it'll be zeroed after crosing 65535u
+    nextShapeId++; // it'll be zeroed after crossing 65535u
 }
 
 void VisualSTM::OnFrameFinished() {

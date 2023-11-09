@@ -136,7 +136,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
             swap(segments[seg], segments[size_bef - removal]);
             removal++;
         }
-    segments.resize(size_bef - (removal - 1));
+    segments.resize(size_bef - (removal - 1u));
     LOGI("Total segments: %zu / %u", segments.size(), size_bef);
 #else
     LOGI("Total segments: %zu", segments.size());
@@ -264,8 +264,8 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                 if (a_u.find(can) != a_u.end() && a_v.find(can) != a_v.end()
                     && a_r.find(can) != a_r.end()) {
                     Segment *prev_seg = &prev_segments[can];
-                    dist = sqrt(std::pow(seg->cx - prev_seg->cx, 2) +
-                                std::pow(seg->cy - prev_seg->cy, 2));
+                    dist = static_cast<float>(sqrt(std::pow(seg->cx - prev_seg->cx, 2) +
+                                                   std::pow(seg->cy - prev_seg->cy, 2)));
                     if (best == -1) { // NOLINT(bugprone-branch-clone)
                         nearest_dist = dist;
                         best = static_cast<int32_t>(can);
@@ -361,9 +361,9 @@ bool Segmentation::CompareColours(uint8_t (*a)[3], uint8_t (*b)[3]) {
 uint32_t Segmentation::FindPixelOfASegmentToDissolveIn(Segment *seg) {
     uint32_t cor = seg->p.front();
     uint16_t a = cor >> 16, b = cor & 0xFFFF;
-    if (a > 0)
+    if (a > 0u)
         return ((a - 1u) << 16) | b;
-    if (b > 0)
+    if (b > 0u)
         return (a << 16) | (b - 1u);
     cor = seg->p.back();
     a = cor >> 16, b = cor & 0xFFFF;

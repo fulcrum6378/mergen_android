@@ -57,14 +57,15 @@ void Criterion::Elasticity() {
     bool negativity;
     while (elasticise) {
         negativity = score <= 0.0f;
-        score = negativity ? (score + elasticityApproach) : (score - elasticityApproach);
+        score = negativity ? (score + elsApproach) : (score - elsApproach);
         if (negativity != score <= 0.0f)
             score = 0.0f;
         if (score == 0.0f)
             break;
         Rewarder::Compute();
-        std::this_thread::sleep_for(std::chrono::milliseconds(elasticityFrame));
+        std::this_thread::sleep_for(std::chrono::milliseconds(elsFrame));
     }
-    elasticise = false;
+    //elsPromise->set_value();
     elasticity = nullptr;
+    delete elasticity;
 }

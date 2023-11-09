@@ -166,7 +166,7 @@ void VisMemory::SaveIndexes(unordered_map<INT, list<uint16_t>> *indexes, string 
     uint32_t off;
     for (pair<const INT, list<uint16_t>> &index: (*indexes)) {
         if (!index.second.empty()) {
-            char buf[index.second.size() * 2];
+            char buf[index.second.size() * 2u];
             off = 0u;
             for (uint16_t sid: index.second) {
                 memcpy(&buf[off], &sid, 2u);

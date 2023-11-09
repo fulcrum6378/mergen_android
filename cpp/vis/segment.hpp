@@ -25,7 +25,7 @@ struct Segment {
     uint64_t ys, us, vs;
 #endif
     // average colour
-    std::array<uint8_t, 3> m;
+    std::array<uint8_t, 3u> m;
     // boundaries, dimensions, their ratio and coordinates of central point
     uint16_t min_y, min_x, max_y, max_x, w, h, r, cx, cy;
     // border pixels
