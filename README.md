@@ -129,7 +129,6 @@ so I began developing **Mergen IV** at 2 August 2022!
 At 10 July 2023, I started a subproject for the computer vision (VIS) component and named it [**MyCV**](
 https://github.com/fulcrum6378/mycv). It uses Python for faster debugging of the vision-related methods.
 After its successful image processing, I started translating it to C++ since 24 September 2023.
-
 Fortunately the C++ implementations worked in my phone, [*Samsung Galaxy A50*](
 https://www.gsmarena.com/samsung_galaxy_a50-9554.php), **10 to 50 times faster** than Python(3.11) codes in my laptop
 with a CPU of Intel Core i7!!
@@ -139,10 +138,16 @@ https://github.com/fulcrum6378/mergen_linux), which runs Mergen on the Linux OS,
 so that I could learn how to implement them in a more difficult and lesser known OS, such as *FreeBSD*.
 But ironically, with few modifications it could run it on FreeBSD at 1 November!
 
+At 3 November 2023, I started another subproject, this time for the audio processing/sound recognition (AUD) component
+(in Python again like *MyCV*) and named it [**Echo**](https://github.com/fulcrum6378/echo).
+Since Linux (Ubuntu) couldn't do the distance on my new decision for AUD to implement [Open Sound System](
+https://en.wikipedia.org/wiki/Open_Sound_System), I archived *MergenLinux*,
+and then forked it as [**Mergen4BSD**](https://github.com/fulcrum6378/mergen4bsd) at 12 November 2023.
+
 ### Timeline of development
 
 This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
-(updated as of 6402.08.18)
+(updated as of 6402.08.22)
 
 | # | Starting date          | Duration | Active days | %  |        Version         |
 |---|:-----------------------|:---------|:-----------:|:--:|:----------------------:|
@@ -153,13 +158,13 @@ This table shows how much I've worked on Mergen and when. The timeline is divide
 | 5 | 2022/07/26, 6401/05/04 | 109 days |     7+8     | 14 |          0.4           |
 | 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    | 32 |          0.4           |
 | 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     | 2  |           -            |
-| 8 | 2023/04/29, 6402/02/09 | 194 days |    78+11    | 46 | 0.4, mycv, linux, echo |
+| 8 | 2023/04/29, 6402/02/09 | 198 days |    80+13    | 47 | 0.4, mycv, linux, echo |
 
 - Periods 1, 2 and 3 include days of researches which are not recorded.
 - Period 5 includes a few days of researching/practicing about/on a new programming language
   for Mergen (4 days), JNI+NDK (3 days) and OCR (1 day).
 - Periods 6, 7 and 8 include a few days when I was learning/evaluating Vulkan (18-0-0 days),
-  OpenBSD (2-0-0 days), FreeBSD (1-0-2 days), TensorFlow (3-0-0 days), PyTorch (3-1-0/5 days),
+  OpenBSD (2-0-0 days), FreeBSD (1-0-4 days), TensorFlow (3-0-0 days), PyTorch (3-1-0/5 days),
   Statistics (Data Science, 0-0-3/5 days) and Machine Learning (0-0-5 days).
 
 ## How to use the Android app
