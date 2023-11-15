@@ -7,7 +7,7 @@ Microphone::Microphone() {
     AAudioStreamBuilder_setDeviceId(builder, AAUDIO_UNSPECIFIED);
     AAudioStreamBuilder_setDirection(builder, AAUDIO_DIRECTION_INPUT);
     AAudioStreamBuilder_setSharingMode(builder, AAUDIO_SHARING_MODE_SHARED);
-    AAudioStreamBuilder_setSampleRate(builder, 48000);
+    AAudioStreamBuilder_setSampleRate(builder, 22050);
     AAudioStreamBuilder_setChannelCount(builder, 1);
     AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_I16);
     AAudioStreamBuilder_setBufferCapacityInFrames(builder, 192);
