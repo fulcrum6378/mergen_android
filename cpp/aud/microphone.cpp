@@ -7,10 +7,9 @@ Microphone::Microphone() {
     AAudioStreamBuilder_setDeviceId(builder, AAUDIO_UNSPECIFIED);
     AAudioStreamBuilder_setDirection(builder, AAUDIO_DIRECTION_INPUT);
     AAudioStreamBuilder_setSharingMode(builder, AAUDIO_SHARING_MODE_SHARED);
-    AAudioStreamBuilder_setSampleRate(builder, 44100); // 2 sample hertz reconstruct a hearing wavelength!
+    AAudioStreamBuilder_setSampleRate(builder, 44100); // 2 sample hertz reconstruct 1 hearing wavelength!
     AAudioStreamBuilder_setChannelCount(builder, 1);
-    AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_I16);
-    // TODO we better make them 8-bit: AAUDIO_FORMAT_PCM_I24_PACKED. Implementation below should be fixed.
+    AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_I16); // couldn't get smaller!
     AAudioStreamBuilder_setBufferCapacityInFrames(builder, 192);
     AAudioStreamBuilder_setDataCallback(builder, Microphone::Callback, this);
     AAudioStreamBuilder_openStream(builder, &stream);
