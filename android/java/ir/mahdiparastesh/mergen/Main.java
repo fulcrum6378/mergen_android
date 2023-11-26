@@ -76,7 +76,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
             public void handleMessage(Message msg) {
                 switch (msg.what) {
                     // C++ signals:
-                    case 0: // By vis/Camera.cpp whenever a new frame is captured.
+                    case 0 -> { // By vis/Camera.cpp whenever a new frame is captured.
                         capture.setAlpha(.9f);
                         captureAnimation = ObjectAnimator.ofFloat(capture, View.ALPHA, .9f, 0f)
                                 .setDuration(200);
@@ -87,8 +87,8 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
                             }
                         });
                         captureAnimation.start();
-                        break;
-                    case 1: // By vis/Segmentation.cpp when it's done saving data.
+                    }
+                    case 1 -> { // By vis/Segmentation.cpp when it's done saving data.
                         isFinished = true;
                         if (debug.recorded) {
                             if (toast != null) toast.cancel();
@@ -96,22 +96,19 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
                                     "You can now close the app safely.", Toast.LENGTH_SHORT);
                             toast.show();
                         }
-                        break;
-                    case 2: // By vis/Segmentation.cpp to stop recording.
+                    }
+                    case 2 -> { // By vis/Segmentation.cpp to stop recording.
                         debug.recorded = true;
                         recording(false, (byte) 0);
-                        break;
+                    }
 
                     // Java signals:
-                    case 127: // By Debug.java to start recording.
-                        recording(true, (byte) msg.obj);
-                        break;
-                    case 126: // By Debug.java to stop recording.
-                        recording(false, (byte) 0);
-                        break;
-                    case 125: // By Debug.java to close the app.
-                        onBackPressed();
-                        break;
+                    case 127 -> // By Debug.java to start recording.
+                            recording(true, (byte) msg.obj);
+                    case 126 -> // By Debug.java to stop recording.
+                            recording(false, (byte) 0);
+                    case 125 -> // By Debug.java to close the app.
+                            onBackPressed();
                 }
             }
         };

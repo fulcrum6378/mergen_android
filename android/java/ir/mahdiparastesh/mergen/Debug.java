@@ -15,7 +15,7 @@ import java.util.zip.ZipOutputStream;
 /** @noinspection ResultOfMethodCallIgnored */
 public class Debug extends Thread {
     boolean active = true, recorded = true;
-    Main c;
+    final Main c;
 
     public Debug(Main c) {
         this.c = c;
@@ -47,26 +47,25 @@ public class Debug extends Thread {
                 }
             }
             switch (mode) {
-                case 1: // START
+                case 1 -> { // START
                     if (!c.isRecording) {
                         Main.handler.obtainMessage(127, (byte) 0).sendToTarget();
                         out.write(0);
                     } else out.write(1);
-                    break;
-                case 2: // STOP
+                }
+                case 2 -> { // STOP
                     if (c.isRecording) {
                         Main.handler.obtainMessage(126).sendToTarget();
                         out.write(0);
                     } else out.write(1);
-                    break;
-                case 3: // EXIT
+                }
+                case 3 -> { // EXIT
                     if (c.isFinished) {
                         Main.handler.obtainMessage(125).sendToTarget();
                         out.write(0);
                     } else out.write(1);
-                    break;
-
-                case 10: // wipe visual STM
+                }
+                case 10 -> { // wipe visual STM
                     truncateDir(new File(c.getFilesDir(), "vis/stm/shapes"));
                     truncateDir(new File(c.getFilesDir(), "vis/stm/y"));
                     truncateDir(new File(c.getFilesDir(), "vis/stm/u"));
@@ -75,13 +74,12 @@ public class Debug extends Thread {
                     new File(c.getFilesDir(), "vis/stm/frames").delete();
                     new File(c.getFilesDir(), "vis/stm/numbers").delete();
                     out.write(0);
-                    break;
-
-                case 11: // send `arr` and `b_status`
+                }
+                case 11 -> { // send `arr` and `b_status`
                     Files.copy(new File(c.getCacheDir(), "arr").toPath(), out);
                     Files.copy(new File(c.getCacheDir(), "b_status").toPath(), out);
-                    break;
-                case 21: // send `stm.zip`
+                }
+                case 21 -> { // send `stm.zip`
                     if (!c.isFinished) {
                         out.write(1);
                         break;
@@ -97,8 +95,8 @@ public class Debug extends Thread {
                     addFileToZip(stm, new File(c.getFilesDir(), "vis/stm/numbers"), null);
                     stm.flush();
                     stm.close(); // both necessary!
-                    break;
-                case 22: // send 'mem.zip'
+                }
+                case 22 -> { // send 'mem.zip'
                     out.write(0);
                     ZipOutputStream ltm = new ZipOutputStream(out);
                     addFileToZip(ltm, new File(c.getFilesDir(), "vis/mem/shapes"), null);
@@ -108,9 +106,8 @@ public class Debug extends Thread {
                     addFileToZip(ltm, new File(c.getFilesDir(), "vis/mem/r"), null);
                     ltm.flush();
                     ltm.close();
-                    break;
-                default:
-                    out.write(255);
+                }
+                default -> out.write(255);
             }
             out.flush();
             con.close();

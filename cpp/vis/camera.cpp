@@ -168,13 +168,17 @@ void Camera::DetermineCaptureDimensions() {
     ASSERT(false, "Failed for GetSensorOrientation()")
 }*/
 
-/** The default FPS is in range 22..24! */
+/** My phone gives 8..10 FPS (1088x1088)!
+ * In order to implement ANativeWindow_setFrameRate(), you'll need to add "nativewindow" to
+ * target_link_libraries() in CMakeLists. But it didn't make any difference in my phone! */
 void Camera::CreateSession(ANativeWindow *displayWindow) {
     displayWindow_ = displayWindow;
     ACaptureSessionOutputContainer_create(&outputContainer_);
 
     // READER
     ANativeWindow_acquire(readerWindow_);
+    //ANativeWindow_setFrameRate(
+    //        readerWindow_, 1.0f, ANATIVEWINDOW_FRAME_RATE_COMPATIBILITY_FIXED_SOURCE);
     ACaptureSessionOutput_create(readerWindow_, &readerOutput_);
     ACaptureSessionOutputContainer_add(outputContainer_, readerOutput_);
     ACameraOutputTarget_create(readerWindow_, &readerTarget_);
@@ -184,6 +188,8 @@ void Camera::CreateSession(ANativeWindow *displayWindow) {
 
     // DISPLAY
     ANativeWindow_acquire(displayWindow_);
+    //ANativeWindow_setFrameRate(
+    //        displayWindow_, 0.1f, ANATIVEWINDOW_FRAME_RATE_COMPATIBILITY_FIXED_SOURCE);
     ACaptureSessionOutput_create(displayWindow_, &displayOutput_);
     ACaptureSessionOutputContainer_add(outputContainer_, displayOutput_);
     ACameraOutputTarget_create(displayWindow_, &displayTarget_);
@@ -219,7 +225,8 @@ bool Camera::SetRecording(bool b, int8_t debugMode) {
 #endif
     return true;
 }
-
+#include <chrono>
+auto prev = std::chrono::system_clock::now();
 /**
  * Called when a frame is captured.
  * Beware that AImageReader_acquireLatestImage deletes the previous images.
@@ -229,6 +236,9 @@ bool Camera::SetRecording(bool b, int8_t debugMode) {
  * AImage_getTimestamp sucks! e.g. gives "1968167967185224" for 2023.06.28!
  */
 void Camera::ImageCallback(AImageReader *reader) {
+    LOGE("Since the previous frame: %lld", std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now() - prev).count());
+    prev = std::chrono::system_clock::now();
     AImage *image = nullptr;
     if (AImageReader_acquireNextImage(reader, &image) != AMEDIA_OK || !image) return;
     bool used = false;

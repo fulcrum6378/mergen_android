@@ -60,5 +60,6 @@ target_link_libraries(main
         camera2ndk   # ACameraXXXXX
         log          # <android/log.h>::__android_log_assert
         mediandk     # AImageReader
+        nativewindow # ANativeWindow_setFrameRate
         #vulkan
 )

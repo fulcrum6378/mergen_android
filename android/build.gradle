@@ -4,11 +4,11 @@ android {
     namespace 'ir.mahdiparastesh.mergen'
     compileSdk 34
     buildToolsVersion = '34.0.0'
-    ndkVersion '26.0.10792818'
+    ndkVersion '26.1.10909125'
 
     defaultConfig {
         applicationId 'ir.mahdiparastesh.mergen'
-        minSdk 29
+        minSdk 30
         targetSdk 34
         versionCode 1
         versionName rootProject.ext.VERSION
@@ -22,4 +22,7 @@ android {
         shaders.srcDirs = ['../shaders']
     }
     externalNativeBuild { cmake { path file('../cpp/CMakeLists.txt'); version '3.22.1' } }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_20; targetCompatibility JavaVersion.VERSION_20
+    }
 }
