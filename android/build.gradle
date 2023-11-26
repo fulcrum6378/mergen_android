@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId 'ir.mahdiparastesh.mergen'
-        minSdk 30
+        minSdk 26
         targetSdk 34
         versionCode 1
         versionName rootProject.ext.VERSION

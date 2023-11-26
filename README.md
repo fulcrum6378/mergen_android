@@ -3,8 +3,8 @@
 Mergen is a logical real-time robot, in other words an "**Artificial Mind**",
 written in C++ language, which is temporarily mounted on Android.
 
-The main C++ library located in the [/cpp/](cpp) is intended to be mounted on real robots with the
-[*FreeBSD* operating system](https://www.freebsd.org/).
+The library located in the [/cpp/](cpp), which is written in **C++ 20**, is intended to be mounted
+on real robots with the [*FreeBSD* operating system](https://www.freebsd.org/).
 
 ## Philosophy
 
@@ -184,7 +184,8 @@ I have also created a remote debugging tool for VIS, inside MyCV's
 which communicates over a network (like Wi-Fi) with
 [Debug.java](android/java/ir/mahdiparastesh/mergen/Debug.java) which is the server, sending data of a processed image.
 
-The app **requires Android 10+** and uses latest stable versions of Gradle, SDK and NDK, along with C++ 20 and Java 20.
+The app **requires Android 8.0+**, Java 20 and CMake 3.4.1+.
+It uses latest stable versions of Gradle, Android SDK + NDK.
 No modular dependencies needed.
 
 ## License
