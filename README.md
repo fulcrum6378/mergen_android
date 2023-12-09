@@ -147,7 +147,7 @@ and then forked it as [**Mergen4BSD**](https://github.com/fulcrum6378/mergen4bsd
 ### Timeline of development
 
 This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
-(updated as of 6402.09.05)
+(updated as of 6402.09.17)
 
 | # | Starting date          | Duration | Active days | %  |        Version         |
 |---|:-----------------------|:---------|:-----------:|:--:|:----------------------:|
@@ -158,7 +158,7 @@ This table shows how much I've worked on Mergen and when. The timeline is divide
 | 5 | 2022/07/26, 6401/05/04 | 109 days |     7+8     | 14 |          0.4           |
 | 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    | 32 |          0.4           |
 | 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     | 2  |           -            |
-| 8 | 2023/04/29, 6402/02/09 | 211 days |    87+13    | 47 | 0.4, mycv, linux, echo |
+| 8 | 2023/04/29, 6402/02/09 | 223 days |    88+13    | 45 | 0.4, mycv, linux, echo |
 
 - Periods 1, 2 and 3 include days of researches which are not recorded.
 - Period 5 includes a few days of researching/practicing about/on a new programming language
