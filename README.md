@@ -139,10 +139,12 @@ so that I could learn how to implement them in a more difficult and lesser known
 But ironically, with few modifications it could run it on FreeBSD at 1 November!
 
 At 3 November 2023, I started another subproject, this time for the audio processing/sound recognition (AUD) component
-(in Python again like *MyCV*) and named it [**Echo**](https://github.com/fulcrum6378/echo).
+(in Python again like *MyCV*) and named it [Echo](https://github.com/fulcrum6378/echo).
 Since Linux (Ubuntu) couldn't do the distance on my new decision for AUD to implement [Open Sound System](
 https://en.wikipedia.org/wiki/Open_Sound_System), I archived *MergenLinux*,
 and then forked it as [**Mergen4BSD**](https://github.com/fulcrum6378/mergen4bsd) at 12 November 2023.
+At 28 December 2023, concluded that creating subprojects for AUD and HPT is useless;
+because they don't need such pre-processing of their signals as VIS requires on its image frames!
 
 ### Timeline of development
 

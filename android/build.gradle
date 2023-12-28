@@ -4,7 +4,7 @@ android {
     namespace 'ir.mahdiparastesh.mergen'
     compileSdk 34
     buildToolsVersion = '34.0.0'
-    ndkVersion '26.1.10909125'
+    ndkVersion System.getenv('NDK_VERSION')
 
     defaultConfig {
         applicationId 'ir.mahdiparastesh.mergen'
