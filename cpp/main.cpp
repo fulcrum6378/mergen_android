@@ -18,7 +18,7 @@ static Microphone *aud_in;
 static Speaker *aud_out;
 static Touchscreen *hpt;
 static Vibrator *mov;
-static Camera *vis; // temporarily disabled via start, stop and onSurfaceStatusChanged
+static Camera *vis;
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {

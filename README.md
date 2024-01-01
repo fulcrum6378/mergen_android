@@ -1,7 +1,7 @@
 # Mergen
 
-Mergen is a logical real-time robot, in other words an "**Artificial Mind**",
-written in C++ language, which is temporarily mounted on Android.
+Mergen is a real-time hyper-logical robot, in other words an "**Artificial Mind**",
+written in C++ language and temporarily mounted on Android.
 
 The library located in the [/cpp/](cpp), which is written in **C++ 20**, is intended to be mounted
 on real robots with the [*FreeBSD* operating system](https://www.freebsd.org/).
@@ -50,7 +50,7 @@ Mergen is intended to have 2 aspects:
 | [**SCM**](cpp/scm) | simulation of the **Subconscious Mind**     |
 | [**VIS**](cpp/vis) | controlling **Visual** inputs               |
 
-- [VLK](cpp/vlk) : contains two practices of the *Vulkan* API and might be removed later.
+- [VLK](cpp/vlk) : contains two practices of the *Vulkan* API and will be removed later.
 
 ## History
 
@@ -144,24 +144,24 @@ Since Linux (Ubuntu) couldn't do the distance on my new decision for AUD to impl
 https://en.wikipedia.org/wiki/Open_Sound_System), I archived *MergenLinux*,
 and then forked it as [**Mergen4BSD**](https://github.com/fulcrum6378/mergen4bsd) at 12 November 2023.
 At 28 December 2023, concluded that creating subprojects for AUD and HPT is useless;
-because they don't need such pre-processing of their signals as VIS requires on its image frames!
+because they don't need such pre-processing of their signals as VIS requires for its image frames!
 
 ### Timeline of development
 
 This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
-(updated as of 6402.09.25)
+(updated as of 6402.10.11)
 
-| # | Starting date          | Duration | Active days | %  |        Version         |
-|---|:-----------------------|:---------|:-----------:|:--:|:----------------------:|
-| 1 | 2020/12/13, 6399/09/23 | 43 days  |     20      | 47 |  0.1..0.2, pronouncer  |
-| 2 | 2021/01/25, 6399/11/06 | 264 days |     ~33     | 13 |          0.3           |
-| 3 | 2021/10/16, 6400/07/24 | 145 days |     18      | 12 |          0.3           |
-| 4 | 2022/03/10, 6400/12/19 | 137 days |      0      | 0  |           -            |
-| 5 | 2022/07/26, 6401/05/04 | 109 days |     7+8     | 14 |          0.4           |
-| 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    | 32 |          0.4           |
-| 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     | 2  |           -            |
-| 8 | 2023/04/29, 6402/02/09 | 217 days |    88+13    | 47 | 0.4, mycv, linux, echo |
-| 9 | 2023/12/02, 6402/09/11 |          |             |    |                        |
+| # | Starting date          | Duration | Active days | %  |       Version        |
+|---|:-----------------------|:---------|:-----------:|:--:|:--------------------:|
+| 1 | 2020/12/13, 6399/09/23 | 43 days  |     20      | 47 | 0.1..0.2, pronouncer |
+| 2 | 2021/01/25, 6399/11/06 | 264 days |     ~33     | 13 |         0.3          |
+| 3 | 2021/10/16, 6400/07/24 | 145 days |     18      | 12 |         0.3          |
+| 4 | 2022/03/10, 6400/12/19 | 137 days |      0      | 0  |          -           |
+| 5 | 2022/07/26, 6401/05/04 | 109 days |     7+8     | 14 |         0.4          |
+| 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    | 32 |         0.4          |
+| 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     | 2  |          -           |
+| 8 | 2023/04/29, 6402/02/09 | 217 days |    88+13    | 47 | 0.4, mycv, linux+bsd |
+| 9 | 2023/12/02, 6402/09/11 | 30 days  |      2      | 7  |         0.4          |
 
 - Periods 1, 2 and 3 include days of researches which are not recorded.
 - Period 5 includes a few days of researching/practicing about/on a new programming language
@@ -170,7 +170,7 @@ This table shows how much I've worked on Mergen and when. The timeline is divide
   OpenBSD (2-0-0 days), FreeBSD (1-0-4 days), TensorFlow (3-0-0 days), PyTorch (3-1-0/5 days),
   Statistics (Data Science, 0-0-3/5 days) and Machine Learning (0-0-5 days).
 
-## How to use the Android app
+## Android app
 
 [**Main.java**](android/java/ir/mahdiparastesh/mergen/Main.java) provides a basic control panel for this robot.
 
