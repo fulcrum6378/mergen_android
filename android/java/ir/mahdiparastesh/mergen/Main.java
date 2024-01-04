@@ -119,12 +119,17 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         // initialise camera(s)
         ndkCamera = create();
         Size size = getCameraDimensions(ndkCamera);
-        /*Toast.makeText(this, size.getWidth() + " : " + size.getHeight(),
-                Toast.LENGTH_SHORT).show();*/
         onRecordingStopped();
         ViewGroup.LayoutParams previewLP = preview.getLayoutParams();
-        previewLP.width = size.getWidth();
-        previewLP.height = size.getHeight();
+        float sw = getResources().getDisplayMetrics().widthPixels,
+                sh = getResources().getDisplayMetrics().heightPixels;
+        if (sh > sw) { // portrait
+            previewLP.width = (int) sw;
+            previewLP.height = (int) ((sw / (float) size.getWidth()) * (float) size.getHeight());
+        } else { // landscape or square
+            previewLP.width = (int) ((sh / size.getHeight()) * (float) size.getWidth());
+            previewLP.height = (int) sh;
+        }
         preview.setLayoutParams(previewLP);
         preview.setSurfaceTextureListener(this);
         if (preview.isAvailable()) //noinspection DataFlowIssue

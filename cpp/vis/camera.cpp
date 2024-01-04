@@ -129,6 +129,7 @@ void Camera::DetermineCaptureDimensions() {
     // format of the data: format, width, height, input?, type int32
     bool foundIt = false;
     dimensions = std::pair<int16_t, int16_t>(720, 720);
+    auto nearestHeight = static_cast<int32_t>(H);
 
     for (uint32_t i = 0u; i < entry.count; i += 4u) {
         int32_t input = entry.data.i32[i + 3];
@@ -138,8 +139,7 @@ void Camera::DetermineCaptureDimensions() {
         std::pair<int32_t, int32_t> ent(entry.data.i32[i + 1], entry.data.i32[i + 2]);
         //if (ent.first == ent.second) continue; // discard square dimensions
 
-        if (abs(ent.second - IMAGE_NEAREST_HEIGHT) <
-            abs(dimensions.second - IMAGE_NEAREST_HEIGHT)) {
+        if (abs(ent.second - nearestHeight) < abs(dimensions.second - nearestHeight)) {
             foundIt = true;
             dimensions = ent;
         }

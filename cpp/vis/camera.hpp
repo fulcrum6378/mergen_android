@@ -17,9 +17,6 @@
  * @see <a href="https://developer.android.com/reference/android/graphics/ImageFormat#YUV_420_888">
  * YUV_420_888</a> */
 #define IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
-/** Let's make it a sqaure for less trouble, at least for now!
- * it would result in 2336x1080 in Galaxy A50. */
-#define IMAGE_NEAREST_HEIGHT 1088
 // maximum image buffers
 #define MAX_BUF_COUNT 4
 // whether ot not save all image frames as a single bitmap stream, or do the segmentation instead
