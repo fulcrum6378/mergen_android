@@ -20,7 +20,7 @@ static Touchscreen *hpt;
 static Vibrator *mov;
 static Camera *vis;
 
-extern "C" JNIEXPORT jlong JNICALL
+extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     // retrieve necessary JNI references (don't put them in static variables)
     JavaVM *jvm = nullptr;
@@ -46,9 +46,7 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     Manifest::init();
     rew = new Rewarder(aud_out, mov, jvm, gMain);
     scm = new Perception();
-
     // ComputeVK().run(state->activity->assetManager);
-    return reinterpret_cast<jlong>(vis);
 }
 
 extern "C" JNIEXPORT jbyte JNICALL
@@ -88,25 +86,19 @@ Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
 
 
 extern "C" JNIEXPORT jobject JNICALL
-Java_ir_mahdiparastesh_mergen_Main_getCameraDimensions(
-        JNIEnv *env, jobject, jlong cameraObj) {
-    if (!cameraObj) return nullptr;
+Java_ir_mahdiparastesh_mergen_Main_getCameraDimensions(JNIEnv *env, jobject) {
     jclass cls = env->FindClass("android/util/Size");
-    auto dim = reinterpret_cast<Camera *>(cameraObj)->dimensions;
-    jobject previewSize = env->NewObject(
+    return env->NewObject(
             cls, env->GetMethodID(cls, "<init>", "(II)V"),
-            dim.first, dim.second);
-    return previewSize;
+            vis->dimensions.first, vis->dimensions.second);
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
-        JNIEnv *env, jobject, jlong cameraObj, jobject surface, jboolean available) {
-    auto *cam = reinterpret_cast<Camera *>(cameraObj);
-    assert(cam == vis);
-    if (available) cam->CreateSession(ANativeWindow_fromSurface(env, surface));
+        JNIEnv *env, jobject, jobject surface, jboolean available) {
+    if (available) vis->CreateSession(ANativeWindow_fromSurface(env, surface));
     else { // don't put these in Main.destroy()
-        delete cam;
+        delete vis;
         vis = nullptr;
     }
 }

@@ -37,7 +37,6 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     static Handler handler;
     private Vibrator vib;
     private Debug debug;
-    private long ndkCamera;
     private Surface surface = null;
     boolean isRecording = false, isFinished = true;
     private Toast toast;
@@ -117,8 +116,8 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
                         .getDefaultVibrator() : (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         // initialise camera(s)
-        ndkCamera = create();
-        Size size = getCameraDimensions(ndkCamera);
+        create();
+        Size size = getCameraDimensions();
         onRecordingStopped();
         ViewGroup.LayoutParams previewLP = preview.getLayoutParams();
         float sw = getResources().getDisplayMetrics().widthPixels,
@@ -144,7 +143,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
         surfaceTexture.setDefaultBufferSize(width, height);
         surface = new Surface(surfaceTexture);
-        onSurfaceStatusChanged(ndkCamera, surface, true);
+        onSurfaceStatusChanged(surface, true);
         root.setClickable(true);
     }
 
@@ -160,8 +159,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
         root.setClickable(false);
         recording(false, (byte) 0);
-        onSurfaceStatusChanged(ndkCamera, surface, false);
-        ndkCamera = 0;
+        onSurfaceStatusChanged(surface, false);
         surface = null;
         return true;
     }
@@ -290,7 +288,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
 
 
     /** Structs utilities required for recording. */
-    private native long create();
+    private native void create();
 
     /** Starts recording. */
     private native byte start(byte debugMode);
@@ -301,11 +299,15 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     /** Destructs utilities required for recording. */
     private native void destroy();
 
-    /** Camera cannot record in any dimension you want! */
-    private native Size getCameraDimensions(long cameraObj);
+
+    /**
+     * Finds the nearest possible dimensions to the ones requested in Segmentation.
+     * Always call this after create().
+     */
+    private native Size getCameraDimensions();
 
     /** Lets Camera be created or destroyed. */
-    private native void onSurfaceStatusChanged(long cameraObj, Surface surface, boolean available);
+    private native void onSurfaceStatusChanged(Surface surface, boolean available);
 
     /** Sends specific touch events. */
     private native void onTouch(int dev, int act, int id, float x, float y, float size);
