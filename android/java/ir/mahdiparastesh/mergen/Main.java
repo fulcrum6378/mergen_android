@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.graphics.SurfaceTexture;
 import android.os.Build;
 import android.os.Bundle;
@@ -143,7 +144,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
         surfaceTexture.setDefaultBufferSize(width, height);
         surface = new Surface(surfaceTexture);
-        onSurfaceStatusChanged(surface, true);
+        onSurfaceStatusChanged(surface, true, getResources().getAssets());
         root.setClickable(true);
     }
 
@@ -159,7 +160,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
         root.setClickable(false);
         recording(false, (byte) 0);
-        onSurfaceStatusChanged(surface, false);
+        onSurfaceStatusChanged(surface, false, null);
         surface = null;
         return true;
     }
@@ -307,7 +308,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     private native Size getCameraDimensions();
 
     /** Lets Camera be created or destroyed. */
-    private native void onSurfaceStatusChanged(Surface surface, boolean available);
+    private native void onSurfaceStatusChanged(Surface surface, boolean available, AssetManager assetManager);
 
     /** Sends specific touch events. */
     private native void onTouch(int dev, int act, int id, float x, float y, float size);

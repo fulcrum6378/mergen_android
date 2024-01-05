@@ -124,7 +124,7 @@ private:
     /** You need to download the latest binaries in
      * <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/releases">
      * Vulkan-ValidationLayers</a>in order to be able to change this value to "true". */
-    bool enableValidationLayers = true;
+    bool enableValidationLayers = false;
 
     const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
     const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};

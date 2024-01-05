@@ -126,6 +126,8 @@ void HelloVK::cleanup() {
     initialized = false;
 }
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "modernize-loop-convert"
 void HelloVK::cleanupSwapChain() {
     for (size_t i = 0; i < swapChainFramebuffers.size(); i++)
         vkDestroyFramebuffer(device, swapChainFramebuffers[i], nullptr);
@@ -135,6 +137,7 @@ void HelloVK::cleanupSwapChain() {
 
     vkDestroySwapchainKHR(device, swapChain, nullptr);
 }
+#pragma clang diagnostic pop
 
 void HelloVK::reset(ANativeWindow *newWindow, AAssetManager *newManager) {
     window.reset(newWindow);

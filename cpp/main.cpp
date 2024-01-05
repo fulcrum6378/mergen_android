@@ -1,3 +1,4 @@
+#include <android/asset_manager_jni.h>
 #include <android/native_window_jni.h>
 #include <cassert>
 #include <jni.h>
@@ -10,9 +11,11 @@
 #include "rew/rewarder.hpp"
 #include "scm/perception.hpp"
 #include "vis/camera.hpp"
+#include "vlk/hello_vk.hpp"
 
 static Perception *scm;
 static Rewarder *rew;
+static HelloVK *vlk;
 
 static Microphone *aud_in;
 static Speaker *aud_out;
@@ -95,11 +98,20 @@ Java_ir_mahdiparastesh_mergen_Main_getCameraDimensions(JNIEnv *env, jobject) {
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
-        JNIEnv *env, jobject, jobject surface, jboolean available) {
-    if (available) vis->CreateSession(ANativeWindow_fromSurface(env, surface));
-    else { // don't put these in Main.destroy()
-        delete vis;
-        vis = nullptr;
+        JNIEnv *env, jobject, jobject surface, jboolean available, jobject assetManager) {
+    if (available) {
+        //vis->CreateSession(ANativeWindow_fromSurface(env, surface));
+        vlk = new HelloVK();
+        vlk->reset(ANativeWindow_fromSurface(env, surface),
+                   AAssetManager_fromJava(env, assetManager));
+        vlk->initVulkan();
+        vlk->render();
+    } else { // don't put these in Main.destroy()
+        //delete vis;
+        //vis = nullptr;
+        vlk->cleanup();
+        delete vlk;
+        vlk = nullptr;
     }
 }
 

@@ -43,10 +43,10 @@ add_library(main SHARED
         vis/visual_stm.hpp
 
         #vlk/compute_vk.cpp
-        #vlk/compute_vk.h
-        #vlk/global.h
-        #vlk/hello_vk.cpp
-        #vlk/hello_vk.h
+        #vlk/compute_vk.hpp
+        vlk/global.hpp
+        vlk/hello_vk.cpp
+        vlk/hello_vk.hpp
 )
 
 # For CLion to index the Android NDK headers
@@ -60,5 +60,5 @@ target_link_libraries(main
         camera2ndk   # ACameraXXXXX
         log          # <android/log.h>::__android_log_assert
         mediandk     # AImageReader
-        #vulkan
+        vulkan
 )
