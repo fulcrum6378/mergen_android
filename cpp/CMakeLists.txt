@@ -8,7 +8,7 @@ add_definitions(-DVK_USE_PLATFORM_ANDROID_KHR=1)
 add_library(main SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         global.hpp
-        manifest.hpp
+        global_vk.hpp
 
         aud/beeping.hpp
         aud/microphone.cpp
@@ -28,8 +28,11 @@ add_library(main SHARED
         rew/rewarder.cpp
         rew/rewarder.hpp
 
+        scm/manifest.hpp
         scm/perception.hpp
 
+        vis/analyses.cpp
+        vis/analyses.hpp
         vis/bitmap_stream.hpp
         vis/camera.cpp
         vis/camera.hpp
@@ -41,12 +44,6 @@ add_library(main SHARED
         vis/segmentation.hpp
         vis/visual_stm.cpp
         vis/visual_stm.hpp
-
-        #vlk/compute_vk.cpp
-        #vlk/compute_vk.hpp
-        vlk/global.hpp
-        vlk/hello_vk.cpp
-        vlk/hello_vk.hpp
 )
 
 # For CLion to index the Android NDK headers

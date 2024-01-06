@@ -50,8 +50,6 @@ Mergen is intended to have 2 aspects:
 | [**SCM**](cpp/scm) | simulation of the **Subconscious Mind**     |
 | [**VIS**](cpp/vis) | controlling **Visual** inputs               |
 
-- [VLK](cpp/vlk) : contains two practices of the *Vulkan* API and will be removed later.
-
 ## History
 
 #### Theorem

@@ -5,14 +5,14 @@
 #include <sstream>
 #include <string>
 
-#include "hello_vk.hpp"
+#include "analyses.hpp"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 
 // PUBLIC:
 
-void HelloVK::initVulkan() {
+void Analyses::initVulkan() {
     createInstance();
     setupDebugMessenger();
     createSurface();
@@ -34,7 +34,7 @@ void HelloVK::initVulkan() {
     initialized = true;
 }
 
-void HelloVK::render() {
+void Analyses::render() {
     if (orientationChanged) onOrientationChange();
 
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE,
@@ -97,7 +97,7 @@ void HelloVK::render() {
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void HelloVK::cleanup() {
+void Analyses::cleanup() {
     vkDeviceWaitIdle(device);
     cleanupSwapChain();
     vkDestroyDescriptorPool(device, descriptorPool, nullptr);
@@ -128,7 +128,8 @@ void HelloVK::cleanup() {
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "modernize-loop-convert"
-void HelloVK::cleanupSwapChain() {
+
+void Analyses::cleanupSwapChain() {
     for (size_t i = 0; i < swapChainFramebuffers.size(); i++)
         vkDestroyFramebuffer(device, swapChainFramebuffers[i], nullptr);
 
@@ -137,9 +138,10 @@ void HelloVK::cleanupSwapChain() {
 
     vkDestroySwapchainKHR(device, swapChain, nullptr);
 }
+
 #pragma clang diagnostic pop
 
-void HelloVK::reset(ANativeWindow *newWindow, AAssetManager *newManager) {
+void Analyses::reset(ANativeWindow *newWindow, AAssetManager *newManager) {
     window.reset(newWindow);
     assetManager = newManager;
     if (initialized) {
@@ -150,7 +152,7 @@ void HelloVK::reset(ANativeWindow *newWindow, AAssetManager *newManager) {
 
 // PRIVATE (INIT):
 
-void HelloVK::createInstance() {
+void Analyses::createInstance() {
     assert(!enableValidationLayers ||
            checkValidationLayerSupport());  // validation layers requested, but not available!
     auto requiredExtensions = getRequiredExtensions(enableValidationLayers);
@@ -202,7 +204,7 @@ void HelloVK::createInstance() {
   	 VK_KHR_get_physical_device_properties2 */
 }
 
-void HelloVK::setupDebugMessenger() {
+void Analyses::setupDebugMessenger() {
     if (!enableValidationLayers) return;
 
     VkDebugUtilsMessengerCreateInfoEXT createInfo{};
@@ -217,7 +219,7 @@ void HelloVK::setupDebugMessenger() {
  * chance to provide a native window. This happens after the APP_CMD_START event
  * has had a chance to be called.
  */
-void HelloVK::createSurface() {
+void Analyses::createSurface() {
     assert(window != nullptr);  // window must have been initialized
     const VkAndroidSurfaceCreateInfoKHR create_info{
             .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
@@ -230,7 +232,7 @@ void HelloVK::createSurface() {
 }
 
 /** Pick only the first suitable device */
-void HelloVK::pickPhysicalDevice() {
+void Analyses::pickPhysicalDevice() {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
     // LOGE("Vulkan GPUs available: %u", deviceCount); // 1
@@ -249,7 +251,7 @@ void HelloVK::pickPhysicalDevice() {
     assert(physicalDevice != VK_NULL_HANDLE);  // failed to find a suitable GPU!
 }
 
-void HelloVK::createLogicalDeviceAndQueue() {
+void Analyses::createLogicalDeviceAndQueue() {
     QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies =
@@ -289,7 +291,7 @@ void HelloVK::createLogicalDeviceAndQueue() {
             &presentQueue);
 }
 
-void HelloVK::establishDisplaySizeIdentity() {
+void Analyses::establishDisplaySizeIdentity() {
     VkSurfaceCapabilitiesKHR capabilities;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
             physicalDevice, surface, &capabilities);
@@ -306,7 +308,7 @@ void HelloVK::establishDisplaySizeIdentity() {
     displaySizeIdentity = capabilities.currentExtent;
 }
 
-void HelloVK::createSwapChain() {
+void Analyses::createSwapChain() {
     SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice);
 
     auto chooseSwapSurfaceFormat = [](
@@ -374,7 +376,7 @@ void HelloVK::createSwapChain() {
     swapChainExtent = displaySizeIdentity;
 }
 
-void HelloVK::createImageViews() {
+void Analyses::createImageViews() {
     swapChainImageViews.resize(swapChainImages.size());
     for (size_t i = 0; i < swapChainImages.size(); i++) {
         VkImageViewCreateInfo createInfo{};
@@ -396,7 +398,7 @@ void HelloVK::createImageViews() {
     }
 }
 
-void HelloVK::createRenderPass() {
+void Analyses::createRenderPass() {
     VkAttachmentDescription colorAttachment{};
     colorAttachment.format = swapChainImageFormat;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -440,7 +442,7 @@ void HelloVK::createRenderPass() {
             device, &renderPassInfo, nullptr, &renderPass));
 }
 
-void HelloVK::createDescriptorSetLayout() {
+void Analyses::createDescriptorSetLayout() {
     VkDescriptorSetLayoutBinding uboLayoutBinding{};
     uboLayoutBinding.binding = 0;
     uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -457,7 +459,7 @@ void HelloVK::createDescriptorSetLayout() {
                                          &descriptorSetLayout));
 }
 
-void HelloVK::createUniformBuffers() {
+void Analyses::createUniformBuffers() {
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
     uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
@@ -470,7 +472,7 @@ void HelloVK::createUniformBuffers() {
                      uniformBuffers[i], uniformBuffersMemory[i]);
 }
 
-void HelloVK::createDescriptorPool() {
+void Analyses::createDescriptorPool() {
     VkDescriptorPoolSize poolSize{};
     poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
@@ -485,7 +487,7 @@ void HelloVK::createDescriptorPool() {
             device, &poolInfo, nullptr, &descriptorPool));
 }
 
-void HelloVK::createDescriptorSets() {
+void Analyses::createDescriptorSets() {
     std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -542,7 +544,7 @@ void HelloVK::createDescriptorSets() {
  * a 4x4 rotation matrix specified by the descriptorSetLayout. This is required
  * in order to render a rotated scene when the device has been rotated.
  */
-void HelloVK::createGraphicsPipeline() {
+void Analyses::createGraphicsPipeline() {
     auto vertShaderCode =
             LoadBinaryFileToVector("shaders/triangle.vert.spv", assetManager);
     auto fragShaderCode =
@@ -665,7 +667,7 @@ void HelloVK::createGraphicsPipeline() {
     vkDestroyShaderModule(device, vertShaderModule, nullptr);
 }
 
-void HelloVK::createFramebuffers() {
+void Analyses::createFramebuffers() {
     swapChainFramebuffers.resize(swapChainImageViews.size());
     for (size_t i = 0; i < swapChainImageViews.size(); i++) {
         VkImageView attachments[] = {swapChainImageViews[i]};
@@ -685,7 +687,7 @@ void HelloVK::createFramebuffers() {
     }
 }
 
-void HelloVK::createCommandPool() {
+void Analyses::createCommandPool() {
     QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -695,7 +697,7 @@ void HelloVK::createCommandPool() {
             device, &poolInfo, nullptr, &commandPool));
 }
 
-void HelloVK::createCommandBuffer() {
+void Analyses::createCommandBuffer() {
     commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -707,7 +709,7 @@ void HelloVK::createCommandBuffer() {
             device, &allocInfo, commandBuffers.data()));
 }
 
-void HelloVK::createSyncObjects() {
+void Analyses::createSyncObjects() {
     imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
@@ -734,7 +736,7 @@ void HelloVK::createSyncObjects() {
 
 // PRIVATE (MISC):
 
-std::vector<const char *> HelloVK::getRequiredExtensions(bool _enableValidationLayers) {
+std::vector<const char *> Analyses::getRequiredExtensions(bool _enableValidationLayers) {
     std::vector<const char *> extensions;
     extensions.push_back("VK_KHR_surface");
     extensions.push_back("VK_KHR_android_surface");
@@ -743,7 +745,7 @@ std::vector<const char *> HelloVK::getRequiredExtensions(bool _enableValidationL
     return extensions;
 }
 
-bool HelloVK::checkValidationLayerSupport() {
+bool Analyses::checkValidationLayerSupport() {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -762,7 +764,7 @@ bool HelloVK::checkValidationLayerSupport() {
     return true;
 }
 
-QueueFamilyIndices HelloVK::findQueueFamilies(VkPhysicalDevice dev) const {
+QueueFamilyIndices Analyses::findQueueFamilies(VkPhysicalDevice dev) const {
     QueueFamilyIndices indices;
 
     uint32_t queueFamilyCount = 0;
@@ -788,7 +790,7 @@ QueueFamilyIndices HelloVK::findQueueFamilies(VkPhysicalDevice dev) const {
     return indices;
 }
 
-bool HelloVK::checkDeviceExtensionSupport(VkPhysicalDevice dev) {
+bool Analyses::checkDeviceExtensionSupport(VkPhysicalDevice dev) {
     uint32_t extensionCount;
     vkEnumerateDeviceExtensionProperties(
             dev, nullptr, &extensionCount, nullptr);
@@ -807,7 +809,7 @@ bool HelloVK::checkDeviceExtensionSupport(VkPhysicalDevice dev) {
     return requiredExtensions.empty();
 }
 
-SwapChainSupportDetails HelloVK::querySwapChainSupport(VkPhysicalDevice dev) const {
+SwapChainSupportDetails Analyses::querySwapChainSupport(VkPhysicalDevice dev) const {
     SwapChainSupportDetails details;
 
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
@@ -836,7 +838,7 @@ SwapChainSupportDetails HelloVK::querySwapChainSupport(VkPhysicalDevice dev) con
     return details;
 }
 
-bool HelloVK::isDeviceSuitable(VkPhysicalDevice dev) {
+bool Analyses::isDeviceSuitable(VkPhysicalDevice dev) {
     QueueFamilyIndices indices = findQueueFamilies(dev);
     bool extensionsSupported = checkDeviceExtensionSupport(dev);
     bool swapChainAdequate = false;
@@ -870,7 +872,7 @@ VkExtent2D HelloVK::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilitie
     }
 }*/
 
-VkShaderModule HelloVK::createShaderModule(const std::vector<uint8_t> &code) {
+VkShaderModule Analyses::createShaderModule(const std::vector<uint8_t> &code) {
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = code.size();
@@ -884,7 +886,7 @@ VkShaderModule HelloVK::createShaderModule(const std::vector<uint8_t> &code) {
     return shaderModule;
 }
 
-void HelloVK::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+void Analyses::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = 0;
@@ -910,11 +912,8 @@ void HelloVK::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageI
     scissor.extent = swapChainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    static float grey;
-    grey += 0.005f;
-    if (grey > 1.0f)
-        grey = 0.0f;
-    VkClearValue clearColor = {{{grey, grey, grey, 1.0f}}};
+    // background colour in RGBA
+    VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 0.0f}}};
 
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
@@ -932,7 +931,7 @@ void HelloVK::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageI
     VK_CHECK(vkEndCommandBuffer(commandBuffer));
 }
 
-void HelloVK::recreateSwapChain() {
+void Analyses::recreateSwapChain() {
     vkDeviceWaitIdle(device);
     cleanupSwapChain();
     createSwapChain();
@@ -940,7 +939,7 @@ void HelloVK::recreateSwapChain() {
     createFramebuffers();
 }
 
-void HelloVK::onOrientationChange() {
+void Analyses::onOrientationChange() {
     recreateSwapChain();
     orientationChanged = false;
 }
@@ -950,7 +949,7 @@ void HelloVK::onOrientationChange() {
  * requirements. Vulkan manages these requirements as a bitset, in this case
  * expressed through a uInt32_t.
  */
-uint32_t HelloVK::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+uint32_t Analyses::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
     VkPhysicalDeviceMemoryProperties memProperties;
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
 
@@ -969,9 +968,9 @@ uint32_t HelloVK::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags prop
  *  Upon creation, these buffers will list memory requirements which need to be
  *  satisfied by the device in use in order to be created.
  */
-void HelloVK::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
-                           VkMemoryPropertyFlags properties, VkBuffer &buffer,
-                           VkDeviceMemory &bufferMemory) {
+void Analyses::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
+                            VkMemoryPropertyFlags properties, VkBuffer &buffer,
+                            VkDeviceMemory &bufferMemory) {
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size = size;
@@ -994,7 +993,7 @@ void HelloVK::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
     vkBindBufferMemory(device, buffer, bufferMemory, 0);
 }
 
-void HelloVK::updateUniformBuffer(uint32_t currentImage) {
+void Analyses::updateUniformBuffer(uint32_t currentImage) {
     SwapChainSupportDetails swapChainSupport =
             querySwapChainSupport(physicalDevice);
     UniformBufferObject ubo{};
@@ -1011,9 +1010,9 @@ void HelloVK::updateUniformBuffer(uint32_t currentImage) {
 
 /** Handles screen rotation with 3 hardcoded rotation
  * matrices (detailed below). We skip the 180 degrees rotation. */
-void HelloVK::getPrerotationMatrix(const VkSurfaceCapabilitiesKHR &capabilities,
-                                   const VkSurfaceTransformFlagBitsKHR &pretransformFlag,
-                                   std::array<float, 16> &mat) {
+void Analyses::getPrerotationMatrix(const VkSurfaceCapabilitiesKHR &capabilities,
+                                    const VkSurfaceTransformFlagBitsKHR &pretransformFlag,
+                                    std::array<float, 16> &mat) {
     // mat is initialized to the identity matrix
     mat = {1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1.};
     if (pretransformFlag & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR) {

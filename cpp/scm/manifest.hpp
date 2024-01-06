@@ -1,5 +1,5 @@
-#ifndef MANIFEST_H
-#define MANIFEST_H
+#ifndef SCM_MANIFEST_H
+#define SCM_MANIFEST_H
 
 #include <unordered_map>
 
@@ -55,4 +55,4 @@ public:
     }
 };
 
-#endif //MANIFEST_H
+#endif //SCM_MANIFEST_H

@@ -346,10 +346,10 @@ public class Main extends Activity {
     /** Lets Camera be destroyed. */
     private native void onPreviewSurfaceDestroyed();
 
-    /** Lets the Vulkan instance be created. */
+    /** Lets Analyses be created. */
     private native void onAnalysesSurfaceCreated(Surface surface, AssetManager assetManager);
 
-    /** Lets the Vulkan instance be destroyed. */
+    /** Lets Analyses be destroyed. */
     private native void onAnalysesSurfaceDestroyed();
 
     /** Sends specific touch events. */

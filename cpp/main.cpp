@@ -9,19 +9,20 @@
 #include "hpt/touchscreen.hpp"
 #include "mov/vibrator.hpp"
 #include "rew/rewarder.hpp"
+#include "scm/manifest.hpp"
 #include "scm/perception.hpp"
+#include "vis/analyses.hpp"
 #include "vis/camera.hpp"
-#include "vlk/hello_vk.hpp"
 
 static Perception *scm;
 static Rewarder *rew;
-static HelloVK *vlk;
 
 static Microphone *aud_in;
 static Speaker *aud_out;
 static Touchscreen *hpt;
 static Vibrator *mov;
 static Camera *vis;
+static Analyses *vis_dbg;
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
@@ -112,18 +113,18 @@ Java_ir_mahdiparastesh_mergen_Main_onPreviewSurfaceDestroyed(JNIEnv *, jobject) 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceCreated(
         JNIEnv *env, jobject, jobject surface, jobject assetManager) {
-    vlk = new HelloVK();
-    vlk->reset(ANativeWindow_fromSurface(env, surface),
-               AAssetManager_fromJava(env, assetManager));
-    vlk->initVulkan();
-    vlk->render();
+    vis_dbg = new Analyses();
+    vis_dbg->reset(ANativeWindow_fromSurface(env, surface),
+                   AAssetManager_fromJava(env, assetManager));
+    vis_dbg->initVulkan();
+    vis_dbg->render();
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceDestroyed(JNIEnv *, jobject) {
-    vlk->cleanup();
-    delete vlk;
-    vlk = nullptr;
+    vis_dbg->cleanup();
+    delete vis_dbg;
+    vis_dbg = nullptr;
 }
 
 extern "C" JNIEXPORT void JNICALL

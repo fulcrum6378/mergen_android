@@ -4,8 +4,8 @@
 #include <jni.h>
 
 #include "../aud/speaker.hpp"
-#include "../manifest.hpp"
 #include "../mov/vibrator.hpp"
+#include "../scm/manifest.hpp"
 #include "criterion.hpp"
 #include "expression.hpp"
 

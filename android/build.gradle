@@ -19,6 +19,7 @@ android {
         manifest.srcFile 'AndroidManifest.xml'
         java.srcDirs = ['java']
         res.srcDirs = ['res']
+        jniLibs.srcDirs = ['jniLibs']
         shaders.srcDirs = ['../shaders']
     }
     externalNativeBuild { cmake { path file('../cpp/CMakeLists.txt'); version '3.22.1' } }

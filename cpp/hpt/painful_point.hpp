@@ -3,9 +3,9 @@
 
 #include <cmath>
 
-#include "../manifest.hpp"
 #include "../rew/criterion.hpp"
 #include "../rew/rewarder.hpp"
+#include "../scm/manifest.hpp"
 
 #define INPUT_ID_TOUCH 4
 

@@ -1,12 +1,12 @@
-#ifndef VLK_HELLO_VK_H
-#define VLK_HELLO_VK_H
+#ifndef VIS_ANALYSES_H
+#define VIS_ANALYSES_H
 
 #include <android/native_window.h>
 #include <array>
 #include <memory> // unique_ptr
 #include <optional>
 
-#include "global.hpp"
+#include "../global_vk.hpp"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
@@ -38,7 +38,7 @@ struct ANativeWindowDeleter {
 };
 
 /** @see <a href="https://github.com/android/ndk-samples/tree/main/hello-vulkan">Hello VK</a> */
-class HelloVK {
+class Analyses {
 public:
     void initVulkan();
 
@@ -123,8 +123,9 @@ private:
 
     /** You need to download the latest binaries in
      * <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/releases">
-     * Vulkan-ValidationLayers</a>in order to be able to change this value to "true". */
-    bool enableValidationLayers = false;
+     * Vulkan-ValidationLayers</a> into `android/jniLibs` (`app/src/main/jniLibs`),
+     * in order to be able to change this value to "true". */
+    bool enableValidationLayers = true;
 
     const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
     const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
@@ -178,4 +179,4 @@ private:
 
 #pragma clang diagnostic pop
 
-#endif //VLK_HELLO_VK_H
+#endif //VIS_ANALYSES_H

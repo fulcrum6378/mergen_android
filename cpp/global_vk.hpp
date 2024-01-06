@@ -1,12 +1,12 @@
-#ifndef VLK_GLOBAL_H
-#define VLK_GLOBAL_H
+#ifndef GLOBAL_VK_H
+#define GLOBAL_VK_H
 
 #include <android/asset_manager.h>
 #include <cassert>
 #include <vector>
 #include <vulkan/vulkan.h>
 
-#include "../global.hpp"
+#include "global.hpp"
 
 #define VK_CHECK(x)                           \
   do {                                        \
@@ -116,4 +116,4 @@ static void DestroyDebugUtilsMessengerEXT(
     if (func != nullptr) func(instance, debugMessenger, pAllocator);
 }
 
-#endif //VLK_GLOBAL_H
+#endif //GLOBAL_VK_H
