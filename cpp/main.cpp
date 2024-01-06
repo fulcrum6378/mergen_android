@@ -97,22 +97,33 @@ Java_ir_mahdiparastesh_mergen_Main_getCameraDimensions(JNIEnv *env, jobject) {
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_ir_mahdiparastesh_mergen_Main_onSurfaceStatusChanged(
-        JNIEnv *env, jobject, jobject surface, jboolean available, jobject assetManager) {
-    if (available) {
-        //vis->CreateSession(ANativeWindow_fromSurface(env, surface));
-        vlk = new HelloVK();
-        vlk->reset(ANativeWindow_fromSurface(env, surface),
-                   AAssetManager_fromJava(env, assetManager));
-        vlk->initVulkan();
-        vlk->render();
-    } else { // don't put these in Main.destroy()
-        //delete vis;
-        //vis = nullptr;
-        vlk->cleanup();
-        delete vlk;
-        vlk = nullptr;
-    }
+Java_ir_mahdiparastesh_mergen_Main_onPreviewSurfaceCreated(
+        JNIEnv *env, jobject, jobject surface) {
+    vis->CreateSession(ANativeWindow_fromSurface(env, surface));
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_ir_mahdiparastesh_mergen_Main_onPreviewSurfaceDestroyed(JNIEnv *, jobject) {
+    // don't put these in Main.destroy()
+    delete vis;
+    vis = nullptr;
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceCreated(
+        JNIEnv *env, jobject, jobject surface, jobject assetManager) {
+    vlk = new HelloVK();
+    vlk->reset(ANativeWindow_fromSurface(env, surface),
+               AAssetManager_fromJava(env, assetManager));
+    vlk->initVulkan();
+    vlk->render();
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceDestroyed(JNIEnv *, jobject) {
+    vlk->cleanup();
+    delete vlk;
+    vlk = nullptr;
 }
 
 extern "C" JNIEXPORT void JNICALL

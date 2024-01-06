@@ -30,15 +30,15 @@ import android.widget.Toast;
 import java.util.Arrays;
 
 @SuppressLint("ClickableViewAccessibility")
-public class Main extends Activity implements TextureView.SurfaceTextureListener {
+public class Main extends Activity {
     private RelativeLayout root;
     private View colouring, capture;
-    private TextureView preview;
+    private TextureView preview, analyses;
 
     static Handler handler;
     private Vibrator vib;
     private Debug debug;
-    private Surface surface = null;
+    private Surface previewSurface = null, analysesSurface = null;
     boolean isRecording = false, isFinished = true;
     private Toast toast;
     private ObjectAnimator captureAnimation;
@@ -52,6 +52,7 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
         root = findViewById(R.id.root);
         colouring = findViewById(R.id.colouring);
         preview = findViewById(R.id.preview);
+        analyses = findViewById(R.id.analyses);
         capture = findViewById(R.id.capture);
 
         // ask for camera and microphone permissions
@@ -131,39 +132,70 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
             previewLP.height = (int) sh;
         }
         preview.setLayoutParams(previewLP);
-        preview.setSurfaceTextureListener(this);
+        preview.setSurfaceTextureListener(previewSurfaceListener);
         if (preview.isAvailable()) //noinspection DataFlowIssue
-            onSurfaceTextureAvailable(preview.getSurfaceTexture(), size.getWidth(), size.getHeight());
+            previewSurfaceListener.onSurfaceTextureAvailable(
+                    preview.getSurfaceTexture(), size.getWidth(), size.getHeight());
+
+        // initialise the analyses surface for Vulkan
+        analyses.setSurfaceTextureListener(analysesSurfaceListener);
+        if (analyses.isAvailable()) //noinspection DataFlowIssue
+            analysesSurfaceListener.onSurfaceTextureAvailable(
+                    analyses.getSurfaceTexture(), size.getWidth(), size.getHeight());
 
         // initialise the debugger
         debug = new Debug(this);
         debug.start();
     }
 
-    @Override
-    public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
-        surfaceTexture.setDefaultBufferSize(width, height);
-        surface = new Surface(surfaceTexture);
-        onSurfaceStatusChanged(surface, true, getResources().getAssets());
-        root.setClickable(true);
-    }
+    TextureView.SurfaceTextureListener previewSurfaceListener = new TextureView.SurfaceTextureListener() {
+        @Override
+        public void onSurfaceTextureAvailable(SurfaceTexture st, int width, int height) {
+            st.setDefaultBufferSize(width, height);
+            previewSurface = new Surface(st);
+            onPreviewSurfaceCreated(previewSurface);
+            root.setClickable(true);
+        }
 
-    @Override
-    public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int width, int height) {
-    }
+        @Override
+        public void onSurfaceTextureSizeChanged(SurfaceTexture st, int width, int height) {
+        }
 
-    @Override
-    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-    }
+        @Override
+        public void onSurfaceTextureUpdated(SurfaceTexture st) {
+        }
 
-    @Override
-    public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
-        root.setClickable(false);
-        recording(false, (byte) 0);
-        onSurfaceStatusChanged(surface, false, null);
-        surface = null;
-        return true;
-    }
+        @Override
+        public boolean onSurfaceTextureDestroyed(SurfaceTexture st) {
+            root.setClickable(false);
+            recording(false, (byte) 0);
+            onPreviewSurfaceDestroyed();
+            previewSurface = null;
+            return true;
+        }
+    }, analysesSurfaceListener = new TextureView.SurfaceTextureListener() {
+        @Override
+        public void onSurfaceTextureAvailable(SurfaceTexture st, int width, int height) {
+            st.setDefaultBufferSize(width, height);
+            analysesSurface = new Surface(st);
+            onAnalysesSurfaceCreated(analysesSurface, getResources().getAssets());
+        }
+
+        @Override
+        public void onSurfaceTextureSizeChanged(SurfaceTexture st, int width, int height) {
+        }
+
+        @Override
+        public void onSurfaceTextureUpdated(SurfaceTexture st) {
+        }
+
+        @Override
+        public boolean onSurfaceTextureDestroyed(SurfaceTexture st) {
+            onAnalysesSurfaceDestroyed();
+            analysesSurface = null;
+            return true;
+        }
+    };
 
     /**
      * Starts/stops recording.
@@ -269,7 +301,8 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
     protected void onDestroy() {
         if (shakeAmplitude != 0) shakeAmplitude = 0;
         debug.interrupt();
-        surface.release();
+        previewSurface.release();
+        analysesSurface.release();
         destroy();
         super.onDestroy();
     }
@@ -307,8 +340,17 @@ public class Main extends Activity implements TextureView.SurfaceTextureListener
      */
     private native Size getCameraDimensions();
 
-    /** Lets Camera be created or destroyed. */
-    private native void onSurfaceStatusChanged(Surface surface, boolean available, AssetManager assetManager);
+    /** Lets ACaptureSession be created. */
+    private native void onPreviewSurfaceCreated(Surface surface);
+
+    /** Lets Camera be destroyed. */
+    private native void onPreviewSurfaceDestroyed();
+
+    /** Lets the Vulkan instance be created. */
+    private native void onAnalysesSurfaceCreated(Surface surface, AssetManager assetManager);
+
+    /** Lets the Vulkan instance be destroyed. */
+    private native void onAnalysesSurfaceDestroyed();
 
     /** Sends specific touch events. */
     private native void onTouch(int dev, int act, int id, float x, float y, float size);
