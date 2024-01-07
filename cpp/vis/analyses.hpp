@@ -8,10 +8,6 @@
 
 #include "../global_vk.hpp"
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
-#pragma ide diagnostic ignored "OCUnusedStructInspection"
-
 static const int MAX_FRAMES_IN_FLIGHT = 2;
 
 struct UniformBufferObject {
@@ -33,25 +29,17 @@ struct SwapChainSupportDetails {
     std::vector<VkPresentModeKHR> presentModes;
 };
 
-struct ANativeWindowDeleter {
-    void operator()(ANativeWindow *window) { ANativeWindow_release(window); }
-};
-
-/** @see <a href="https://github.com/android/ndk-samples/tree/main/hello-vulkan">Hello VK</a> */
 class Analyses {
 public:
+    Analyses(ANativeWindow *window, AAssetManager *assets);
+
     void initVulkan();
 
     void render();
 
-    void cleanup();
-
     void cleanupSwapChain();
 
-    void reset(ANativeWindow *newWindow, AAssetManager *newManager);
-
-
-    bool initialized = false;
+    ~Analyses();
 
 private:
     void createInstance();
@@ -91,6 +79,9 @@ private:
     void createSyncObjects();
 
 
+    ANativeWindow *window_;
+    AAssetManager *assets_;
+
     static std::vector<const char *> getRequiredExtensions(bool _enableValidationLayers);
 
     bool checkValidationLayerSupport();
@@ -111,8 +102,6 @@ private:
 
     void recreateSwapChain();
 
-    void onOrientationChange();
-
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
@@ -129,8 +118,6 @@ private:
 
     const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
     const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-    std::unique_ptr<ANativeWindow, ANativeWindowDeleter> window;
-    AAssetManager *assetManager;
 
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
@@ -168,15 +155,7 @@ private:
     std::vector<VkDescriptorSet> descriptorSets;
 
     uint32_t currentFrame = 0;
-    bool orientationChanged = false;
     VkSurfaceTransformFlagBitsKHR pretransformFlag;
-
-
-    static void getPrerotationMatrix(const VkSurfaceCapabilitiesKHR &capabilities,
-                                     const VkSurfaceTransformFlagBitsKHR &pretransformFlag,
-                                     std::array<float, 16> &mat);
 };
-
-#pragma clang diagnostic pop
 
 #endif //VIS_ANALYSES_H

@@ -147,7 +147,7 @@ because they don't need such pre-processing of their signals as VIS requires for
 ### Timeline of development
 
 This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
-(updated as of 6402.10.16)
+(updated as of 6402.10.17)
 
 | # | Starting date          | Duration | Active days | %  |       Version        |
 |---|:-----------------------|:---------|:-----------:|:--:|:--------------------:|
@@ -159,7 +159,7 @@ This table shows how much I've worked on Mergen and when. The timeline is divide
 | 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    | 32 |         0.4          |
 | 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     | 2  |          -           |
 | 8 | 2023/04/29, 6402/02/09 | 217 days |    88+13    | 47 | 0.4, mycv, linux+bsd |
-| 9 | 2023/12/02, 6402/09/11 | 35 days  |      7      | 20 |      0.4, mycv       |
+| 9 | 2023/12/02, 6402/09/11 | 36 days  |      8      | 22 |      0.4, mycv       |
 
 - Periods 1, 2 and 3 include days of researches which are not recorded.
 - Period 5 includes a few days of researching/practicing about/on a new programming language
@@ -192,5 +192,5 @@ No modular dependencies needed.
 ## License
 
 ```
-Copyright © Mahdi Parastesh - All Rights Reserved.
+Copyright © Mahdi Parastesh - USE IT WELL!!
 ```

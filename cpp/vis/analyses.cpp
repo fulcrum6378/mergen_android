@@ -7,10 +7,8 @@
 
 #include "analyses.hpp"
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
-
-// PUBLIC:
+Analyses::Analyses(ANativeWindow *window, AAssetManager *assets) :
+        window_(window), assets_(assets) {}
 
 void Analyses::initVulkan() {
     createInstance();
@@ -31,126 +29,7 @@ void Analyses::initVulkan() {
     createCommandPool();
     createCommandBuffer();
     createSyncObjects();
-    initialized = true;
 }
-
-void Analyses::render() {
-    if (orientationChanged) onOrientationChange();
-
-    vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE,
-                    UINT64_MAX);
-    uint32_t imageIndex;
-    VkResult result = vkAcquireNextImageKHR(
-            device, swapChain, UINT64_MAX,
-            imageAvailableSemaphores[currentFrame],
-            VK_NULL_HANDLE, &imageIndex);
-    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-        recreateSwapChain();
-        return;
-    }
-    assert(result == VK_SUCCESS ||
-           result == VK_SUBOPTIMAL_KHR);  // failed to acquire swap chain image
-    updateUniformBuffer(currentFrame);
-
-    vkResetFences(device, 1, &inFlightFences[currentFrame]);
-    vkResetCommandBuffer(commandBuffers[currentFrame], 0);
-
-    recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
-
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-    VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
-    VkPipelineStageFlags waitStages[] = {
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = waitSemaphores;
-    submitInfo.pWaitDstStageMask = waitStages;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
-    VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = signalSemaphores;
-
-    VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submitInfo,
-                           inFlightFences[currentFrame]));
-
-    VkPresentInfoKHR presentInfo{};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = signalSemaphores;
-
-    VkSwapchainKHR swapChains[] = {swapChain};
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapChains;
-    presentInfo.pImageIndices = &imageIndex;
-    presentInfo.pResults = nullptr;
-
-    result = vkQueuePresentKHR(presentQueue, &presentInfo);
-    if (result == VK_SUBOPTIMAL_KHR)
-        orientationChanged = true;
-    else if (result == VK_ERROR_OUT_OF_DATE_KHR)
-        recreateSwapChain();
-    else
-        assert(result == VK_SUCCESS);  // failed to present swap chain image!
-    currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-}
-
-void Analyses::cleanup() {
-    vkDeviceWaitIdle(device);
-    cleanupSwapChain();
-    vkDestroyDescriptorPool(device, descriptorPool, nullptr);
-
-    vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
-
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        vkDestroyBuffer(device, uniformBuffers[i], nullptr);
-        vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
-    }
-
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
-        vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
-        vkDestroyFence(device, inFlightFences[i], nullptr);
-    }
-    vkDestroyCommandPool(device, commandPool, nullptr);
-    vkDestroyPipeline(device, graphicsPipeline, nullptr);
-    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-    vkDestroyRenderPass(device, renderPass, nullptr);
-    vkDestroyDevice(device, nullptr);
-    vkDestroySurfaceKHR(instance, surface, nullptr);
-    if (enableValidationLayers)
-        DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
-    vkDestroyInstance(instance, nullptr);
-    initialized = false;
-}
-
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "modernize-loop-convert"
-
-void Analyses::cleanupSwapChain() {
-    for (size_t i = 0; i < swapChainFramebuffers.size(); i++)
-        vkDestroyFramebuffer(device, swapChainFramebuffers[i], nullptr);
-
-    for (size_t i = 0; i < swapChainImageViews.size(); i++)
-        vkDestroyImageView(device, swapChainImageViews[i], nullptr);
-
-    vkDestroySwapchainKHR(device, swapChain, nullptr);
-}
-
-#pragma clang diagnostic pop
-
-void Analyses::reset(ANativeWindow *newWindow, AAssetManager *newManager) {
-    window.reset(newWindow);
-    assetManager = newManager;
-    if (initialized) {
-        createSurface();
-        recreateSwapChain();
-    }
-}
-
-// PRIVATE (INIT):
 
 void Analyses::createInstance() {
     assert(!enableValidationLayers ||
@@ -209,7 +88,6 @@ void Analyses::setupDebugMessenger() {
 
     VkDebugUtilsMessengerCreateInfoEXT createInfo{};
     populateDebugMessengerCreateInfo(createInfo);
-
     VK_CHECK(CreateDebugUtilsMessengerEXT(
             instance, &createInfo, nullptr, &debugMessenger));
 }
@@ -220,13 +98,11 @@ void Analyses::setupDebugMessenger() {
  * has had a chance to be called.
  */
 void Analyses::createSurface() {
-    assert(window != nullptr);  // window must have been initialized
     const VkAndroidSurfaceCreateInfoKHR create_info{
             .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
             .pNext = nullptr,
             .flags = 0,
-            .window = window.get()};
-
+            .window = window_};
     VK_CHECK(vkCreateAndroidSurfaceKHR(
             instance, &create_info, nullptr, &surface));
 }
@@ -295,16 +171,6 @@ void Analyses::establishDisplaySizeIdentity() {
     VkSurfaceCapabilitiesKHR capabilities;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
             physicalDevice, surface, &capabilities);
-
-    uint32_t width = capabilities.currentExtent.width;
-    uint32_t height = capabilities.currentExtent.height;
-    if (capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR ||
-        capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR) {
-        // Swap to get identity width and height
-        capabilities.currentExtent.height = width;
-        capabilities.currentExtent.width = height;
-    }
-
     displaySizeIdentity = capabilities.currentExtent;
 }
 
@@ -546,9 +412,9 @@ void Analyses::createDescriptorSets() {
  */
 void Analyses::createGraphicsPipeline() {
     auto vertShaderCode =
-            LoadBinaryFileToVector("shaders/triangle.vert.spv", assetManager);
+            LoadBinaryFileToVector("shaders/triangle.vert.spv", assets_);
     auto fragShaderCode =
-            LoadBinaryFileToVector("shaders/triangle.frag.spv", assetManager);
+            LoadBinaryFileToVector("shaders/triangle.frag.spv", assets_);
 
     VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
     VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -732,6 +598,111 @@ void Analyses::createSyncObjects() {
         VK_CHECK(vkCreateFence(
                 device, &fenceInfo, nullptr, &inFlightFences[i]));
     }
+}
+
+void Analyses::render() {
+    vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE,
+                    UINT64_MAX);
+    uint32_t imageIndex;
+    VkResult result = vkAcquireNextImageKHR(
+            device, swapChain, UINT64_MAX,
+            imageAvailableSemaphores[currentFrame],
+            VK_NULL_HANDLE, &imageIndex);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        recreateSwapChain();
+        return;
+    }
+    assert(result == VK_SUCCESS ||
+           result == VK_SUBOPTIMAL_KHR);  // failed to acquire swap chain image
+    updateUniformBuffer(currentFrame);
+
+    vkResetFences(device, 1, &inFlightFences[currentFrame]);
+    vkResetCommandBuffer(commandBuffers[currentFrame], 0);
+
+    recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+    VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
+    VkPipelineStageFlags waitStages[] = {
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = waitSemaphores;
+    submitInfo.pWaitDstStageMask = waitStages;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
+    VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = signalSemaphores;
+
+    VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submitInfo,
+                           inFlightFences[currentFrame]));
+
+    VkPresentInfoKHR presentInfo{};
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = signalSemaphores;
+
+    VkSwapchainKHR swapChains[] = {swapChain};
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = swapChains;
+    presentInfo.pImageIndices = &imageIndex;
+    presentInfo.pResults = nullptr;
+
+    result = vkQueuePresentKHR(presentQueue, &presentInfo);
+    /*if (result == VK_SUBOPTIMAL_KHR)
+        orientationChanged = true;
+    else */
+    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+        recreateSwapChain();
+    else
+        assert(result == VK_SUCCESS);  // failed to present swap chain image!
+    currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+}
+
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "modernize-loop-convert"
+
+void Analyses::cleanupSwapChain() {
+    for (size_t i = 0; i < swapChainFramebuffers.size(); i++)
+        vkDestroyFramebuffer(device, swapChainFramebuffers[i], nullptr);
+
+    for (size_t i = 0; i < swapChainImageViews.size(); i++)
+        vkDestroyImageView(device, swapChainImageViews[i], nullptr);
+
+    vkDestroySwapchainKHR(device, swapChain, nullptr);
+}
+
+#pragma clang diagnostic pop
+
+Analyses::~Analyses() {
+    vkDeviceWaitIdle(device);
+    cleanupSwapChain();
+    vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+
+    vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        vkDestroyBuffer(device, uniformBuffers[i], nullptr);
+        vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
+    }
+
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
+        vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
+        vkDestroyFence(device, inFlightFences[i], nullptr);
+    }
+    vkDestroyCommandPool(device, commandPool, nullptr);
+    vkDestroyPipeline(device, graphicsPipeline, nullptr);
+    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+    vkDestroyRenderPass(device, renderPass, nullptr);
+    vkDestroyDevice(device, nullptr);
+    vkDestroySurfaceKHR(instance, surface, nullptr);
+    if (enableValidationLayers)
+        DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+    vkDestroyInstance(instance, nullptr);
 }
 
 // PRIVATE (MISC):
@@ -939,11 +910,6 @@ void Analyses::recreateSwapChain() {
     createFramebuffers();
 }
 
-void Analyses::onOrientationChange() {
-    recreateSwapChain();
-    orientationChanged = false;
-}
-
 /*
  * Finds the index of the memory heap which matches a particular buffer's memory
  * requirements. Vulkan manages these requirements as a bitset, in this case
@@ -994,34 +960,12 @@ void Analyses::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
 }
 
 void Analyses::updateUniformBuffer(uint32_t currentImage) {
-    SwapChainSupportDetails swapChainSupport =
-            querySwapChainSupport(physicalDevice);
+    SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice);
     UniformBufferObject ubo{};
-    getPrerotationMatrix(
-            swapChainSupport.capabilities, pretransformFlag, ubo.mvp);
+    ubo.mvp = {1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1.};
     void *data;
     vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(ubo),
                 0, &data);
     memcpy(data, &ubo, sizeof(ubo));
     vkUnmapMemory(device, uniformBuffersMemory[currentImage]);
 }
-
-// STATIC:
-
-/** Handles screen rotation with 3 hardcoded rotation
- * matrices (detailed below). We skip the 180 degrees rotation. */
-void Analyses::getPrerotationMatrix(const VkSurfaceCapabilitiesKHR &capabilities,
-                                    const VkSurfaceTransformFlagBitsKHR &pretransformFlag,
-                                    std::array<float, 16> &mat) {
-    // mat is initialized to the identity matrix
-    mat = {1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1.};
-    if (pretransformFlag & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR) {
-        // mat is set to a 90 deg rotation matrix
-        mat = {0., 1., 0., 0., -1., 0, 0., 0., 0., 0., 1., 0., 0., 0., 0., 1.};
-    } else if (pretransformFlag & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR) {
-        // mat is set to 270 deg rotation matrix
-        mat = {0., -1., 0., 0., 1., 0, 0., 0., 0., 0., 1., 0., 0., 0., 0., 1.};
-    }
-}
-
-#pragma clang diagnostic pop

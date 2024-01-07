@@ -47,10 +47,9 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     vis = new Camera(jvm, gMain);
 
     // initialise high-level components
-    Manifest::init();
     rew = new Rewarder(aud_out, mov, jvm, gMain);
+    Manifest::init();
     scm = new Perception();
-    // ComputeVK().run(state->activity->assetManager);
 }
 
 extern "C" JNIEXPORT jbyte JNICALL
@@ -113,16 +112,14 @@ Java_ir_mahdiparastesh_mergen_Main_onPreviewSurfaceDestroyed(JNIEnv *, jobject) 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceCreated(
         JNIEnv *env, jobject, jobject surface, jobject assetManager) {
-    vis_dbg = new Analyses();
-    vis_dbg->reset(ANativeWindow_fromSurface(env, surface),
-                   AAssetManager_fromJava(env, assetManager));
+    vis_dbg = new Analyses(ANativeWindow_fromSurface(env, surface),
+                           AAssetManager_fromJava(env, assetManager));
     vis_dbg->initVulkan();
     vis_dbg->render();
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceDestroyed(JNIEnv *, jobject) {
-    vis_dbg->cleanup();
     delete vis_dbg;
     vis_dbg = nullptr;
 }
