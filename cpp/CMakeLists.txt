@@ -51,10 +51,14 @@ target_include_directories(main PUBLIC
         $ENV{ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include
 )
 
+# third party libraries
+add_subdirectory(glm)
+
 target_link_libraries(main
         aaudio       # AAudioXXXXX
         android      # <android/native_window(_jni).h>::ANativeWindow(_fromSurface)
         camera2ndk   # ACameraXXXXX
+        glm          # OpenGL Math (imported)
         log          # <android/log.h>::__android_log_assert
         mediandk     # AImageReader
         vulkan
