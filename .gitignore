@@ -15,4 +15,4 @@
 local.properties
 
 /cpp/cmake-build-debug
-/cpp/glm/
+/cpp/include

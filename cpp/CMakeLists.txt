@@ -46,19 +46,25 @@ add_library(main SHARED
         vis/visual_stm.hpp
 )
 
-# For CLion to index the Android NDK headers
 target_include_directories(main PUBLIC
+        # for CLion to index the Android NDK headers
         $ENV{ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include
+        # third-party libraries
+        include
 )
 
-# third party libraries
-add_subdirectory(glm)
+#add_definitions(-Dglm_DIR:PATH=include/glm/glm)
+#set(glm_LIBRARY_DIR include/glm/glm)
+#include(include/glm/glmConfig.cmake)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/include")
+add_subdirectory(include/glm)
+#find_package(glm REQUIRED)
 
 target_link_libraries(main
         aaudio       # AAudioXXXXX
         android      # <android/native_window(_jni).h>::ANativeWindow(_fromSurface)
         camera2ndk   # ACameraXXXXX
-        glm          # OpenGL Math (imported)
+        #glm          # OpenGL Math (imported)
         log          # <android/log.h>::__android_log_assert
         mediandk     # AImageReader
         vulkan
