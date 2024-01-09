@@ -12,7 +12,9 @@ Analyses::Analyses(ANativeWindow *window, AAssetManager *assets) :
 
 void Analyses::initVulkan() {
     createInstance();
+#if ENABLE_VALIDATION_LAYERS
     setupDebugMessenger();
+#endif
     createSurface();
     pickPhysicalDevice();
     createLogicalDeviceAndQueue();
@@ -27,15 +29,12 @@ void Analyses::initVulkan() {
     createGraphicsPipeline();
     createFramebuffers();
     createCommandPool();
-    createVertexBuffer();
     createCommandBuffer();
     createSyncObjects();
 }
 
 void Analyses::createInstance() {
-    assert(!enableValidationLayers ||
-           checkValidationLayerSupport());  // validation layers requested, but not available!
-    auto requiredExtensions = getRequiredExtensions(enableValidationLayers);
+    auto requiredExtensions = getRequiredExtensions();
 
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -51,16 +50,16 @@ void Analyses::createInstance() {
     createInfo.enabledExtensionCount = (uint32_t) requiredExtensions.size();
     createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
-    if (enableValidationLayers) {
-        VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-        createInfo.ppEnabledLayerNames = validationLayers.data();
-        populateDebugMessengerCreateInfo(debugCreateInfo);
-        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT *) &debugCreateInfo;
-    } else {
-        createInfo.enabledLayerCount = 0;
-        createInfo.pNext = nullptr;
-    }
+#if ENABLE_VALIDATION_LAYERS
+    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+    createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+    createInfo.ppEnabledLayerNames = validationLayers.data();
+    populateDebugMessengerCreateInfo(debugCreateInfo);
+    createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT *) &debugCreateInfo;
+#else
+    createInfo.enabledLayerCount = 0;
+    createInfo.pNext = nullptr;
+#endif
     VK_CHECK(vkCreateInstance(&createInfo, nullptr, &instance));
 
     uint32_t extensionCount = 0;
@@ -84,6 +83,19 @@ void Analyses::createInstance() {
   	 VK_KHR_get_physical_device_properties2 */
 }
 
+std::vector<const char *> Analyses::getRequiredExtensions() {
+    std::vector<const char *> extensions;
+    extensions.push_back("VK_KHR_surface");
+    extensions.push_back("VK_KHR_android_surface");
+#if ENABLE_VALIDATION_LAYERS
+    assert(checkValidationLayerSupport());  // validation layers requested, but not available!
+    extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME); // "VK_EXT_debug_utils"
+#endif
+    return extensions;
+}
+
+#if ENABLE_VALIDATION_LAYERS
+
 bool Analyses::checkValidationLayerSupport() {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -103,23 +115,14 @@ bool Analyses::checkValidationLayerSupport() {
     return true;
 }
 
-std::vector<const char *> Analyses::getRequiredExtensions(bool _enableValidationLayers) {
-    std::vector<const char *> extensions;
-    extensions.push_back("VK_KHR_surface");
-    extensions.push_back("VK_KHR_android_surface");
-    if (_enableValidationLayers)
-        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME); // "VK_EXT_debug_utils"
-    return extensions;
-}
-
 void Analyses::setupDebugMessenger() {
-    if (!enableValidationLayers) return;
-
     VkDebugUtilsMessengerCreateInfoEXT createInfo{};
     populateDebugMessengerCreateInfo(createInfo);
     VK_CHECK(CreateDebugUtilsMessengerEXT(
             instance, &createInfo, nullptr, &debugMessenger));
 }
+
+#endif
 
 /*
  * createSurface can only be called after the android ecosystem has had the
@@ -266,10 +269,12 @@ void Analyses::createLogicalDeviceAndQueue() {
     createInfo.pEnabledFeatures = &deviceFeatures;
     createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
-    if (enableValidationLayers) { // for Vulkan versions compatibility (no longer needed)
-        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-        createInfo.ppEnabledLayerNames = validationLayers.data();
-    } else createInfo.enabledLayerCount = 0;
+#if ENABLE_VALIDATION_LAYERS // for Vulkan versions compatibility (no longer needed)
+    createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+    createInfo.ppEnabledLayerNames = validationLayers.data();
+#else
+    createInfo.enabledLayerCount = 0;
+#endif
 
     VK_CHECK(vkCreateDevice(
             physicalDevice, &createInfo, nullptr, &device));
@@ -453,7 +458,7 @@ void Analyses::createUniformBuffers() {
                      uniformBuffers[i], uniformBuffersMemory[i]);
 }
 
-/*
+/**
  *	Create a buffer with specified usage and memory properties
  *	i.e a uniform buffer which uses HOST_COHERENT memory
  *  Upon creation, these buffers will list memory requirements which need to be
@@ -467,7 +472,6 @@ void Analyses::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
     bufferInfo.size = size;
     bufferInfo.usage = usage;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
     VK_CHECK(vkCreateBuffer(device, &bufferInfo, nullptr, &buffer));
 
     VkMemoryRequirements memRequirements;
@@ -477,9 +481,7 @@ void Analyses::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
-
-    VK_CHECK(vkAllocateMemory(
-            device, &allocInfo, nullptr, &bufferMemory));
+    VK_CHECK(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory));
 
     vkBindBufferMemory(device, buffer, bufferMemory, 0);
 }
@@ -494,12 +496,12 @@ uint32_t Analyses::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags pro
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
 
     for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
-        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags &
-                                        properties) == properties)
+        if ((typeFilter & (1 << i)) &&
+            (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
             return i;
 
     assert(false);  // failed to find suitable memory type!
-    return -1;
+    //return -1;
 }
 
 void Analyses::createDescriptorPool() {
@@ -600,16 +602,12 @@ void Analyses::createGraphicsPipeline() {
     VkPipelineShaderStageCreateInfo shaderStages[] =
             {vertShaderStageInfo, fragShaderStageInfo};
 
-    auto bindingDescription = Vertex::getBindingDescription();
-    auto attributeDescriptions = Vertex::getAttributeDescriptions();
-
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 1;
-    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-    vertexInputInfo.vertexAttributeDescriptionCount =
-            static_cast<uint32_t>(attributeDescriptions.size());
-    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+    vertexInputInfo.vertexBindingDescriptionCount = 0;
+    vertexInputInfo.pVertexBindingDescriptions = nullptr;
+    vertexInputInfo.vertexAttributeDescriptionCount = 0;
+    vertexInputInfo.pVertexAttributeDescriptions = nullptr;
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -743,17 +741,6 @@ void Analyses::createCommandPool() {
     poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
     VK_CHECK(vkCreateCommandPool(
             device, &poolInfo, nullptr, &commandPool));
-}
-
-void Analyses::createVertexBuffer() {
-    VkBufferCreateInfo bufferInfo{};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = sizeof(vertices[0]) * vertices.size();
-    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    VK_CHECK(vkCreateBuffer(
-            device, &bufferInfo, nullptr, &vertexBuffer));
 }
 
 void Analyses::createCommandBuffer() {
@@ -938,8 +925,6 @@ Analyses::~Analyses() {
     vkDeviceWaitIdle(device);
     cleanupSwapChain();
 
-    vkDestroyBuffer(device, vertexBuffer, nullptr);
-
     vkDestroyDescriptorPool(device, descriptorPool, nullptr);
     vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
@@ -959,7 +944,8 @@ Analyses::~Analyses() {
     vkDestroyRenderPass(device, renderPass, nullptr);
     vkDestroyDevice(device, nullptr);
     vkDestroySurfaceKHR(instance, surface, nullptr);
-    if (enableValidationLayers)
-        DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+#if ENABLE_VALIDATION_LAYERS
+    DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+#endif
     vkDestroyInstance(instance, nullptr);
 }

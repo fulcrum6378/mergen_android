@@ -9,8 +9,15 @@
 
 #include "../global_vk.hpp"
 
+/** You need to download the latest binaries in
+ * <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/releases">
+ * Vulkan-ValidationLayers</a> into `android/jniLibs` (`app/src/main/jniLibs`),
+ * in order to be able to change this value to "true". */
+#define ENABLE_VALIDATION_LAYERS true
+
 static const int MAX_FRAMES_IN_FLIGHT = 2;
 
+// TODO edit this to put data in it
 struct UniformBufferObject {
     std::array<float, 16> mvp;
 };
@@ -19,7 +26,7 @@ struct QueueFamilyIndices {
     std::optional<uint32_t> graphicsFamily;
     std::optional<uint32_t> presentFamily;
 
-    bool isComplete() {
+    [[nodiscard]] bool isComplete() const {
         return graphicsFamily.has_value() && presentFamily.has_value();
     }
 };
@@ -45,11 +52,15 @@ public:
 private:
     void createInstance();
 
+    std::vector<const char *> getRequiredExtensions();
+
+#if ENABLE_VALIDATION_LAYERS
+
     bool checkValidationLayerSupport();
 
-    static std::vector<const char *> getRequiredExtensions(bool _enableValidationLayers);
-
     void setupDebugMessenger();
+
+#endif
 
     void createSurface();
 
@@ -101,7 +112,7 @@ private:
 
     void createSyncObjects();
 
-    // render()
+    // RENDER()
 
     void recreateSwapChain();
 
@@ -112,24 +123,17 @@ private:
 
     ANativeWindow *window_;
     AAssetManager *assets_;
-    VkBuffer vertexBuffer;
-
-    /** You need to download the latest binaries in
-     * <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/releases">
-     * Vulkan-ValidationLayers</a> into `android/jniLibs` (`app/src/main/jniLibs`),
-     * in order to be able to change this value to "true". */
-    bool enableValidationLayers = true;
-
-    const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
     const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
     VkInstance instance;
-    VkDebugUtilsMessengerEXT debugMessenger;
-
     VkSurfaceKHR surface;
-
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     VkDevice device;
+
+#if ENABLE_VALIDATION_LAYERS
+    const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
+    VkDebugUtilsMessengerEXT debugMessenger;
+#endif
 
     VkSwapchainKHR swapChain;
     std::vector<VkImage> swapChainImages;
@@ -160,40 +164,6 @@ private:
 
     uint32_t currentFrame = 0;
     VkSurfaceTransformFlagBitsKHR pretransformFlag;
-};
-
-struct Vertex {
-    glm::vec2 pos;
-    glm::vec3 color;
-
-    static VkVertexInputBindingDescription getBindingDescription() {
-        VkVertexInputBindingDescription bindingDescription{};
-        bindingDescription.binding = 0;
-        bindingDescription.stride = sizeof(Vertex);
-        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-        return bindingDescription;
-    }
-
-    static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
-        std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
-        attributeDescriptions[0].binding = 0;
-        attributeDescriptions[0].location = 0;
-        attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-        attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
-        attributeDescriptions[1].binding = 0;
-        attributeDescriptions[1].location = 1;
-        attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[1].offset = offsetof(Vertex, color);
-
-        return attributeDescriptions;
-    }
-};
-
-const std::vector<Vertex> vertices = {
-        {{0.0f,  -0.5f}, {1.0f, 0.0f, 0.0f}},
-        {{0.5f,  0.5f},  {0.0f, 1.0f, 0.0f}},
-        {{-0.5f, 0.5f},  {0.0f, 0.0f, 1.0f}}
 };
 
 #endif //VIS_ANALYSES_H
