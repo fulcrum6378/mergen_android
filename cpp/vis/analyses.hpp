@@ -45,11 +45,23 @@ public:
 private:
     void createInstance();
 
+    bool checkValidationLayerSupport();
+
+    static std::vector<const char *> getRequiredExtensions(bool _enableValidationLayers);
+
     void setupDebugMessenger();
 
     void createSurface();
 
     void pickPhysicalDevice();
+
+    bool isDeviceSuitable(VkPhysicalDevice dev);
+
+    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice dev) const;
+
+    bool checkDeviceExtensionSupport(VkPhysicalDevice dev);
+
+    SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice dev) const;
 
     void createLogicalDeviceAndQueue();
 
@@ -65,11 +77,19 @@ private:
 
     void createUniformBuffers();
 
+    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
+                      VkMemoryPropertyFlags properties, VkBuffer &buffer,
+                      VkDeviceMemory &bufferMemory);
+
+    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
     void createDescriptorPool();
 
     void createDescriptorSets();
 
     void createGraphicsPipeline();
+
+    VkShaderModule createShaderModule(const std::vector<uint8_t> &code);
 
     void createFramebuffers();
 
@@ -81,38 +101,18 @@ private:
 
     void createSyncObjects();
 
+    // render()
+
+    void recreateSwapChain();
+
+    void updateUniformBuffer(uint32_t currentImage);
+
+    void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+
 
     ANativeWindow *window_;
     AAssetManager *assets_;
     VkBuffer vertexBuffer;
-
-    static std::vector<const char *> getRequiredExtensions(bool _enableValidationLayers);
-
-    bool checkValidationLayerSupport();
-
-    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice dev) const;
-
-    bool checkDeviceExtensionSupport(VkPhysicalDevice dev);
-
-    SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice dev) const;
-
-    bool isDeviceSuitable(VkPhysicalDevice dev);
-
-    // VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
-
-    VkShaderModule createShaderModule(const std::vector<uint8_t> &code);
-
-    void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
-
-    void recreateSwapChain();
-
-    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-
-    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
-                      VkMemoryPropertyFlags properties, VkBuffer &buffer,
-                      VkDeviceMemory &bufferMemory);
-
-    void updateUniformBuffer(uint32_t currentImage);
 
     /** You need to download the latest binaries in
      * <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/releases">
@@ -191,9 +191,9 @@ struct Vertex {
 };
 
 const std::vector<Vertex> vertices = {
-        {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-        {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-        {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+        {{0.0f,  -0.5f}, {1.0f, 0.0f, 0.0f}},
+        {{0.5f,  0.5f},  {0.0f, 1.0f, 0.0f}},
+        {{-0.5f, 0.5f},  {0.0f, 0.0f, 1.0f}}
 };
 
 #endif //VIS_ANALYSES_H
