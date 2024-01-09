@@ -1,7 +1,7 @@
 #version 450
 
 // Colour passed to the fragment shader
-layout(location = 0) out/*put*/ vec3 fragColor;
+layout(location = 0) out vec3 fragColor;
 
 // Uniform buffer containing an MVP matrix.
 // Currently the vulkan backend only sets the rotation matix

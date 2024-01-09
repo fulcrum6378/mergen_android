@@ -41,11 +41,7 @@ class Analyses {
 public:
     Analyses(ANativeWindow *window, AAssetManager *assets);
 
-    void initVulkan();
-
     void render();
-
-    void cleanupSwapChain();
 
     ~Analyses();
 
@@ -98,15 +94,13 @@ private:
 
     void createDescriptorSets();
 
-    void createGraphicsPipeline();
+    void createGraphicsPipeline(AAssetManager *assets);
 
     VkShaderModule createShaderModule(const std::vector<uint8_t> &code);
 
     void createFramebuffers();
 
     void createCommandPool();
-
-    void createVertexBuffer();
 
     void createCommandBuffer();
 
@@ -116,13 +110,14 @@ private:
 
     void recreateSwapChain();
 
+    void cleanupSwapChain();
+
     void updateUniformBuffer(uint32_t currentImage);
 
     void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
 
     ANativeWindow *window_;
-    AAssetManager *assets_;
     const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
     VkInstance instance;

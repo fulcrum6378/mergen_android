@@ -7,10 +7,10 @@
 
 #include "analyses.hpp"
 
-Analyses::Analyses(ANativeWindow *window, AAssetManager *assets) :
-        window_(window), assets_(assets) {}
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "cppcoreguidelines-pro-type-member-init"
 
-void Analyses::initVulkan() {
+Analyses::Analyses(ANativeWindow *window, AAssetManager *assets) : window_(window) {
     createInstance();
 #if ENABLE_VALIDATION_LAYERS
     setupDebugMessenger();
@@ -26,12 +26,14 @@ void Analyses::initVulkan() {
     createUniformBuffers();
     createDescriptorPool();
     createDescriptorSets();
-    createGraphicsPipeline();
+    createGraphicsPipeline(assets);
     createFramebuffers();
     createCommandPool();
     createCommandBuffer();
     createSyncObjects();
 }
+
+#pragma clang diagnostic pop
 
 void Analyses::createInstance() {
     auto requiredExtensions = getRequiredExtensions();
@@ -423,7 +425,6 @@ void Analyses::createRenderPass() {
     renderPassInfo.pSubpasses = &subpass;
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &dependency;
-
     VK_CHECK(vkCreateRenderPass(
             device, &renderPassInfo, nullptr, &renderPass));
 }
@@ -440,9 +441,8 @@ void Analyses::createDescriptorSetLayout() {
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     layoutInfo.bindingCount = 1;
     layoutInfo.pBindings = &uboLayoutBinding;
-
-    VK_CHECK(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
-                                         &descriptorSetLayout));
+    VK_CHECK(vkCreateDescriptorSetLayout(
+            device, &layoutInfo, nullptr, &descriptorSetLayout));
 }
 
 void Analyses::createUniformBuffers() {
@@ -514,7 +514,6 @@ void Analyses::createDescriptorPool() {
     poolInfo.poolSizeCount = 1;
     poolInfo.pPoolSizes = &poolSize;
     poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-
     VK_CHECK(vkCreateDescriptorPool(
             device, &poolInfo, nullptr, &descriptorPool));
 }
@@ -576,11 +575,11 @@ void Analyses::createDescriptorSets() {
  * a 4x4 rotation matrix specified by the descriptorSetLayout. This is required
  * in order to render a rotated scene when the device has been rotated.
  */
-void Analyses::createGraphicsPipeline() {
+void Analyses::createGraphicsPipeline(AAssetManager *assets) {
     auto vertShaderCode =
-            LoadBinaryFileToVector("shaders/triangle.vert.spv", assets_);
+            LoadBinaryFileToVector("shaders/analyses.vert.spv", assets);
     auto fragShaderCode =
-            LoadBinaryFileToVector("shaders/triangle.frag.spv", assets_);
+            LoadBinaryFileToVector("shaders/analyses.frag.spv", assets);
 
     VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
     VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -866,7 +865,6 @@ void Analyses::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = 0;
     beginInfo.pInheritanceInfo = nullptr;
-
     VK_CHECK(vkBeginCommandBuffer(commandBuffer, &beginInfo));
 
     VkRenderPassBeginInfo renderPassInfo{};

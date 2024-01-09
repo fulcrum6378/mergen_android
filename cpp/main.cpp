@@ -1,6 +1,5 @@
 #include <android/asset_manager_jni.h>
 #include <android/native_window_jni.h>
-#include <cassert>
 #include <jni.h>
 #include <sys/stat.h>
 
@@ -114,7 +113,6 @@ Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceCreated(
         JNIEnv *env, jobject, jobject surface, jobject assetManager) {
     vis_dbg = new Analyses(ANativeWindow_fromSurface(env, surface),
                            AAssetManager_fromJava(env, assetManager));
-    vis_dbg->initVulkan();
     vis_dbg->render();
 }
 
