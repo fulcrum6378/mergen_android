@@ -9,17 +9,10 @@
 
 #include "../global_vk.hpp"
 
-/** You need to download the latest binaries in
- * <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/releases">
- * Vulkan-ValidationLayers</a> into `android/jniLibs` (`app/src/main/jniLibs`),
- * in order to be able to change this value to "true". */
-#define ENABLE_VALIDATION_LAYERS true
+#define MAX_FRAMES_IN_FLIGHT 2
 
-static const int MAX_FRAMES_IN_FLIGHT = 2;
-
-// TODO edit this to put data in it
 struct UniformBufferObject {
-    std::array<float, 16> mvp;
+    glm::mat4 mvp;
 };
 
 struct QueueFamilyIndices {
@@ -102,6 +95,8 @@ private:
 
     void createCommandPool();
 
+    void createVertexBuffer();
+
     void createCommandBuffer();
 
     void createSyncObjects();
@@ -159,6 +154,43 @@ private:
 
     uint32_t currentFrame = 0;
     VkSurfaceTransformFlagBitsKHR pretransformFlag;
+
+    VkBuffer vertexBuffer;
+    VkDeviceMemory vertexBufferMemory;
+};
+
+struct Vertex {
+    glm::vec2 pos;
+    glm::vec3 colour;
+
+    static VkVertexInputBindingDescription getBindingDescription() {
+        VkVertexInputBindingDescription bindingDescription{};
+        bindingDescription.binding = 0;
+        bindingDescription.stride = sizeof(Vertex);
+        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+        return bindingDescription;
+    }
+
+    static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
+        std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+        attributeDescriptions[0].binding = 0;
+        attributeDescriptions[0].location = 0;
+        attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[0].offset = offsetof(Vertex, pos);
+
+        attributeDescriptions[1].binding = 0;
+        attributeDescriptions[1].location = 1;
+        attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[1].offset = offsetof(Vertex, colour);
+
+        return attributeDescriptions;
+    }
+};
+
+const std::vector<Vertex> vertices = {
+        {{0.0f,  -0.5f}, {1.0f, 0.0f, 0.0f}},
+        {{0.5f,  0.5f},  {0.0f, 1.0f, 0.0f}},
+        {{-0.5f, 0.5f},  {0.0f, 0.0f, 1.0f}}
 };
 
 #endif //VIS_ANALYSES_H

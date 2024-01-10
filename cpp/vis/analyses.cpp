@@ -29,6 +29,7 @@ Analyses::Analyses(ANativeWindow *window, AAssetManager *assets) : window_(windo
     createGraphicsPipeline(assets);
     createFramebuffers();
     createCommandPool();
+    createVertexBuffer();
     createCommandBuffer();
     createSyncObjects();
 }
@@ -38,17 +39,9 @@ Analyses::Analyses(ANativeWindow *window, AAssetManager *assets) : window_(windo
 void Analyses::createInstance() {
     auto requiredExtensions = getRequiredExtensions();
 
-    VkApplicationInfo appInfo{};
-    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "Mergen";
-    appInfo.applicationVersion = VK_MAKE_VERSION(0, 2, 0);
-    appInfo.pEngineName = "No Engine";
-    appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_0;
-
     VkInstanceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    createInfo.pApplicationInfo = &appInfo;
+    createInfo.pApplicationInfo = &vkAppInfo;
     createInfo.enabledExtensionCount = (uint32_t) requiredExtensions.size();
     createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
@@ -459,10 +452,10 @@ void Analyses::createUniformBuffers() {
 }
 
 /**
- *	Create a buffer with specified usage and memory properties
- *	i.e a uniform buffer which uses HOST_COHERENT memory
- *  Upon creation, these buffers will list memory requirements which need to be
- *  satisfied by the device in use in order to be created.
+ * Creates a buffer with specified usage and memory properties
+ * i.e a uniform buffer which uses HOST_COHERENT memory.
+ * Upon creation, these buffers will list memory requirements which need to be
+ * satisfied by the device in use in order to be created.
  */
 void Analyses::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
                             VkMemoryPropertyFlags properties, VkBuffer &buffer,
@@ -486,7 +479,7 @@ void Analyses::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
     vkBindBufferMemory(device, buffer, bufferMemory, 0);
 }
 
-/*
+/**
  * Finds the index of the memory heap which matches a particular buffer's memory
  * requirements. Vulkan manages these requirements as a bitset, in this case
  * expressed through a uInt32_t.
@@ -551,7 +544,7 @@ void Analyses::createDescriptorSets() {
     }
 }
 
-/*
+/**
  * Creates a graphics pipeline loading a simple vertex and fragment shader, both
  * with 'main' set as entrypoint A list of standard parameters are provided:
  * 	- The vertex input coming from the application is set to empty - we are
@@ -577,9 +570,9 @@ void Analyses::createDescriptorSets() {
  */
 void Analyses::createGraphicsPipeline(AAssetManager *assets) {
     auto vertShaderCode =
-            LoadBinaryFileToVector("shaders/analyses.vert.spv", assets);
+            LoadShaderCode("shaders/analyses.vert.spv", assets);
     auto fragShaderCode =
-            LoadBinaryFileToVector("shaders/analyses.frag.spv", assets);
+            LoadShaderCode("shaders/analyses.frag.spv", assets);
 
     VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
     VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -601,12 +594,16 @@ void Analyses::createGraphicsPipeline(AAssetManager *assets) {
     VkPipelineShaderStageCreateInfo shaderStages[] =
             {vertShaderStageInfo, fragShaderStageInfo};
 
+    auto bindingDescription = Vertex::getBindingDescription();
+    auto attributeDescriptions = Vertex::getAttributeDescriptions();
+
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.pVertexBindingDescriptions = nullptr;
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
-    vertexInputInfo.pVertexAttributeDescriptions = nullptr;
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    vertexInputInfo.vertexAttributeDescriptionCount =
+            static_cast<uint32_t>(attributeDescriptions.size());
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -742,6 +739,18 @@ void Analyses::createCommandPool() {
             device, &poolInfo, nullptr, &commandPool));
 }
 
+void Analyses::createVertexBuffer() {
+    size_t buf_size = sizeof(vertices[0]) * vertices.size();
+    createBuffer(buf_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                 vertexBuffer, vertexBufferMemory);
+
+    void *data;
+    vkMapMemory(device, vertexBufferMemory, 0, buf_size, 0, &data);
+    memcpy(data, vertices.data(), buf_size);
+    vkUnmapMemory(device, vertexBufferMemory);
+}
+
 void Analyses::createCommandBuffer() {
     commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
     VkCommandBufferAllocateInfo allocInfo{};
@@ -850,9 +859,14 @@ void Analyses::recreateSwapChain() {
 }
 
 void Analyses::updateUniformBuffer(uint32_t currentImage) {
-    SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice);
+    //SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice);
     UniformBufferObject ubo{};
-    ubo.mvp = {1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1.};
+    ubo.mvp = {
+            1., 0., 0., 0.,
+            0., 1., 0., 0.,
+            0., 0., 1., 0.,
+            0., 0., 0., 1.
+    };
     void *data;
     vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(ubo),
                 0, &data);
@@ -894,12 +908,17 @@ void Analyses::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
             commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdBindPipeline(
             commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+
+    VkBuffer vertexBuffers[] = {vertexBuffer};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
     vkCmdBindDescriptorSets(
             commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,
             0, 1, &descriptorSets[currentFrame],
             0, nullptr);
 
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertices.size()), 1, 0, 0);
     vkCmdEndRenderPass(commandBuffer);
     VK_CHECK(vkEndCommandBuffer(commandBuffer));
 }
@@ -922,6 +941,9 @@ void Analyses::cleanupSwapChain() {
 Analyses::~Analyses() {
     vkDeviceWaitIdle(device);
     cleanupSwapChain();
+
+    vkDestroyBuffer(device, vertexBuffer, nullptr);
+    vkFreeMemory(device, vertexBufferMemory, nullptr);
 
     vkDestroyDescriptorPool(device, descriptorPool, nullptr);
     vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);

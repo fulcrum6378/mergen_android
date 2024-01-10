@@ -3,7 +3,7 @@
 
 class Perception {
 public:
-    Perception() {}
+    Perception() = default;
 
     ~Perception() = default;
 };

@@ -23,11 +23,12 @@
             android:clickable="false"
             android:foregroundGravity="center" />
 
+        <!-- when `alpha` is set to 1, `preview` ain't shown! -->
         <TextureView
             android:id="@+id/analyses"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:alpha="0.4"
+            android:alpha="0.99"
             android:layout_alignTop="@id/preview"
             android:layout_alignBottom="@id/preview"
             android:layout_alignLeft="@id/preview"

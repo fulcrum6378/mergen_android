@@ -8,6 +8,22 @@
 
 #include "global.hpp"
 
+/**
+ * You need to download the latest binaries in
+ * <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/releases">
+ * Vulkan-ValidationLayers</a> into `android/jniLibs` (`app/src/main/jniLibs`),
+ * in order to be able to change this value to "true".
+ */
+#define ENABLE_VALIDATION_LAYERS true
+
+/** Global struct for creating Vulkan instances. */
+inline static VkApplicationInfo vkAppInfo{
+        VK_STRUCTURE_TYPE_APPLICATION_INFO, nullptr,
+        "Mergen", VK_MAKE_VERSION(0, 4, 0),
+        "No Engine", VK_MAKE_VERSION(1, 0, 0),
+        VK_API_VERSION_1_0
+};
+
 #define VK_CHECK(x)                           \
   do {                                        \
     VkResult err = x;                         \
@@ -17,9 +33,7 @@
     }                                         \
   } while (0)
 
-// All functions here MUST be STATIC!
-
-static std::vector<uint8_t> LoadBinaryFileToVector(
+static std::vector<uint8_t> LoadShaderCode(
         const char *file_path, AAssetManager *assetManager) {
     std::vector<uint8_t> file_content;
     assert(assetManager);
@@ -33,6 +47,8 @@ static std::vector<uint8_t> LoadBinaryFileToVector(
     AAsset_close(file);
     return file_content;
 }
+
+#if ENABLE_VALIDATION_LAYERS
 
 static android_LogPriority toStringMessageSeverity(VkDebugUtilsMessageSeverityFlagBitsEXT s) {
     switch (s) {
@@ -115,5 +131,7 @@ static void DestroyDebugUtilsMessengerEXT(
             vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
     if (func != nullptr) func(instance, debugMessenger, pAllocator);
 }
+
+#endif //ENABLE_VALIDATION_LAYERS
 
 #endif //GLOBAL_VK_H
