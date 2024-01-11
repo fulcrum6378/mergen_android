@@ -28,7 +28,7 @@
             android:id="@+id/analyses"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:alpha="0.99"
+            android:alpha="0.4"
             android:layout_alignTop="@id/preview"
             android:layout_alignBottom="@id/preview"
             android:layout_alignLeft="@id/preview"

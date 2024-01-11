@@ -12,7 +12,9 @@
 #define MAX_FRAMES_IN_FLIGHT 2
 
 struct UniformBufferObject {
-    glm::mat4 mvp;
+    glm::mat4 model;
+    glm::mat4 view;
+    glm::mat4 proj;
 };
 
 struct QueueFamilyIndices {
@@ -101,7 +103,7 @@ private:
 
     void createSyncObjects();
 
-    // RENDER()
+    // RENDER
 
     void recreateSwapChain();
 
@@ -189,8 +191,15 @@ struct Vertex {
 
 const std::vector<Vertex> vertices = {
         {{0.0f,  -0.5f}, {1.0f, 0.0f, 0.0f}},
-        {{0.5f,  0.5f},  {0.0f, 1.0f, 0.0f}},
-        {{-0.5f, 0.5f},  {0.0f, 0.0f, 1.0f}}
+        {{0.5f,  0.0f},  {0.0f, 1.0f, 0.0f}},
+        {{-0.5f, 0.0f},  {0.0f, 0.0f, 1.0f}},
+        {{0.0f, 0.5f},  {0.0f, 1.0f, 1.0f}} // IGNORED!!
+
+        /*{{0.0f*//*centre*//*,  -0.5f*//*top*//*}, {1.0f, 0.0f, 0.0f}},
+        {{0.5f*//*right*//*,  0.0f*//*centre*//*},  {0.0f, 1.0f, 0.0f}},
+        {{-0.5f*//*left*//*, 0.0f*//*centre*//*},  {0.0f, 0.0f, 1.0f}},
+        {{0.5f*//*right*//*,  0.3f*//*bottom*//*},  {0.0f, 1.0f, 0.0f}},
+        {{-0.3f*//*left*//*, 0.5f*//*bottom*//*},  {0.0f, 0.0f, 1.0f}}*/
 };
 
 #endif //VIS_ANALYSES_H
