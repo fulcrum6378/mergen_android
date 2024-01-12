@@ -163,7 +163,6 @@ private:
 
 struct Vertex {
     glm::vec2 pos;
-    glm::vec3 colour;
 
     static VkVertexInputBindingDescription getBindingDescription() {
         VkVertexInputBindingDescription bindingDescription{};
@@ -173,33 +172,26 @@ struct Vertex {
         return bindingDescription;
     }
 
-    static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
-        std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+    static std::array<VkVertexInputAttributeDescription, 1> getAttributeDescriptions() {
+        std::array<VkVertexInputAttributeDescription, 1> attributeDescriptions{};
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
         attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
         attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
-        attributeDescriptions[1].binding = 0;
+        /*attributeDescriptions[1].binding = 0; // resize the array, if you want to uncomment this
         attributeDescriptions[1].location = 1;
         attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[1].offset = offsetof(Vertex, colour);
-
+        attributeDescriptions[1].offset = offsetof(Vertex, colour);*/
         return attributeDescriptions;
     }
 };
 
 const std::vector<Vertex> vertices = {
-        {{0.0f,  -0.5f}, {1.0f, 0.0f, 0.0f}},
-        {{0.5f,  0.0f},  {0.0f, 1.0f, 0.0f}},
-        {{-0.5f, 0.0f},  {0.0f, 0.0f, 1.0f}},
-        {{0.0f, 0.5f},  {0.0f, 1.0f, 1.0f}} // IGNORED!!
-
-        /*{{0.0f*//*centre*//*,  -0.5f*//*top*//*}, {1.0f, 0.0f, 0.0f}},
-        {{0.5f*//*right*//*,  0.0f*//*centre*//*},  {0.0f, 1.0f, 0.0f}},
-        {{-0.5f*//*left*//*, 0.0f*//*centre*//*},  {0.0f, 0.0f, 1.0f}},
-        {{0.5f*//*right*//*,  0.3f*//*bottom*//*},  {0.0f, 1.0f, 0.0f}},
-        {{-0.3f*//*left*//*, 0.5f*//*bottom*//*},  {0.0f, 0.0f, 1.0f}}*/
+        //{{0.0f,  0.0f}},
+        {{0.0f,  -0.5f}},
+        {{0.5f,  0.0f}},
+        {{-0.5f, 0.0f}},
+        {{0.0f, 0.5f}}
 };
 
 #endif //VIS_ANALYSES_H
