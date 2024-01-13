@@ -176,7 +176,7 @@ struct Vertex {
         std::array<VkVertexInputAttributeDescription, 1> attributeDescriptions{};
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
-        attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[0].format = VK_FORMAT_R16G16_UINT;
         attributeDescriptions[0].offset = offsetof(Vertex, pos);
         /*attributeDescriptions[1].binding = 0; // resize the array, if you want to uncomment this
         attributeDescriptions[1].location = 1;
@@ -187,11 +187,11 @@ struct Vertex {
 };
 
 const std::vector<Vertex> vertices = {
-        //{{0.0f,  0.0f}},
-        {{0.0f,  -0.5f}},
-        {{0.5f,  0.0f}},
-        {{-0.5f, 0.0f}},
-        {{0.0f, 0.5f}}
+        {{50u,  50u}},
+        {{50u,  0u}},
+        {{100u,  50u}},
+        {{0u, 50u}},
+        {{50u, 100u}}
 };
 
 #endif //VIS_ANALYSES_H

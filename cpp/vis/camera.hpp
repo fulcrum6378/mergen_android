@@ -20,7 +20,7 @@
 // maximum image buffers
 #define MAX_BUF_COUNT 4
 // whether ot not save all image frames as a single bitmap stream, or do the segmentation instead
-#define VIS_SAVE false
+#define BITMAP_STREAM false
 
 enum class CaptureSessionState : int8_t {
     READY,      // session is ready
@@ -35,7 +35,7 @@ class Camera {
 public:
     std::pair<int16_t, int16_t> dimensions;
 
-    Camera(JavaVM *jvm, jobject main);
+    Camera(JavaVM *jvm, jobject main, Analyses **analyses);
 
     void CreateSession(ANativeWindow *displayWindow);
 

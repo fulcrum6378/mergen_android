@@ -10,6 +10,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "analyses.hpp"
 #include "visual_stm.hpp"
 
 // height of an image frame
@@ -23,8 +24,11 @@
 #define U_RADIUS 10
 #define V_RADIUS 10
 #define R_RADIUS 15
+
 // debug the results using VisualSTM
-#define VISUAL_STM true
+#define VISUAL_STM false
+// debug the results using Analyses
+#define ANALYSES true
 
 /**
  * Image Segmentation, using a Region-Growing method
@@ -38,7 +42,7 @@
  */
 class Segmentation {
 public:
-    Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal);
+    Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal, Analyses **analyses);
 
     /** Main processing function of Segmentation which execute all the necessary jobs.
      * do NOT refer to `debugMode_` in Camera. */
@@ -89,6 +93,7 @@ private:
     JavaVM *jvm_;
     jobject main_;
     jmethodID *jmSignal_;
+    Analyses **analyses_;
 };
 
 #endif //VIS_SEGMENTATION_H

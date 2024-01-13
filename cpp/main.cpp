@@ -10,7 +10,6 @@
 #include "rew/rewarder.hpp"
 #include "scm/manifest.hpp"
 #include "scm/perception.hpp"
-#include "vis/analyses.hpp"
 #include "vis/camera.hpp"
 
 static Perception *scm;
@@ -43,7 +42,7 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     aud_out = new Speaker();
     hpt = new Touchscreen();
     mov = new Vibrator(jvm, gMain);
-    vis = new Camera(jvm, gMain);
+    vis = new Camera(jvm, gMain, &vis_dbg);
 
     // initialise high-level components
     rew = new Rewarder(aud_out, mov, jvm, gMain);
@@ -113,7 +112,6 @@ Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceCreated(
         JNIEnv *env, jobject, jobject surface, jobject assetManager) {
     vis_dbg = new Analyses(ANativeWindow_fromSurface(env, surface),
                            AAssetManager_fromJava(env, assetManager));
-    vis_dbg->render();
 }
 
 extern "C" JNIEXPORT void JNICALL

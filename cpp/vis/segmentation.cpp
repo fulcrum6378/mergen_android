@@ -10,8 +10,12 @@
 
 using namespace std;
 
-Segmentation::Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal) :
-        stm(new VisualSTM), jvm_(jvm), main_(main), jmSignal_(jmSignal) {}
+Segmentation::Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal, Analyses **analyses) :
+        jvm_(jvm), main_(main), jmSignal_(jmSignal), analyses_(analyses) {
+#if VISUAL_STM
+    stm = new VisualSTM;
+#endif
+}
 
 void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMode) {
     locked = true;
@@ -306,6 +310,9 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
 #if VISUAL_STM
     stm->OnFrameFinished();
 #endif
+#if ANALYSES
+    (*analyses_)->render();
+#endif
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
@@ -394,5 +401,7 @@ void Segmentation::SetAsBorder(uint16_t y, uint16_t x) {
 }
 
 Segmentation::~Segmentation() {
+#if VISUAL_STM
     delete stm;
+#endif
 }

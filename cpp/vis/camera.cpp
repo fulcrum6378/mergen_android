@@ -8,7 +8,7 @@
  * its return value will be needed for Main::getCameraDimensions, then we should have some
  * configurations done and then we'll create a camera session.
  */
-Camera::Camera(JavaVM *jvm, jobject main) :
+Camera::Camera(JavaVM *jvm, jobject main, Analyses **analyses) :
         jvm_(jvm), main_(main), captureSessionState_(CaptureSessionState::MAX_STATE) {
 
     // initialise ACameraManager and get ACameraDevice instances
@@ -74,7 +74,7 @@ Camera::Camera(JavaVM *jvm, jobject main) :
     jvm_->GetEnv((void **) &env, JNI_VERSION_1_6);
     jmSignal_ = env->GetMethodID(
             env->FindClass("ir/mahdiparastesh/mergen/Main"), "signal", "(B)V");
-    segmentation_ = new Segmentation(jvm, main_, &jmSignal_);
+    segmentation_ = new Segmentation(jvm, main_, &jmSignal_, analyses);
 }
 
 /**
@@ -112,7 +112,7 @@ void Camera::EnumerateCamera() {
     }
 
     ASSERT(!cameras_.empty(), "No Camera Available on the device")
-    if (activeCameraId_.length() == 0u) {
+    if (activeCameraId_.empty()) {
         // if no back facing camera found, pick up the first one to use...
         activeCameraId_ = cameras_.begin()->second.id_;
     }
@@ -215,7 +215,7 @@ bool Camera::SetRecording(bool b, int8_t debugMode) {
     if (captureSessionState_ != CaptureSessionState::ACTIVE || b == recording_) return false;
     recording_ = b;
     debugMode_ = debugMode;
-#if VIS_SAVE
+#if BITMAP_STREAM
     if (b) bmp_stream_ = new BitmapStream(dimensions); else delete bmp_stream_;
     // if (bmp_stream_) bmp_stream_->BakeMetadata();
 #endif
@@ -235,7 +235,7 @@ void Camera::ImageCallback(AImageReader *reader) {
     if (AImageReader_acquireNextImage(reader, &image) != AMEDIA_OK || !image) return;
     bool used = false;
     if (recording_) {
-#if VIS_SAVE
+#if BITMAP_STREAM
         used = bmp_stream_->HandleImage(image);
 #else
         used = !segmentation_->locked;
