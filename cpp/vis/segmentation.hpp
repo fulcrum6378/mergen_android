@@ -1,6 +1,7 @@
 #ifndef VIS_SEGMENTATION_H
 #define VIS_SEGMENTATION_H
 
+#include <android/native_window.h>
 #include <array>
 #include <atomic>
 #include <jni.h>
@@ -10,7 +11,6 @@
 #include <unordered_set>
 #include <vector>
 
-#include "analyses.hpp"
 #include "visual_stm.hpp"
 
 // height of an image frame
@@ -42,7 +42,7 @@
  */
 class Segmentation {
 public:
-    Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal, Analyses **analyses);
+    Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal, ANativeWindow **analyses);
 
     /** Main processing function of Segmentation which execute all the necessary jobs.
      * do NOT refer to `debugMode_` in Camera. */
@@ -93,7 +93,10 @@ private:
     JavaVM *jvm_;
     jobject main_;
     jmethodID *jmSignal_;
-    Analyses **analyses_;
+    ANativeWindow **analyses_;
+#if ANALYSES
+    ANativeWindow_Buffer analysesBuf{};
+#endif
 };
 
 #endif //VIS_SEGMENTATION_H

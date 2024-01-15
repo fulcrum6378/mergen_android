@@ -35,7 +35,7 @@ class Camera {
 public:
     std::pair<int16_t, int16_t> dimensions;
 
-    Camera(JavaVM *jvm, jobject main, Analyses **analyses);
+    Camera(JavaVM *jvm, jobject main, ANativeWindow **analyses);
 
     void CreateSession(ANativeWindow *displayWindow);
 

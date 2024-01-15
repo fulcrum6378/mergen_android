@@ -8,7 +8,7 @@ add_definitions(-DVK_USE_PLATFORM_ANDROID_KHR=1)
 add_library(main SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         global.hpp
-        global_vk.hpp
+        #global_vk.hpp
 
         aud/beeping.hpp
         aud/microphone.cpp
@@ -31,8 +31,7 @@ add_library(main SHARED
         scm/manifest.hpp
         scm/perception.hpp
 
-        vis/analyses.cpp
-        vis/analyses.hpp
+
         vis/bitmap_stream.hpp
         vis/camera.cpp
         vis/camera.hpp
@@ -49,9 +48,9 @@ add_library(main SHARED
 # Paths
 target_include_directories(main PUBLIC
         $ENV{ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include  # NDK for CLion
-        include  # third-party dependencies
+        #include  # third-party dependencies
 )
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/include")
+#list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 # NDK headers
 target_link_libraries(main
@@ -60,8 +59,8 @@ target_link_libraries(main
         camera2ndk   # ACameraXXXXX
         log          # <android/log.h>::__android_log_assert
         mediandk     # AImageReader
-        vulkan       # Vulkan headers
+        #vulkan       # Vulkan headers
 )
 
 # Dependencies
-add_subdirectory(include/glm)  # OpenGL Math
+#add_subdirectory()

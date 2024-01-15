@@ -8,7 +8,7 @@
  * its return value will be needed for Main::getCameraDimensions, then we should have some
  * configurations done and then we'll create a camera session.
  */
-Camera::Camera(JavaVM *jvm, jobject main, Analyses **analyses) :
+Camera::Camera(JavaVM *jvm, jobject main, ANativeWindow **analyses) :
         jvm_(jvm), main_(main), captureSessionState_(CaptureSessionState::MAX_STATE) {
 
     // initialise ACameraManager and get ACameraDevice instances

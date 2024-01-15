@@ -10,7 +10,7 @@
 
 using namespace std;
 
-Segmentation::Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal, Analyses **analyses) :
+Segmentation::Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal, ANativeWindow **analyses) :
         jvm_(jvm), main_(main), jmSignal_(jmSignal), analyses_(analyses) {
 #if VISUAL_STM
     stm = new VisualSTM;
@@ -225,6 +225,21 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                 CheckIfBorder(y, x, y + 1u, x - 1u); // south-western
             }
     }
+#if ANALYSES
+    ANativeWindow_acquire(*analyses_);
+    if (ANativeWindow_lock(*analyses_, &analysesBuf, nullptr) == 0) {
+        auto *out = static_cast<uint32_t *>(analysesBuf.bits);
+        out += analysesBuf.width - 1;
+        for (int32_t yy = 0; yy < analysesBuf.height; yy++) {
+            for (int32_t xx = 0; xx < analysesBuf.width; xx++) {
+                out[xx * analysesBuf.stride] = (b_status[yy][xx] == 1) ? 0xFF0000FF : 0x00000000; // BGR
+            }
+            out -= 1; // move to the next column
+        }
+        ANativeWindow_unlockAndPost(*analyses_);
+    }
+    ANativeWindow_release(*analyses_);
+#endif
     auto delta5 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
@@ -309,14 +324,6 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     ri = std::move(_ri);
 #if VISUAL_STM
     stm->OnFrameFinished();
-#endif
-#if ANALYSES
-    if (vertices[0].pos[0] == 0.0f)
-        vertices[0] = {{-0.5f,  -0.5f}};
-    else
-        vertices[0] = {{0.0f,  -0.5f}};
-    (*analyses_)->createVertexBuffer();
-    (*analyses_)->render();
 #endif
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();

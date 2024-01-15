@@ -1,4 +1,3 @@
-#include <android/asset_manager_jni.h>
 #include <android/native_window_jni.h>
 #include <jni.h>
 #include <sys/stat.h>
@@ -20,7 +19,7 @@ static Speaker *aud_out;
 static Touchscreen *hpt;
 static Vibrator *mov;
 static Camera *vis;
-static Analyses *vis_dbg;
+static ANativeWindow *vis_dbg;
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
@@ -108,16 +107,14 @@ Java_ir_mahdiparastesh_mergen_Main_onPreviewSurfaceDestroyed(JNIEnv *, jobject) 
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceCreated(
-        JNIEnv *env, jobject, jobject surface, jobject assetManager) {
-    vis_dbg = new Analyses(ANativeWindow_fromSurface(env, surface),
-                           AAssetManager_fromJava(env, assetManager));
-    vis_dbg->render();
+Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceCreated(JNIEnv *env, jobject, jobject surface) {
+    vis_dbg = ANativeWindow_fromSurface(env, surface);
+    ANativeWindow_setBuffersGeometry(
+            vis_dbg, W, H, AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM);
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceDestroyed(JNIEnv *, jobject) {
-    delete vis_dbg;
     vis_dbg = nullptr;
 }
 
