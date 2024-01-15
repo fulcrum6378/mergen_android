@@ -311,6 +311,11 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     stm->OnFrameFinished();
 #endif
 #if ANALYSES
+    if (vertices[0].pos[0] == 0.0f)
+        vertices[0] = {{-0.5f,  -0.5f}};
+    else
+        vertices[0] = {{0.0f,  -0.5f}};
+    (*analyses_)->createVertexBuffer();
     (*analyses_)->render();
 #endif
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(
