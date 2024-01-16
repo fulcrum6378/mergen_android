@@ -29,8 +29,8 @@
 #define VISUAL_STM false
 // debug the results using the analyses window
 #define VIS_ANALYSES true
-// debug the results using VisualDebug.java
-#define VISUAL_DEBUG true
+// debug the results using SegmentMarkers.java
+#define VIS_SEG_MARKERS true
 
 /**
  * Image Segmentation, using a Region-Growing method
@@ -57,8 +57,8 @@ public:
 #if VIS_ANALYSES
     ANativeWindow *analyses = nullptr;
 #endif
-#if VISUAL_DEBUG
-    jmethodID jmVisDebug;
+#if VIS_SEG_MARKERS
+    jmethodID jmSegMarker;
 #endif
 
 private:
@@ -106,9 +106,9 @@ private:
 #if VIS_ANALYSES
     ANativeWindow_Buffer analysesBuf{};
 #endif
-#if VISUAL_DEBUG
-    // data to be sent to VisualDebug.java
-    jlong visDbg[MAX_SEGS];
+#if VIS_SEG_MARKERS
+    // data to be sent to SegmentMarkers.java
+    jlong segMarkers[MAX_SEGS];
 #endif
 };
 

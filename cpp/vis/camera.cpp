@@ -3,11 +3,6 @@
 #include "../global.hpp"
 #include "camera.hpp"
 
-/**
- * This should be invoked before the first Main::onSurfaceTextureAvailable;
- * its return value will be needed for Main::getCameraDimensions, then we should have some
- * configurations done and then we'll create a camera session.
- */
 Camera::Camera(JavaVM *jvm, jobject main) :
         jvm_(jvm), main_(main), captureSessionState_(CaptureSessionState::MAX_STATE) {
 
@@ -75,8 +70,8 @@ Camera::Camera(JavaVM *jvm, jobject main) :
     jmSignal_ = env->GetMethodID(
             env->FindClass("ir/mahdiparastesh/mergen/Main"), "signal", "(B)V");
     segmentation = new Segmentation(jvm, main_, &jmSignal_);
-    segmentation->jmVisDebug = env->GetMethodID(
-            env->FindClass("ir/mahdiparastesh/mergen/Main"), "visDebug", "([J)V");
+    segmentation->jmSegMarker = env->GetMethodID(
+            env->FindClass("ir/mahdiparastesh/mergen/Main"), "updateSegMarkers", "([J)V");
 }
 
 /**

@@ -267,12 +267,17 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
          [](const Segment &a, const Segment &b) { return a.p.size() > b.p.size(); });
     float nearest_dist, dist;
     int32_t best;
-#if VISUAL_DEBUG
-    char visDbgBuf[8];
+#if VIS_SEG_MARKERS
+    char segMarkerBuf[8];
 #endif
     l_ = segments.size();
     for (uint16_t sid = sidInc; sid < sidInc + MAX_SEGS; sid++) {
-        if (sid >= l_) break;
+        if (sid >= l_) {
+#if VIS_SEG_MARKERS
+            // TODO fix the rest of `visDbg` with `-2`
+#endif
+            break;
+        }
         Segment *seg = &segments[sid];
         seg->ComputeRatioAndCentre();
 #if VISUAL_STM
@@ -342,20 +347,13 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                 /*LOGI("%u->%d : %d, %d, %d, %d, %d, %d, %d", sid, diff[sid][0], diff[sid][1],
                      diff[sid][2], diff[sid][3], diff[sid][4],
                      diff[sid][5], diff[sid][6], diff[sid][7]);*/
-#if VISUAL_DEBUG
-                // data to send to VisualDebug.java
-                memcpy(&visDbgBuf[0], &best, 4u);
-                memcpy(&visDbgBuf[4], &seg->cx, 2u);
-                memcpy(&visDbgBuf[6], &seg->cy, 2u);
-#endif
-            } else {
-                // LOGI("Segment %u was lost", sid);
-#if VISUAL_DEBUG
-                memcpy(&visDbgBuf[0], &best, 4u);
-#endif
-            }
-#if VISUAL_DEBUG
-            memcpy(&visDbg[sid - sidInc], visDbgBuf, 8u);
+            }// else LOGI("Segment %u was lost", sid);
+#if VIS_SEG_MARKERS
+            // data to send to SegmentMarkers.java
+            memcpy(&segMarkerBuf[0], &best, 4u);
+            memcpy(&segMarkerBuf[4], &seg->cx, 2u);
+            memcpy(&segMarkerBuf[6], &seg->cy, 2u);
+            memcpy(&segMarkers[sid - sidInc], segMarkerBuf, 8u);
 #endif
         }
         // index segments of the current frame
@@ -372,10 +370,10 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
 #if VISUAL_STM
     stm->OnFrameFinished();
 #endif
-#if VISUAL_DEBUG
+#if VIS_SEG_MARKERS
     jlongArray jla = env->NewLongArray(MAX_SEGS);
-    env->SetLongArrayRegion(jla, 0, MAX_SEGS, visDbg);
-    env->CallVoidMethod(main_, jmVisDebug, jla);
+    env->SetLongArrayRegion(jla, 0, MAX_SEGS, segMarkers);
+    env->CallVoidMethod(main_, jmSegMarker, jla);
 #endif
     sidInc += MAX_SEGS;
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(

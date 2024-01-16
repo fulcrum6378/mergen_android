@@ -31,14 +31,14 @@ import java.util.Arrays;
 /** The main and only activity of the application */
 @SuppressLint("ClickableViewAccessibility")
 public class Main extends Activity {
-    private RelativeLayout root, previewBox, visualDebugPool;
+    private RelativeLayout root, previewBox, segMarkerPool;
     private View colouring, capture;
     private TextureView preview, analyses;
 
     static Handler handler;
     private Vibrator vib;
     private RemoteDebug remoteDebug;
-    private VisualDebug visualDebug;
+    private SegmentMarkers segMarker;
     private Surface previewSurface = null, analysesSurface = null;
     boolean isRecording = false, isFinished = true;
     private Toast toast;
@@ -55,7 +55,7 @@ public class Main extends Activity {
         previewBox = findViewById(R.id.previewBox);
         preview = findViewById(R.id.preview);
         analyses = findViewById(R.id.analyses);
-        visualDebugPool = findViewById(R.id.visualDebugPool);
+        segMarkerPool = findViewById(R.id.segMarkerPool);
         capture = findViewById(R.id.capture);
 
         // ask for camera and microphone permissions
@@ -107,14 +107,14 @@ public class Main extends Activity {
                     }
 
                     // Java signals:
-                    case 127 -> // By Debug.java to start recording.
+                    case 127 -> // By RemoteDebug.java to start recording.
                             recording(true, (byte) msg.obj);
-                    case 126 -> // By Debug.java to stop recording.
+                    case 126 -> // By RemoteDebug.java to stop recording.
                             recording(false, (byte) 0);
-                    case 125 -> // By Debug.java to close the app.
+                    case 125 -> // By RemoteDebug.java to close the app.
                             onBackPressed();
-                    case 124 -> // For visDebug().
-                            visualDebug.update((long[]) msg.obj);
+                    case 124 -> // For `updateSegMarkers()`
+                            segMarker.update((long[]) msg.obj);
                 }
             }
         };
@@ -152,8 +152,8 @@ public class Main extends Activity {
         remoteDebug = new RemoteDebug(this);
         remoteDebug.start();
 
-        // initialise the visual debugger
-        visualDebug = new VisualDebug(this, visualDebugPool);
+        // initialise the segment marker manager
+        segMarker = new SegmentMarkers(this, segMarkerPool);
     }
 
     TextureView.SurfaceTextureListener previewSurfaceListener = new TextureView.SurfaceTextureListener() {
@@ -287,9 +287,9 @@ public class Main extends Activity {
         shaker.start();
     }
 
-    /** Passes incoming data from C++ to VisualDebug. */
+    /** Passes segments' data from C++ to SegmentMarkers. */
     @SuppressWarnings("unused")
-    void visDebug(long[] data) {
+    void updateSegMarkers(long[] data) {
         handler.obtainMessage(124, data).sendToTarget();
     }
 
