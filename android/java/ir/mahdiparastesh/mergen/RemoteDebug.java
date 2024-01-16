@@ -12,7 +12,11 @@ import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-/** @noinspection ResultOfMethodCallIgnored */
+/**
+ * A server-client approach for transferring results of analyses for debugging in another computer.
+ *
+ * @noinspection ResultOfMethodCallIgnored, RedundantSuppression
+ */
 public class RemoteDebug extends Thread {
     boolean active = true, recorded = true;
     final Main c;

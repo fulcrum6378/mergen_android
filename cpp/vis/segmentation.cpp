@@ -238,7 +238,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                 CheckIfBorder(y, x, y + 1u, x - 1u); // south-western
             }
     }
-#if VIS_ANALYSES // it takes 8~13 milliseconds!
+#if VIS_ANALYSES // it takes 8~13 milliseconds! TODO move them to another thread...
     ANativeWindow_acquire(analyses);
     if (ANativeWindow_lock(analyses, &analysesBuf, nullptr) == 0) {
         auto *out = static_cast<uint8_t *>(analysesBuf.bits);

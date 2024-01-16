@@ -28,15 +28,17 @@ import android.widget.Toast;
 
 import java.util.Arrays;
 
+/** The main and only activity of the application */
 @SuppressLint("ClickableViewAccessibility")
 public class Main extends Activity {
-    private RelativeLayout root;
+    private RelativeLayout root, previewBox, visualDebugPool;
     private View colouring, capture;
     private TextureView preview, analyses;
 
     static Handler handler;
     private Vibrator vib;
     private RemoteDebug remoteDebug;
+    private VisualDebug visualDebug;
     private Surface previewSurface = null, analysesSurface = null;
     boolean isRecording = false, isFinished = true;
     private Toast toast;
@@ -50,8 +52,10 @@ public class Main extends Activity {
         setContentView(R.layout.main);
         root = findViewById(R.id.root);
         colouring = findViewById(R.id.colouring);
+        previewBox = findViewById(R.id.previewBox);
         preview = findViewById(R.id.preview);
         analyses = findViewById(R.id.analyses);
+        visualDebugPool = findViewById(R.id.visualDebugPool);
         capture = findViewById(R.id.capture);
 
         // ask for camera and microphone permissions
@@ -120,7 +124,7 @@ public class Main extends Activity {
         create();
         Size size = getCameraDimensions();
         onRecordingStopped();
-        ViewGroup.LayoutParams previewLP = preview.getLayoutParams();
+        ViewGroup.LayoutParams previewLP = previewBox.getLayoutParams();
         float sw = getResources().getDisplayMetrics().widthPixels,
                 sh = getResources().getDisplayMetrics().heightPixels;
         if (sh > sw) { // portrait
@@ -130,21 +134,24 @@ public class Main extends Activity {
             previewLP.width = (int) ((sh / size.getHeight()) * (float) size.getWidth());
             previewLP.height = (int) sh;
         }
-        preview.setLayoutParams(previewLP);
+        previewBox.setLayoutParams(previewLP);
         preview.setSurfaceTextureListener(previewSurfaceListener);
         if (preview.isAvailable()) //noinspection DataFlowIssue
             previewSurfaceListener.onSurfaceTextureAvailable(
                     preview.getSurfaceTexture(), size.getWidth(), size.getHeight());
 
-        // initialise the analyses surface for Vulkan
+        // initialise a surface for visualising analyses
         analyses.setSurfaceTextureListener(analysesSurfaceListener);
         if (analyses.isAvailable()) //noinspection DataFlowIssue
             analysesSurfaceListener.onSurfaceTextureAvailable(
                     analyses.getSurfaceTexture(), size.getWidth(), size.getHeight());
 
-        // initialise the debugger
+        // initialise the remote debugger
         remoteDebug = new RemoteDebug(this);
         remoteDebug.start();
+
+        // initialise the visual debugger
+        visualDebug = new VisualDebug(this, visualDebugPool);
     }
 
     TextureView.SurfaceTextureListener previewSurfaceListener = new TextureView.SurfaceTextureListener() {
@@ -276,6 +283,12 @@ public class Main extends Activity {
             shaker = null;
         });
         shaker.start();
+    }
+
+    /** Passes incoming data from C++ to VisualDebug. */
+    @SuppressWarnings("unused")
+    void visDebug() {
+        visualDebug.update();
     }
 
     /** Effect for expressing simulated pleasure & pain. */
