@@ -1,5 +1,4 @@
 #include <android/native_window_jni.h>
-#include <jni.h>
 #include <sys/stat.h>
 
 #include "aud/microphone.hpp"
@@ -19,7 +18,6 @@ static Speaker *aud_out;
 static Touchscreen *hpt;
 static Vibrator *mov;
 static Camera *vis;
-static ANativeWindow *vis_dbg;
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
@@ -41,7 +39,7 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     aud_out = new Speaker();
     hpt = new Touchscreen();
     mov = new Vibrator(jvm, gMain);
-    vis = new Camera(jvm, gMain, &vis_dbg);
+    vis = new Camera(jvm, gMain);
 
     // initialise high-level components
     rew = new Rewarder(aud_out, mov, jvm, gMain);
@@ -108,14 +106,18 @@ Java_ir_mahdiparastesh_mergen_Main_onPreviewSurfaceDestroyed(JNIEnv *, jobject) 
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceCreated(JNIEnv *env, jobject, jobject surface) {
-    vis_dbg = ANativeWindow_fromSurface(env, surface);
-    ANativeWindow_setBuffersGeometry(
-            vis_dbg, W, H, AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM);
+#if VIS_ANALYSES
+    vis->segmentation->analyses = ANativeWindow_fromSurface(env, surface);
+    ANativeWindow_setBuffersGeometry(vis->segmentation->analyses, W, H,
+                                     AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM);
+#endif
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceDestroyed(JNIEnv *, jobject) {
-    vis_dbg = nullptr;
+#if VIS_ANALYSES
+    vis->segmentation->analyses = nullptr;
+#endif
 }
 
 extern "C" JNIEXPORT void JNICALL

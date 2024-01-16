@@ -10,8 +10,8 @@
 
 using namespace std;
 
-Segmentation::Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal, ANativeWindow **analyses) :
-        jvm_(jvm), main_(main), jmSignal_(jmSignal), analyses_(analyses) {
+Segmentation::Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal) :
+        jvm_(jvm), main_(main), jmSignal_(jmSignal) {
 #if VISUAL_STM
     stm = new VisualSTM;
 #endif
@@ -226,8 +226,8 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
             }
     }
 #if ANALYSES
-    ANativeWindow_acquire(*analyses_);
-    if (ANativeWindow_lock(*analyses_, &analysesBuf, nullptr) == 0) {
+    ANativeWindow_acquire(analyses);
+    if (ANativeWindow_lock(analyses, &analysesBuf, nullptr) == 0) {
         auto *out = static_cast<uint32_t *>(analysesBuf.bits);
         out += analysesBuf.width - 1;
         for (int32_t yy = 0; yy < analysesBuf.height; yy++) {
@@ -236,9 +236,9 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
             }
             out -= 1; // move to the next column
         }
-        ANativeWindow_unlockAndPost(*analyses_);
+        ANativeWindow_unlockAndPost(analyses);
     }
-    ANativeWindow_release(*analyses_);
+    ANativeWindow_release(analyses);
 #endif
     auto delta5 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
@@ -412,7 +412,7 @@ void Segmentation::SetAsBorder(uint16_t y, uint16_t x) {
     ); // they get reversed in while writing to a file
 }
 
-Segmentation::~Segmentation() {
+Segmentation::~Segmentation() { // NOLINT(modernize-use-equals-default)
 #if VISUAL_STM
     delete stm;
 #endif

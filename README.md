@@ -189,10 +189,6 @@ The app **requires Android 8.0+**, Java 20 and CMake 3.4.1+.
 It uses latest stable versions of Gradle, Android SDK + NDK.
 No modular dependencies needed for Java.
 
-C++ dependencies:
-
-- [**glm**](https://github.com/g-truc/glm) (OpenGL Math)
-
 ## License
 
 ```

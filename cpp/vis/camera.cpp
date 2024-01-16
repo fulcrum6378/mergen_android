@@ -8,7 +8,7 @@
  * its return value will be needed for Main::getCameraDimensions, then we should have some
  * configurations done and then we'll create a camera session.
  */
-Camera::Camera(JavaVM *jvm, jobject main, ANativeWindow **analyses) :
+Camera::Camera(JavaVM *jvm, jobject main) :
         jvm_(jvm), main_(main), captureSessionState_(CaptureSessionState::MAX_STATE) {
 
     // initialise ACameraManager and get ACameraDevice instances
@@ -74,7 +74,7 @@ Camera::Camera(JavaVM *jvm, jobject main, ANativeWindow **analyses) :
     jvm_->GetEnv((void **) &env, JNI_VERSION_1_6);
     jmSignal_ = env->GetMethodID(
             env->FindClass("ir/mahdiparastesh/mergen/Main"), "signal", "(B)V");
-    segmentation_ = new Segmentation(jvm, main_, &jmSignal_, analyses);
+    segmentation = new Segmentation(jvm, main_, &jmSignal_);
 }
 
 /**
@@ -238,9 +238,9 @@ void Camera::ImageCallback(AImageReader *reader) {
 #if BITMAP_STREAM
         used = bmp_stream_->HandleImage(image);
 #else
-        used = !segmentation_->locked;
+        used = !segmentation->locked;
         if (used)
-            std::thread(&Segmentation::Process, segmentation_,
+            std::thread(&Segmentation::Process, segmentation,
                         image, &recording_, debugMode_).detach();
 #endif
     }
@@ -258,8 +258,8 @@ Camera::~Camera() {
     ACameraCaptureSession_close(captureSession_);
 
     // destroy objects related to image analysis
-    delete segmentation_;
-    segmentation_ = nullptr;
+    delete segmentation;
+    segmentation = nullptr;
 
     // destroy camera session
     if (readerWindow_) {

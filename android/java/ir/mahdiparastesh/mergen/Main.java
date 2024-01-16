@@ -36,7 +36,7 @@ public class Main extends Activity {
 
     static Handler handler;
     private Vibrator vib;
-    private Debug debug;
+    private RemoteDebug remoteDebug;
     private Surface previewSurface = null, analysesSurface = null;
     boolean isRecording = false, isFinished = true;
     private Toast toast;
@@ -90,7 +90,7 @@ public class Main extends Activity {
                     }
                     case 1 -> { // By vis/Segmentation.cpp when it's done saving data.
                         isFinished = true;
-                        if (debug.recorded) {
+                        if (remoteDebug.recorded) {
                             if (toast != null) toast.cancel();
                             toast = Toast.makeText(Main.this,
                                     "You can now close the app safely.", Toast.LENGTH_SHORT);
@@ -98,7 +98,7 @@ public class Main extends Activity {
                         }
                     }
                     case 2 -> { // By vis/Segmentation.cpp to stop recording.
-                        debug.recorded = true;
+                        remoteDebug.recorded = true;
                         recording(false, (byte) 0);
                     }
 
@@ -143,8 +143,8 @@ public class Main extends Activity {
                     analyses.getSurfaceTexture(), size.getWidth(), size.getHeight());
 
         // initialise the debugger
-        debug = new Debug(this);
-        debug.start();
+        remoteDebug = new RemoteDebug(this);
+        remoteDebug.start();
     }
 
     TextureView.SurfaceTextureListener previewSurfaceListener = new TextureView.SurfaceTextureListener() {
@@ -299,7 +299,7 @@ public class Main extends Activity {
     @Override
     protected void onDestroy() {
         if (shakeAmplitude != 0) shakeAmplitude = 0;
-        debug.interrupt();
+        remoteDebug.interrupt();
         previewSurface.release();
         analysesSurface.release();
         destroy();

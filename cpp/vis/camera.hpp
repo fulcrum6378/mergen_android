@@ -35,13 +35,16 @@ class Camera {
 public:
     std::pair<int16_t, int16_t> dimensions;
 
-    Camera(JavaVM *jvm, jobject main, ANativeWindow **analyses);
+    Camera(JavaVM *jvm, jobject main);
 
     void CreateSession(ANativeWindow *displayWindow);
 
     bool SetRecording(bool b, int8_t debugMode);
 
     ~Camera();
+
+
+    Segmentation *segmentation;
 
 private:
     void EnumerateCamera();
@@ -92,9 +95,6 @@ private:
     ACaptureSessionOutput *displayOutput_{};
     ACameraOutputTarget *displayTarget_{};
     ACaptureRequest *displayRequest_{};
-
-    // Image Analysis
-    Segmentation *segmentation_;
 };
 
 class CameraId {

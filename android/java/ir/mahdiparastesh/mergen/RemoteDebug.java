@@ -13,11 +13,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /** @noinspection ResultOfMethodCallIgnored */
-public class Debug extends Thread {
+public class RemoteDebug extends Thread {
     boolean active = true, recorded = true;
     final Main c;
 
-    public Debug(Main c) {
+    public RemoteDebug(Main c) {
         this.c = c;
     }
 

@@ -31,7 +31,6 @@ add_library(main SHARED
         scm/manifest.hpp
         scm/perception.hpp
 
-
         vis/bitmap_stream.hpp
         vis/camera.cpp
         vis/camera.hpp

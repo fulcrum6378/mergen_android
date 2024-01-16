@@ -28,7 +28,7 @@
 // debug the results using VisualSTM
 #define VISUAL_STM false
 // debug the results using Analyses
-#define ANALYSES true
+#define VIS_ANALYSES true
 
 /**
  * Image Segmentation, using a Region-Growing method
@@ -42,7 +42,7 @@
  */
 class Segmentation {
 public:
-    Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal, ANativeWindow **analyses);
+    Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal);
 
     /** Main processing function of Segmentation which execute all the necessary jobs.
      * do NOT refer to `debugMode_` in Camera. */
@@ -52,6 +52,10 @@ public:
 
 
     std::atomic<bool> locked = false;
+#if VIS_ANALYSES
+    ANativeWindow *analyses = nullptr;
+    ANativeWindow_Buffer analysesBuf{};
+#endif
 
 private:
     static bool CompareColours(uint8_t (*a)[3], uint8_t (*b)[3]);
@@ -93,10 +97,6 @@ private:
     JavaVM *jvm_;
     jobject main_;
     jmethodID *jmSignal_;
-    ANativeWindow **analyses_;
-#if ANALYSES
-    ANativeWindow_Buffer analysesBuf{};
-#endif
 };
 
 #endif //VIS_SEGMENTATION_H
