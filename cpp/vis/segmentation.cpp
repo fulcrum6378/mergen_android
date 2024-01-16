@@ -225,7 +225,10 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                 CheckIfBorder(y, x, y + 1u, x - 1u); // south-western
             }
     }
-#if ANALYSES
+    auto delta5 = chrono::duration_cast<chrono::milliseconds>(
+            chrono::system_clock::now() - t0).count();
+
+#if VIS_ANALYSES
     ANativeWindow_acquire(analyses);
     if (ANativeWindow_lock(analyses, &analysesBuf, nullptr) == 0) {
         auto *out = static_cast<uint32_t *>(analysesBuf.bits);
@@ -239,9 +242,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
         ANativeWindow_unlockAndPost(analyses);
     }
     ANativeWindow_release(analyses);
-#endif
-    auto delta5 = chrono::duration_cast<chrono::milliseconds>(
-            chrono::system_clock::now() - t0).count();
+#endif // this time delta is not noted specifically, but it's ~500 milliseconds!
 
     // 6. (save in VisualSTM and) track objects and measure their differences
     t0 = chrono::system_clock::now();

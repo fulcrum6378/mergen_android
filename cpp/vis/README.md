@@ -23,7 +23,6 @@ This component contains the following steps:
 
 #### Other classes and procedural files
 
-- [Analyses](analyses.hpp) : helps with visually debugging the algorithms.
 - [BitmapStream](bitmap_stream.hpp) : it stores image frames in BMP image format for testing in *MyCV*.
 - [Colouring](colouring.hpp) : it makes a very simple effect in the UI of the Android app,
   indicating pleasure (in green) or pain (in red). (subclass of [Criterion](../rew/criterion.hpp))
