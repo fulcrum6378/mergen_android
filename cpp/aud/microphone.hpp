@@ -4,7 +4,7 @@
 #include <aaudio/AAudio.h>
 #include <fstream>
 
-#define AUD_IN_SAVE true
+#define AUD_IN_SAVE false
 
 class Microphone {
 public:

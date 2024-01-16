@@ -15,6 +15,15 @@ Segmentation::Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal) :
 #if VISUAL_STM
     stm = new VisualSTM;
 #endif
+#if VIS_ANALYSES
+    auto *out = static_cast<uint32_t *>(analysesBuf.bits);
+    out += analysesBuf.width - 1;
+    for (int32_t yy = 0; yy < analysesBuf.height; yy++) {
+        for (int32_t xx = 0; xx < analysesBuf.width; xx++)
+            out[xx * analysesBuf.stride] = 0x000000FF; // ABGR
+        out -= 1; // move to the next column
+    }
+#endif
 }
 
 void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMode) {
@@ -90,28 +99,32 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                 status[y][x] = seg.id;
                 // left
                 stack[last][2]++;
-                if (x > 0u && status[y][x - 1u] == 0 && CompareColours(&arr[y][x], &arr[y][x - 1u])) {
+                if (x > 0u && status[y][x - 1u] == 0 &&
+                    CompareColours(&arr[y][x], &arr[y][x - 1u])) {
                     stack.push_back({y, static_cast<uint16_t>(x - 1u), 0u});
                     continue;
                 }
             }
             if (dr <= 1u) { // top
                 stack[last][2]++;
-                if (y > 0u && status[y - 1u][x] == 0 && CompareColours(&arr[y][x], &arr[y - 1u][x])) {
+                if (y > 0u && status[y - 1u][x] == 0 &&
+                    CompareColours(&arr[y][x], &arr[y - 1u][x])) {
                     stack.push_back({static_cast<uint16_t>(y - 1u), x, 0u});
                     continue;
                 }
             }
             if (dr <= 2u) { // right
                 stack[last][2]++;
-                if (x < (W - 1u) && status[y][x + 1u] == 0 && CompareColours(&arr[y][x], &arr[y][x + 1u])) {
+                if (x < (W - 1u) && status[y][x + 1u] == 0 &&
+                    CompareColours(&arr[y][x], &arr[y][x + 1u])) {
                     stack.push_back({y, static_cast<uint16_t>(x + 1u), 0u});
                     continue;
                 }
             }
             if (dr <= 3u) { // bottom
                 stack[last][2]++;
-                if (y < (H - 1u) && status[y + 1u][x] == 0 && CompareColours(&arr[y][x], &arr[y + 1u][x])) {
+                if (y < (H - 1u) && status[y + 1u][x] == 0 &&
+                    CompareColours(&arr[y][x], &arr[y + 1u][x])) {
                     stack.push_back({static_cast<uint16_t>(y + 1u), x, 0u});
                     continue;
                 }
@@ -225,24 +238,22 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                 CheckIfBorder(y, x, y + 1u, x - 1u); // south-western
             }
     }
-    auto delta5 = chrono::duration_cast<chrono::milliseconds>(
-            chrono::system_clock::now() - t0).count();
-
-#if VIS_ANALYSES
+#if VIS_ANALYSES // it takes 8~13 milliseconds!
     ANativeWindow_acquire(analyses);
     if (ANativeWindow_lock(analyses, &analysesBuf, nullptr) == 0) {
-        auto *out = static_cast<uint32_t *>(analysesBuf.bits);
-        out += analysesBuf.width - 1;
+        auto *out = static_cast<uint8_t *>(analysesBuf.bits);
+        out += (analysesBuf.width * 4) - 4;
         for (int32_t yy = 0; yy < analysesBuf.height; yy++) {
-            for (int32_t xx = 0; xx < analysesBuf.width; xx++) {
-                out[xx * analysesBuf.stride] = (b_status[yy][xx] == 1) ? 0xFF0000FF : 0x00000000; // BGR
-            }
-            out -= 1; // move to the next column
+            for (int32_t xx = 0; xx < analysesBuf.width; xx++)
+                out[xx * analysesBuf.stride * 4] = (b_status[yy][xx] == 1) ? 0xFF : 0x00;
+            out -= 4; // move to the next column
         }
         ANativeWindow_unlockAndPost(analyses);
     }
     ANativeWindow_release(analyses);
-#endif // this time delta is not noted specifically, but it's ~500 milliseconds!
+#endif
+    auto delta5 = chrono::duration_cast<chrono::milliseconds>(
+            chrono::system_clock::now() - t0).count();
 
     // 6. (save in VisualSTM and) track objects and measure their differences
     t0 = chrono::system_clock::now();
@@ -261,22 +272,30 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
         if (!prev_segments.empty()) {
             for (uint8_t y_ = seg->m[0] - Y_RADIUS; y_ < seg->m[0] + Y_RADIUS; y_++) {
                 auto it = yi.find(y_);
-                if (it == yi.end()) continue;
+                if (it == yi.end()) {
+                    if (y_ != 255u) continue; else break;
+                }
                 for (uint16_t i: (*it).second) a_y.insert(i);
             }
             for (uint8_t u_ = seg->m[1] - U_RADIUS; u_ < seg->m[1] + U_RADIUS; u_++) {
                 auto it = ui.find(u_);
-                if (it == ui.end()) continue;
+                if (it == ui.end()) {
+                    if (u_ != 255u) continue; else break;
+                }
                 for (uint16_t i: (*it).second) a_u.insert(i);
             }
             for (uint8_t v_ = seg->m[2] - V_RADIUS; v_ < seg->m[2] + V_RADIUS; v_++) {
                 auto it = vi.find(v_);
-                if (it == vi.end()) continue;
+                if (it == vi.end()) {
+                    if (v_ != 255u) continue; else break;
+                }
                 for (uint16_t i: (*it).second) a_v.insert(i);
             }
             for (uint16_t r_ = seg->r - R_RADIUS; r_ < seg->r + R_RADIUS; r_++) {
                 auto it = ri.find(r_);
-                if (it == ri.end()) continue;
+                if (it == ri.end()) {
+                    if (r_ != 255u) continue; else break;
+                }
                 for (uint16_t i: (*it).second) a_r.insert(i);
             }
             best = -1;
