@@ -75,6 +75,8 @@ Camera::Camera(JavaVM *jvm, jobject main) :
     jmSignal_ = env->GetMethodID(
             env->FindClass("ir/mahdiparastesh/mergen/Main"), "signal", "(B)V");
     segmentation = new Segmentation(jvm, main_, &jmSignal_);
+    segmentation->jmVisDebug = env->GetMethodID(
+            env->FindClass("ir/mahdiparastesh/mergen/Main"), "visDebug", "([J)V");
 }
 
 /**
@@ -245,12 +247,6 @@ void Camera::ImageCallback(AImageReader *reader) {
 #endif
     }
     if (!used) AImage_delete(image);
-    else { // don't move this to Segmentation thread. (for performance)
-        JNIEnv *env;
-        if (jvm_->GetEnv((void **) &env, JNI_VERSION_1_6) == JNI_EDETACHED)
-            jvm_->AttachCurrentThread(&env, nullptr);
-        env->CallVoidMethod(main_, jmSignal_, 0);
-    }
 }
 
 Camera::~Camera() {

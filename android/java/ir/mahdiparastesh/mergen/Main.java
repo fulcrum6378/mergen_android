@@ -113,6 +113,8 @@ public class Main extends Activity {
                             recording(false, (byte) 0);
                     case 125 -> // By Debug.java to close the app.
                             onBackPressed();
+                    case 124 -> // For visDebug().
+                            visualDebug.update((long[]) msg.obj);
                 }
             }
         };
@@ -287,8 +289,8 @@ public class Main extends Activity {
 
     /** Passes incoming data from C++ to VisualDebug. */
     @SuppressWarnings("unused")
-    void visDebug() {
-        visualDebug.update();
+    void visDebug(long[] data) {
+        handler.obtainMessage(124, data).sendToTarget();
     }
 
     /** Effect for expressing simulated pleasure & pain. */

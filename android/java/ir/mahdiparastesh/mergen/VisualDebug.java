@@ -12,7 +12,8 @@ public class VisualDebug {
         this.pool = pool;
     }
 
-    public void update() {
-        // TODO
+    public void update(long[] data) {
+        /*Toast.makeText(c, (int) data[0] + ", " + (int) data[1] + ", " + (int) data[2] + ", " + (int) data[3],
+                Toast.LENGTH_SHORT).show();*/
     }
 }

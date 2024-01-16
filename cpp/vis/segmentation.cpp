@@ -30,6 +30,12 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     locked = true;
     //ofstream test(cacheDir + "test.yuv", ios::binary);
 
+    // flush effect for a capture
+    JNIEnv *env;
+    /*if (*/jvm_->GetEnv((void **) &env, JNI_VERSION_1_6)/* == JNI_EDETACHED)*/;
+    jvm_->AttachCurrentThread(&env, nullptr);
+    env->CallVoidMethod(main_, *jmSignal_, 0);
+
     // 1. loading; bring separate YUV data into the multidimensional array of pixels `arr`
     auto t0 = chrono::system_clock::now();
     AImageCropRect srcRect;
@@ -261,8 +267,11 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
          [](const Segment &a, const Segment &b) { return a.p.size() > b.p.size(); });
     float nearest_dist, dist;
     int32_t best;
+#if VISUAL_DEBUG
+    char visDbgBuf[8];
+#endif
     l_ = segments.size();
-    for (uint16_t sid = 0u; sid < MAX_SEGS; sid++) {// Segment &seg: segments
+    for (uint16_t sid = sidInc; sid < sidInc + MAX_SEGS; sid++) {
         if (sid >= l_) break;
         Segment *seg = &segments[sid];
         seg->ComputeRatioAndCentre();
@@ -276,6 +285,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                     if (y_ != 255u) continue; else break;
                 }
                 for (uint16_t i: (*it).second) a_y.insert(i);
+                if (y_ == 255u) break;
             }
             for (uint8_t u_ = seg->m[1] - U_RADIUS; u_ < seg->m[1] + U_RADIUS; u_++) {
                 auto it = ui.find(u_);
@@ -283,6 +293,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                     if (u_ != 255u) continue; else break;
                 }
                 for (uint16_t i: (*it).second) a_u.insert(i);
+                if (u_ == 255u) break;
             }
             for (uint8_t v_ = seg->m[2] - V_RADIUS; v_ < seg->m[2] + V_RADIUS; v_++) {
                 auto it = vi.find(v_);
@@ -290,6 +301,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                     if (v_ != 255u) continue; else break;
                 }
                 for (uint16_t i: (*it).second) a_v.insert(i);
+                if (v_ == 255u) break;
             }
             for (uint16_t r_ = seg->r - R_RADIUS; r_ < seg->r + R_RADIUS; r_++) {
                 auto it = ri.find(r_);
@@ -297,6 +309,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                     if (r_ != 255u) continue; else break;
                 }
                 for (uint16_t i: (*it).second) a_r.insert(i);
+                if (r_ == 255u) break;
             }
             best = -1;
             for (uint16_t can: a_y)
@@ -318,6 +331,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
             a_v.clear();
             a_r.clear();
             if (best != -1) {
+                LOGI("SID %u is the same as %d.", sid, best); // FIXME remove this
                 Segment *prev_seg = &prev_segments[best];
                 diff[sid] = {
                         best, static_cast<int32_t>(nearest_dist),
@@ -328,8 +342,21 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                 /*LOGI("%u->%d : %d, %d, %d, %d, %d, %d, %d", sid, diff[sid][0], diff[sid][1],
                      diff[sid][2], diff[sid][3], diff[sid][4],
                      diff[sid][5], diff[sid][6], diff[sid][7]);*/
-            }/* else
-                LOGI("Segment %u was lost", sid);*/
+#if VISUAL_DEBUG
+                // data to send to VisualDebug.java
+                memcpy(&visDbgBuf[0], &best, 4u);
+                memcpy(&visDbgBuf[4], &seg->cx, 2u);
+                memcpy(&visDbgBuf[6], &seg->cy, 2u);
+#endif
+            } else {
+                // LOGI("Segment %u was lost", sid);
+#if VISUAL_DEBUG
+                memcpy(&visDbgBuf[0], &best, 4u);
+#endif
+            }
+#if VISUAL_DEBUG
+            memcpy(&visDbg[sid - sidInc], visDbgBuf, 8u);
+#endif
         }
         // index segments of the current frame
         _yi[seg->m[0]].insert(sid);
@@ -345,6 +372,12 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
 #if VISUAL_STM
     stm->OnFrameFinished();
 #endif
+#if VISUAL_DEBUG
+    jlongArray jla = env->NewLongArray(MAX_SEGS);
+    env->SetLongArrayRegion(jla, 0, MAX_SEGS, visDbg);
+    env->CallVoidMethod(main_, jmVisDebug, jla);
+#endif
+    sidInc += MAX_SEGS;
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
@@ -362,9 +395,6 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
 #endif
 
         // inform the user that they can close the app safely
-        JNIEnv *env;
-        jvm_->GetEnv((void **) &env, JNI_VERSION_1_6);
-        jvm_->AttachCurrentThread(&env, nullptr);
         env->CallVoidMethod(main_, *jmSignal_, 1);
 
         // save files for debugging if wanted
