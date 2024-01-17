@@ -3,6 +3,7 @@ package ir.mahdiparastesh.mergen;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /** Visualises how image frames are being analysed. */
 public class SegmentMarkers {

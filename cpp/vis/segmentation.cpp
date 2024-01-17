@@ -269,17 +269,22 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     int32_t best;
     l_ = segments.size();
     for (uint16_t sid = sidInc; sid < sidInc + MAX_SEGS; sid++) {
+#if VIS_SEG_MARKERS
+        char *marker = reinterpret_cast<char *>(&segMarkers[sid - sidInc]);
+#endif
         if (sid >= l_) {
 #if VIS_SEG_MARKERS
-            // TODO fix the rest of `segMarkers` with `-2`
+            best = -2;
+            memcpy(&marker[0], &best, 4u);
 #endif
-            break;
+            continue;
         }
         Segment *seg = &segments[sid];
         seg->ComputeRatioAndCentre();
 #if VISUAL_STM
         stm->Insert(seg);
 #endif
+        best = -1;
         if (!prev_segments.empty()) {
             for (uint8_t y_ = seg->m[0] - Y_RADIUS; y_ < seg->m[0] + Y_RADIUS; y_++) {
                 auto it = yi.find(y_);
@@ -313,7 +318,6 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                 for (uint16_t i: (*it).second) a_r.insert(i);
                 if (r_ == 255u) break;
             }
-            best = -1;
             for (uint16_t can: a_y)
                 if (a_u.find(can) != a_u.end() && a_v.find(can) != a_v.end()
                     && a_r.find(can) != a_r.end()) {
@@ -333,7 +337,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
             a_v.clear();
             a_r.clear();
             if (best != -1) {
-                LOGI("SID %u is the same as %d.", sid, best); // FIXME remove this
+                LOGI("SID %u is the same as %d.", sid, best); // REMOVE THIS...
                 Segment *prev_seg = &prev_segments[best];
                 diff[sid] = {
                         best, static_cast<int32_t>(nearest_dist),
@@ -345,25 +349,15 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                      diff[sid][2], diff[sid][3], diff[sid][4],
                      diff[sid][5], diff[sid][6], diff[sid][7]);*/
             }// else LOGI("Segment %u was lost", sid);
-#if VIS_SEG_MARKERS
-            // data to send to SegmentMarkers.java
-            char /**bestCh = reinterpret_cast<char *>(&best),
-                    *cxCh = reinterpret_cast<char *>(&seg->cx),
-                    *cyCh = reinterpret_cast<char *>(&seg->cy),*/
-                    *marker = reinterpret_cast<char *>(&segMarkers[sid - sidInc]);
-            /*marker[0] = bestCh[3];
-            marker[1] = bestCh[2];
-            marker[2] = bestCh[1];
-            marker[3] = bestCh[0];
-            marker[4] = cxCh[1];
-            marker[5] = cxCh[0];
-            marker[6] = cyCh[1];
-            marker[7] = cyCh[0];*/
-            memcpy(&marker[0], &best, 4u);
-            memcpy(&marker[4], &seg->cx, 2u);
-            memcpy(&marker[6], &seg->cy, 2u);
-#endif
         }
+
+#if VIS_SEG_MARKERS
+        // data to send to SegmentMarkers.java
+        memcpy(&marker[0], &best, 4u);
+        memcpy(&marker[4], &seg->cx, 2u);
+        memcpy(&marker[6], &seg->cy, 2u);
+#endif
+
         // index segments of the current frame
         _yi[seg->m[0]].insert(sid);
         _ui[seg->m[1]].insert(sid);
@@ -383,7 +377,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     env->SetLongArrayRegion(jla, 0, MAX_SEGS, segMarkers);
     env->CallVoidMethod(main_, jmSegMarker, jla);
 #endif
-    sidInc += MAX_SEGS;
+    sidInc += min(MAX_SEGS, l_);
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 

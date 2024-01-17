@@ -58,7 +58,7 @@ public:
     ANativeWindow *analyses = nullptr;
 #endif
 #if VIS_SEG_MARKERS
-    jmethodID jmSegMarker;
+    jmethodID jmSegMarker = nullptr;
 #endif
 
 private:
@@ -108,7 +108,7 @@ private:
 #endif
 #if VIS_SEG_MARKERS
     // data to be sent to SegmentMarkers.java
-    jlong segMarkers[MAX_SEGS];
+    jlong segMarkers[MAX_SEGS]{};
 #endif
 };
 
