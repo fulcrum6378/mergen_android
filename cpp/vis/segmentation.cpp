@@ -267,19 +267,21 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
          [](const Segment &a, const Segment &b) { return a.p.size() > b.p.size(); });
     float nearest_dist, dist;
     int32_t best;
+    uint16_t sdx;
     l_ = segments.size();
     for (uint16_t sid = sidInc; sid < sidInc + MAX_SEGS; sid++) {
+        sdx = sid - sidInc;
 #if VIS_SEG_MARKERS
         char *marker = reinterpret_cast<char *>(&segMarkers[sid - sidInc]);
 #endif
-        if (sid >= l_) {
+        if (sdx >= l_) {
 #if VIS_SEG_MARKERS
-            best = -2;
+            best = -2; // FIXME futile exercise in the subsequent loops
             memcpy(&marker[0], &best, 4u);
 #endif
             continue;
         }
-        Segment *seg = &segments[sid];
+        Segment *seg = &segments[sdx];
         seg->ComputeRatioAndCentre();
 #if VISUAL_STM
         stm->Insert(seg);
