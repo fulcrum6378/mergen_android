@@ -32,22 +32,27 @@ public class SegmentMarkers {
 
     /**
      * Called by C++ to update the pointers on the screen.
-     * Assuming this machine is little-endian!
+     * Java numbers are always big-endian! (bits have the same order, but bytes need to be reordered)
      */
     public void update(long[] data) {
-        int best, cx, cy;
+        int best;
+        short cx, cy; // don't make them `int`
+        //StringBuilder sb = new StringBuilder();
         for (int sid = 0; sid < data.length; sid++) {
             TextView tv = (TextView) pool.getChildAt(sid);
-            best = (int) data[sid];
+            best = (int) (data[sid] & 0x00000000FFFFFFFFL);
             if (best == -2) {
                 tv.setVisibility(View.INVISIBLE);
                 continue;
             }
-            cx = (int) ((data[sid] >> 4) & 0xFFFF);
-            cy = (int) ((data[sid] >> 6) & 0xFFFF);
-            tv.setTranslationX((float) cx);
-            tv.setTranslationY((float) cy);
+            cx = (short) ((data[sid] & 0x0000FFFF00000000L) >> 32);
+            cy = (short) ((data[sid] & 0xFFFF000000000000L) >> 48);
+            //sb.append(best).append(":").append(cx).append("x").append(cy).append(", ");
+            float scale = 1088f / 720f;
+            tv.setTranslationY(((float) cx) * /*density * */scale);
+            tv.setTranslationX(((float) cy) * /*density * */scale);
             tv.setVisibility(View.VISIBLE);
         }
+        //Toast.makeText(c, sb.toString(), Toast.LENGTH_SHORT).show();
     }
 }

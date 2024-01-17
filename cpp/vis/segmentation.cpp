@@ -267,14 +267,11 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
          [](const Segment &a, const Segment &b) { return a.p.size() > b.p.size(); });
     float nearest_dist, dist;
     int32_t best;
-#if VIS_SEG_MARKERS
-    char segMarkerBuf[8];
-#endif
     l_ = segments.size();
     for (uint16_t sid = sidInc; sid < sidInc + MAX_SEGS; sid++) {
         if (sid >= l_) {
 #if VIS_SEG_MARKERS
-            // TODO fix the rest of `visDbg` with `-2`
+            // TODO fix the rest of `segMarkers` with `-2`
 #endif
             break;
         }
@@ -350,10 +347,21 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
             }// else LOGI("Segment %u was lost", sid);
 #if VIS_SEG_MARKERS
             // data to send to SegmentMarkers.java
-            memcpy(&segMarkerBuf[0], &best, 4u);
-            memcpy(&segMarkerBuf[4], &seg->cx, 2u);
-            memcpy(&segMarkerBuf[6], &seg->cy, 2u);
-            memcpy(&segMarkers[sid - sidInc], segMarkerBuf, 8u);
+            char /**bestCh = reinterpret_cast<char *>(&best),
+                    *cxCh = reinterpret_cast<char *>(&seg->cx),
+                    *cyCh = reinterpret_cast<char *>(&seg->cy),*/
+                    *marker = reinterpret_cast<char *>(&segMarkers[sid - sidInc]);
+            /*marker[0] = bestCh[3];
+            marker[1] = bestCh[2];
+            marker[2] = bestCh[1];
+            marker[3] = bestCh[0];
+            marker[4] = cxCh[1];
+            marker[5] = cxCh[0];
+            marker[6] = cyCh[1];
+            marker[7] = cyCh[0];*/
+            memcpy(&marker[0], &best, 4u);
+            memcpy(&marker[4], &seg->cx, 2u);
+            memcpy(&marker[6], &seg->cy, 2u);
 #endif
         }
         // index segments of the current frame
