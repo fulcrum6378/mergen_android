@@ -355,7 +355,8 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
 
 #if VIS_SEG_MARKERS
         // data to send to SegmentMarkers.java
-        memcpy(&marker[0], &best, 4u);
+        if (best != -1) best -= sidInc + MAX_SEGS;
+        memcpy(&marker[2], &best, 2u); // there's room for another short!!
         memcpy(&marker[4], &seg->cx, 2u);
         memcpy(&marker[6], &seg->cy, 2u);
 #endif
@@ -379,7 +380,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     env->SetLongArrayRegion(jla, 0, MAX_SEGS, segMarkers);
     env->CallVoidMethod(main_, jmSegMarker, jla);
 #endif
-    sidInc += min(MAX_SEGS, l_);
+    sidInc += MAX_SEGS; // min(MAX_SEGS, l_); (leave these empty so that those can be tracked by `best`)
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 

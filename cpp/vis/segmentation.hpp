@@ -17,8 +17,8 @@
 #define H 720u
 // width of an image frame
 #define W 720u
-// maximum allowed segments to be analysed extensively
-#define MAX_SEGS 20u
+// maximum allowed segments to be analysed extensively (do not exceed 26u)
+#define MAX_SEGS 26u
 // radii for searching through Volatile Indices
 #define Y_RADIUS 15
 #define U_RADIUS 10
