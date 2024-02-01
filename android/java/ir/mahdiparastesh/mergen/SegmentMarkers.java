@@ -118,6 +118,7 @@ public class SegmentMarkers {
 
         // reset `segToA`
         Arrays.fill(segToA, null);
-        for (int a = 0; a < aToSeg.length; a++) segToA[aToSeg[a]] = a;
+        for (int a = 0; a < aToSeg.length; a++)
+            if (aToSeg[a] != null) segToA[aToSeg[a]] = a;
     }
 }
