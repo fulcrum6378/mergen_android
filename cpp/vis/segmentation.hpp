@@ -11,7 +11,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "visual_stm.hpp"
+#include "segment.hpp"
 
 // height of an image frame
 #define H 720u
@@ -25,8 +25,6 @@
 #define V_RADIUS 10
 #define R_RADIUS 15
 
-// debug the results using VisualSTM
-#define VISUAL_STM false
 // debug the results using the analyses window
 #define VIS_ANALYSES true
 // debug the results using SegmentMarkers.java
@@ -48,7 +46,7 @@ public:
 
     /** Main processing function of Segmentation which execute all the necessary jobs.
      * do NOT refer to `debugMode_` in Camera. */
-    void Process(AImage *image, const bool *recording, int8_t debugMode);
+    void Process(AImage *image, const bool *recording);
 
     ~Segmentation();
 
@@ -73,6 +71,8 @@ private:
     void SetAsBorder(uint16_t y, uint16_t x);
 
 
+    /*** IMAGE SEGMENTATION ***/
+
     // multidimensional array of pixels
     uint8_t arr[H][W][3]{};
     // maps pixels to their Segment IDs
@@ -86,6 +86,8 @@ private:
     // maps IDs of Segments to their pointers
     std::unordered_map<uint32_t, Segment *> s_index;
 
+    /*** OBJECT TRACKING ***/
+
     // incrementor of the segments IDs of the volatile indices
     uint16_t sidInc = 0u;
     // 8-bit volatile indices (those preceding with `_` temporarily contain indices of current frame)
@@ -97,9 +99,8 @@ private:
     // a final map for tracking visual objects and explaining their differences
     std::unordered_map<uint16_t, std::vector<int32_t>> diff;
 
-#if VISUAL_STM
-    VisualSTM *stm;
-#endif
+    /*** DEBUGGING ***/
+
     JavaVM *jvm_;
     jobject main_;
     jmethodID *jmSignal_;

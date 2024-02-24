@@ -42,7 +42,7 @@ public class RemoteDebug extends Thread {
             if (mode > 10 && mode <= 20) { // those which require recording to be started
                 out.write(0);
                 recorded = false;
-                Main.handler.obtainMessage(127, mode).sendToTarget();
+                Main.handler.obtainMessage(127).sendToTarget();
                 try {
                     while (!recorded) //noinspection BusyWait
                         Thread.sleep(200);
@@ -53,7 +53,7 @@ public class RemoteDebug extends Thread {
             switch (mode) {
                 case 1 -> { // START
                     if (!c.isRecording) {
-                        Main.handler.obtainMessage(127, (byte) 0).sendToTarget();
+                        Main.handler.obtainMessage(127).sendToTarget();
                         out.write(0);
                     } else out.write(1);
                 }

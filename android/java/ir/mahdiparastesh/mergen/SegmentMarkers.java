@@ -3,6 +3,7 @@ package ir.mahdiparastesh.mergen;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -66,6 +67,7 @@ public class SegmentMarkers {
         // `insert`ed and `update`d segments
         for (short sdx = 0; sdx < data.length; sdx++) {
             best = (short) ((data[sdx] & 0x00000000FFFF0000L) >> 16);
+            //Log.println(Log.ASSERT, "ZOEY", String.valueOf(best));
             if (best == -2) continue;
             Integer marker = null;
             TextView tv;

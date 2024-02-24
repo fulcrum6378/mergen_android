@@ -39,7 +39,7 @@ public:
 
     void CreateSession(ANativeWindow *displayWindow);
 
-    bool SetRecording(bool b, int8_t debugMode);
+    bool SetRecording(bool b);
 
     ~Camera();
 
@@ -70,7 +70,6 @@ private:
     JavaVM *jvm_;
     jobject main_;
     jmethodID jmSignal_;
-    int8_t debugMode_{0};
 
     // Managing cameras
     ACameraManager *cameraMgr_;

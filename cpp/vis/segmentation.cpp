@@ -2,8 +2,6 @@
 #include <chrono>
 #include <cmath>
 #include <cstring>
-#include <fstream>
-#include <ios>
 
 #include "../global.hpp"
 #include "segmentation.hpp"
@@ -12,9 +10,6 @@ using namespace std;
 
 Segmentation::Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal) :
         jvm_(jvm), main_(main), jmSignal_(jmSignal) {
-#if VISUAL_STM
-    stm = new VisualSTM;
-#endif
 #if VIS_ANALYSES
     auto *out = static_cast<uint32_t *>(analysesBuf.bits);
     out += analysesBuf.width - 1;
@@ -26,9 +21,8 @@ Segmentation::Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal) :
 #endif
 }
 
-void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMode) {
+void Segmentation::Process(AImage *image, const bool *recording) {
     locked = true;
-    //ofstream test(cacheDir + "test.yuv", ios::binary);
 
     // flush effect for a capture
     JNIEnv *env;
@@ -62,10 +56,9 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
             arr[y][x][0] = pY[x];
             arr[y][x][1] = pU[uv_offset];
             arr[y][x][2] = pV[uv_offset];
-            //test.put(pY[x]); test.put(pU[uv_offset]); test.put(pV[uv_offset]);
         }
     }
-    AImage_delete(image); // test.close();
+    AImage_delete(image);
     auto delta1 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
@@ -244,7 +237,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                 CheckIfBorder(y, x, y + 1u, x - 1u); // south-western
             }
     }
-#if VIS_ANALYSES // it takes 8~13 milliseconds! TODO move them to another thread...
+#if VIS_ANALYSES // it takes 8~13 milliseconds! TODO move them to another thread anyway...
     ANativeWindow_acquire(analyses);
     if (ANativeWindow_lock(analyses, &analysesBuf, nullptr) == 0) {
         auto *out = static_cast<uint8_t *>(analysesBuf.bits);
@@ -261,13 +254,13 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     auto delta5 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
-    // 6. (save in VisualSTM and) track objects and measure their differences
+    // 6. sort the segments, track them from the previous frame and measure their differences
     t0 = chrono::system_clock::now();
     sort(segments.begin(), segments.end(),
          [](const Segment &a, const Segment &b) { return a.p.size() > b.p.size(); });
     float nearest_dist, dist;
     int32_t best;
-    uint16_t sdx;
+    uint16_t sdx, uBest;
     l_ = segments.size();
     for (uint16_t sid = sidInc; sid < sidInc + MAX_SEGS; sid++) {
         sdx = sid - sidInc;
@@ -283,9 +276,6 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
         }
         Segment *seg = &segments[sdx];
         seg->ComputeRatioAndCentre();
-#if VISUAL_STM
-        stm->Insert(seg);
-#endif
         best = -1;
         if (!prev_segments.empty()) {
             for (uint8_t y_ = seg->m[0] - Y_RADIUS; y_ < seg->m[0] + Y_RADIUS; y_++) {
@@ -334,6 +324,7 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
                         best = static_cast<int32_t>(can);
                     } // else {don't set `best` here}
                 }
+            // TODO what if the colour and/or ratio have/has changed?
             a_y.clear();
             a_u.clear();
             a_v.clear();
@@ -355,7 +346,11 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
 
 #if VIS_SEG_MARKERS
         // data to send to SegmentMarkers.java
-        if (best != -1) best -= sidInc + MAX_SEGS;
+        if (best > -1) {
+            uBest = static_cast<uint16_t>(best);
+            uBest -= sidInc + MAX_SEGS;
+            best = static_cast<int32_t>(uBest);
+        }
         memcpy(&marker[2], &best, 2u); // there's room for another short!!
         memcpy(&marker[4], &seg->cx, 2u);
         memcpy(&marker[6], &seg->cy, 2u);
@@ -372,9 +367,6 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     ui = std::move(_ui);
     vi = std::move(_vi);
     ri = std::move(_ri);
-#if VISUAL_STM
-    stm->OnFrameFinished();
-#endif
 #if VIS_SEG_MARKERS
     jlongArray jla = env->NewLongArray(MAX_SEGS);
     env->SetLongArrayRegion(jla, 0, MAX_SEGS, segMarkers);
@@ -384,36 +376,15 @@ void Segmentation::Process(AImage *image, const bool *recording, int8_t debugMod
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
-    // summary: loading + segmentation + dissolution + segment_analysis + tracing + stm&tracking
+    // summary: loading + segmentation + dissolution + segment_analysis + tracing + tracking
     LOGI("Delta times: %lld + %lld + %lld + %lld + %lld + %lld => %lld",
          delta1, delta2, delta3, delta4, delta5, delta6,
          delta1 + delta2 + delta3 + delta4 + delta5 + delta6);
     LOGI("----------------------------------");
 
-    // debugging
-    bool singleTime = debugMode > 10 && debugMode <= 20;
-    if (!*recording || singleTime) {
-#if VISUAL_STM
-        stm->SaveState();
-#endif
-
-        // inform the user that they can close the app safely
+    // inform the user that they can close the app safely
+    if (!*recording)
         env->CallVoidMethod(main_, *jmSignal_, 1);
-
-        // save files for debugging if wanted
-        if (debugMode == 11) {
-            ofstream arrFile(cacheDir + "arr", ios::binary);
-            arrFile.write(reinterpret_cast<char *>(&arr), sizeof(arr));
-            arrFile.close();
-            ofstream bstFile(cacheDir + "b_status", ios::binary);
-            bstFile.write(reinterpret_cast<char *>(&b_status), sizeof(b_status));
-            bstFile.close();
-        }
-
-        // signal Main.java to stop recording;
-        // this MUST always be after saving the related files of debugding
-        if (singleTime) env->CallVoidMethod(main_, *jmSignal_, 2);
-    }
 
     // clear data and unlock the frame
     memset(status, 0, sizeof(status));
@@ -465,8 +436,4 @@ void Segmentation::SetAsBorder(uint16_t y, uint16_t x) {
     ); // they get reversed in while writing to a file
 }
 
-Segmentation::~Segmentation() { // NOLINT(modernize-use-equals-default)
-#if VISUAL_STM
-    delete stm;
-#endif
-}
+Segmentation::~Segmentation() = default;

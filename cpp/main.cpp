@@ -48,11 +48,11 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
 }
 
 extern "C" JNIEXPORT jbyte JNICALL
-Java_ir_mahdiparastesh_mergen_Main_start(JNIEnv *, jobject, jbyte debugMode) {
+Java_ir_mahdiparastesh_mergen_Main_start(JNIEnv *, jobject) {
     int8_t ret = 0;
     if (!aud_in->Start()) ret = 1;
     if (ret != 0) return ret;
-    if (!vis->SetRecording(true, debugMode)) ret = 2;
+    if (!vis->SetRecording(true)) ret = 2;
     return ret;
 }
 
@@ -61,7 +61,7 @@ Java_ir_mahdiparastesh_mergen_Main_stop(JNIEnv *, jobject) {
     int8_t ret = 0;
     if (!aud_in->Stop()) ret = 1;
     if (ret != 0) return ret;
-    if (!vis->SetRecording(false, 0)) ret = 2;
+    if (!vis->SetRecording(false)) ret = 2;
     return ret;
 }
 
