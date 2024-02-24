@@ -29,7 +29,6 @@ add_library(main SHARED
         rew/rewarder.hpp
 
         scm/manifest.hpp
-        scm/perception.hpp
 
         vis/bitmap_stream.hpp
         vis/camera.cpp
@@ -37,6 +36,7 @@ add_library(main SHARED
         vis/colouring.hpp
         vis/memory.cpp
         vis/memory.hpp
+        vis/perception.hpp
         vis/segment.hpp
         vis/segmentation.cpp
         vis/segmentation.hpp

@@ -70,8 +70,10 @@ Camera::Camera(JavaVM *jvm, jobject main) :
     jmSignal_ = env->GetMethodID(
             env->FindClass("ir/mahdiparastesh/mergen/Main"), "signal", "(B)V");
     segmentation = new Segmentation(jvm, main_, &jmSignal_);
+#if VIS_SEG_MARKERS
     segmentation->jmSegMarker = env->GetMethodID(
             env->FindClass("ir/mahdiparastesh/mergen/Main"), "updateSegMarkers", "([J)V");
+#endif
 }
 
 /**

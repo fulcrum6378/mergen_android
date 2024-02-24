@@ -28,7 +28,7 @@
 // debug the results using the analyses window
 #define VIS_ANALYSES true
 // debug the results using SegmentMarkers.java
-#define VIS_SEG_MARKERS true
+#define VIS_SEG_MARKERS false
 
 /**
  * Image Segmentation, using a Region-Growing method

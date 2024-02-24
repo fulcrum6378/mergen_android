@@ -160,7 +160,7 @@ void Segmentation::Process(AImage *image, const bool *recording) {
     auto delta3 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
-    // 4. average colours + detect boundaries
+    // 4. measurement of average colours and dimensions
     t0 = chrono::system_clock::now();
     uint32_t l_;
 #if MIN_SEG_SIZE != 1u
@@ -170,7 +170,7 @@ void Segmentation::Process(AImage *image, const bool *recording) {
     bool isFirst;
     uint16_t y, x;
     for (Segment &seg: segments) {
-        // average colours of each segment
+        // measure average colours of each segment
         l_ = seg.p.size();
 #if MIN_SEG_SIZE != 1u
         ys = 0ull, us = 0ull, vs = 0ull;
@@ -191,7 +191,7 @@ void Segmentation::Process(AImage *image, const bool *recording) {
         // https://stackoverflow.com/questions/649454/what-is-the-best-way-to-average-two-colors-that-
         // define-a-linear-gradient
 
-        // detect boundaries (min_y, min_x, max_y, max_x)
+        // measure dimensions (min_y, min_x, max_y, max_x)
         isFirst = true;
         for (uint32_t &p: seg.p) {
             y = p >> 16;
@@ -218,7 +218,7 @@ void Segmentation::Process(AImage *image, const bool *recording) {
     auto delta4 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
-    // 5. trace border pixels
+    // 5. tracing border pixels
     t0 = chrono::system_clock::now();
     for (y = 0u; y < H; y++) {
         if (y == 0u || y == H - 1u)
@@ -254,7 +254,7 @@ void Segmentation::Process(AImage *image, const bool *recording) {
     auto delta5 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
-    // 6. sort the segments, track them from the previous frame and measure their differences
+    // 6. measurement; sort segments, track them from a previous frame and measure their differences
     t0 = chrono::system_clock::now();
     sort(segments.begin(), segments.end(),
          [](const Segment &a, const Segment &b) { return a.p.size() > b.p.size(); });
@@ -330,7 +330,7 @@ void Segmentation::Process(AImage *image, const bool *recording) {
             a_v.clear();
             a_r.clear();
             if (best != -1) {
-                LOGI("SID %u is the same as %d.", sid, best); // REMOVE THIS...
+                LOGI("SID %u == %d.", sid, best);
                 Segment *prev_seg = &prev_segments[best];
                 diff[sid] = {
                         best, static_cast<int32_t>(nearest_dist),
@@ -348,10 +348,10 @@ void Segmentation::Process(AImage *image, const bool *recording) {
         // data to send to SegmentMarkers.java
         if (best > -1) {
             uBest = static_cast<uint16_t>(best);
-            uBest -= sidInc + MAX_SEGS;
+            uBest -= (sidInc - MAX_SEGS);
             best = static_cast<int32_t>(uBest);
         }
-        memcpy(&marker[2], &best, 2u); // there's room for another short!!
+        memcpy(&marker[0], &best, 4u);
         memcpy(&marker[4], &seg->cx, 2u);
         memcpy(&marker[6], &seg->cy, 2u);
 #endif
@@ -376,7 +376,7 @@ void Segmentation::Process(AImage *image, const bool *recording) {
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
-    // summary: loading + segmentation + dissolution + segment_analysis + tracing + tracking
+    // summary: loading + segmentation + dissolution + measurement + tracing + tracking
     LOGI("Delta times: %lld + %lld + %lld + %lld + %lld + %lld => %lld",
          delta1, delta2, delta3, delta4, delta5, delta6,
          delta1 + delta2 + delta3 + delta4 + delta5 + delta6);

@@ -7,10 +7,8 @@
 #include "mov/vibrator.hpp"
 #include "rew/rewarder.hpp"
 #include "scm/manifest.hpp"
-#include "scm/perception.hpp"
 #include "vis/camera.hpp"
 
-static Perception *scm;
 static Rewarder *rew;
 
 static Microphone *aud_in;
@@ -44,7 +42,6 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     // initialise high-level components
     rew = new Rewarder(aud_out, mov, jvm, gMain);
     Manifest::init();
-    scm = new Perception();
 }
 
 extern "C" JNIEXPORT jbyte JNICALL
@@ -78,8 +75,6 @@ Java_ir_mahdiparastesh_mergen_Main_destroy(JNIEnv *, jobject) {
 
     delete rew;
     rew = nullptr;
-    delete scm;
-    scm = nullptr;
 }
 
 

@@ -1,5 +1,5 @@
-#ifndef SCM_PERCEPTION_H
-#define SCM_PERCEPTION_H
+#ifndef VIS_PERCEPTION_H
+#define VIS_PERCEPTION_H
 
 class Perception {
 public:
@@ -8,4 +8,4 @@ public:
     ~Perception() = default;
 };
 
-#endif //SCM_PERCEPTION_H
+#endif //VIS_PERCEPTION_H

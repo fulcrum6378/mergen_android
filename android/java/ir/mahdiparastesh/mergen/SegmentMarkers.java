@@ -3,7 +3,6 @@ package ir.mahdiparastesh.mergen;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -50,9 +49,11 @@ public class SegmentMarkers {
     /**
      * Called by C++ to update the pointers on the screen.
      * Java numbers are always big-endian! (bits have the same order, but bytes need to be reordered)
+     * FIXME because segments aren't discarded, they always exceed 26 and line 83 throws!
      */
     public void update(long[] data) {
-        short best, cx, cy; // don't make them `int`
+        int best; // don't make it `short` for `sid` is constantly growing
+        short cx, cy; // don't make them `int`
         float x, y;
         boolean bNew;
 
@@ -66,8 +67,7 @@ public class SegmentMarkers {
 
         // `insert`ed and `update`d segments
         for (short sdx = 0; sdx < data.length; sdx++) {
-            best = (short) ((data[sdx] & 0x00000000FFFF0000L) >> 16);
-            //Log.println(Log.ASSERT, "ZOEY", String.valueOf(best));
+            best = (int) (data[sdx] & 0x00000000FFFFFFFFL);
             if (best == -2) continue;
             Integer marker = null;
             TextView tv;

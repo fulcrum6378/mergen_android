@@ -19,15 +19,19 @@ This component contains the following steps:
    https://github.com/fulcrum6378/mycv/blob/master/segmentation/region_growing_4.py) and [**Comprehender**](
    https://github.com/fulcrum6378/mycv/blob/master/tracing/comprehender_rg4.py).
 
-3. [**VisMemory**](memory.cpp) : it stores specific shapes for learning.
+3. [**Perception**](perception.hpp) : making sense of the segments' changes across frames.
 
-#### Other classes and procedural files
+#### Helper headers
 
 - [BitmapStream](bitmap_stream.hpp) : it stores image frames in BMP image format for testing in *MyCV*.
 - [Colouring](colouring.hpp) : it makes a very simple effect in the UI of the Android app,
   indicating pleasure (in green) or pain (in red). (subclass of [Criterion](../rew/criterion.hpp))
 - [Segment](segment.hpp) : it defines a Segment and type of path points in it.
-- [VisualSTM](visual_stm.cpp) : *Visual Short-Term Memory*; it stores shapes (segments)
   temporarily on a non-volatile (persistent) memory for debugging.
   Translated from *MyCV*'s [**Volatile Indices 1**](
   https://github.com/fulcrum6378/mycv/blob/master/storage/volatile_indices_1.py).
+
+#### Deprecated classes
+
+- [VisMemory](memory.cpp) : it stores specific shapes for learning.
+- [VisualSTM](visual_stm.cpp) : *Visual Short-Term Memory*; it stores shapes (segments)
