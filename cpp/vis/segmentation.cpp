@@ -254,12 +254,12 @@ void Segmentation::Process(AImage *image, const bool *recording) {
     auto delta5 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 
-    // 6. measurement; sort segments, track them from a previous frame and measure their differences
+    // 6. tracking; sort segments, track them from a previous frame and measure their differences
     t0 = chrono::system_clock::now();
     sort(segments.begin(), segments.end(),
          [](const Segment &a, const Segment &b) { return a.p.size() > b.p.size(); });
     float nearest_dist, dist;
-    int32_t best;
+    int16_t best;
     uint16_t sdx, uBest;
     l_ = segments.size();
     for (uint16_t sid = sidInc; sid < sidInc + MAX_SEGS; sid++) {
@@ -271,8 +271,10 @@ void Segmentation::Process(AImage *image, const bool *recording) {
 #if VIS_SEG_MARKERS
             best = -2; // FIXME futile exercise in the subsequent loops
             memcpy(&marker[0], &best, 4u);
-#endif
             continue;
+#else
+            break;
+#endif
         }
         Segment *seg = &segments[sdx];
         seg->ComputeRatioAndCentre();
@@ -318,10 +320,10 @@ void Segmentation::Process(AImage *image, const bool *recording) {
                                                    std::pow(seg->cy - prev_seg->cy, 2)));
                     if (best == -1) { // NOLINT(bugprone-branch-clone)
                         nearest_dist = dist;
-                        best = static_cast<int32_t>(can);
+                        best = static_cast<int16_t>(can);
                     } else if (dist < nearest_dist) {
                         nearest_dist = dist;
-                        best = static_cast<int32_t>(can);
+                        best = static_cast<int16_t>(can);
                     } // else {don't set `best` here}
                 }
             // TODO what if the colour and/or ratio have/has changed?
@@ -349,9 +351,10 @@ void Segmentation::Process(AImage *image, const bool *recording) {
         if (best > -1) {
             uBest = static_cast<uint16_t>(best);
             uBest -= (sidInc - MAX_SEGS);
-            best = static_cast<int32_t>(uBest);
+            best = static_cast<int16_t>(uBest);
         }
-        memcpy(&marker[0], &best, 4u);
+        memcpy(&marker[0], &sid, 2u);
+        memcpy(&marker[2], &best, 2u);
         memcpy(&marker[4], &seg->cx, 2u);
         memcpy(&marker[6], &seg->cy, 2u);
 #endif
@@ -371,8 +374,12 @@ void Segmentation::Process(AImage *image, const bool *recording) {
     jlongArray jla = env->NewLongArray(MAX_SEGS);
     env->SetLongArrayRegion(jla, 0, MAX_SEGS, segMarkers);
     env->CallVoidMethod(main_, jmSegMarker, jla);
+
+    sidInc += MAX_SEGS; // leave these empty so that those can be tracked by `best`
+#else
+    sidInc += min(MAX_SEGS, l_);
 #endif
-    sidInc += MAX_SEGS; // min(MAX_SEGS, l_); (leave these empty so that those can be tracked by `best`)
+    if (sidInc > 32767u) sidInc -= 32767u;
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t0).count();
 

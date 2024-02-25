@@ -17,8 +17,8 @@
 #define H 720u
 // width of an image frame
 #define W 720u
-// maximum allowed segments to be analysed extensively (do not exceed 26u)
-#define MAX_SEGS 26u
+// maximum allowed segments to be extensively analysed
+#define MAX_SEGS 30u
 // radii for searching through Volatile Indices
 #define Y_RADIUS 15
 #define U_RADIUS 10
@@ -28,7 +28,7 @@
 // debug the results using the analyses window
 #define VIS_ANALYSES true
 // debug the results using SegmentMarkers.java
-#define VIS_SEG_MARKERS false
+#define VIS_SEG_MARKERS true
 
 /**
  * Image Segmentation, using a Region-Growing method
@@ -88,7 +88,7 @@ private:
 
     /*** OBJECT TRACKING ***/
 
-    // incrementor of the segments IDs of the volatile indices
+    // incrementor of the segments IDs of the volatile indices (max: 32767u but not signed)
     uint16_t sidInc = 0u;
     // 8-bit volatile indices (those preceding with `_` temporarily contain indices of current frame)
     std::map<uint8_t, std::unordered_set<uint16_t>> yi, _yi, ui, _ui, vi, _vi;
