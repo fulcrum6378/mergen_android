@@ -13,8 +13,6 @@ import java.util.HashSet;
 
 /** Visualises how image frames are being analysed by marking some of the largest segments. */
 public class SegmentMarkers {
-    final float posMultiplier = 1088f / 720f;
-
     final Main c;
     final RelativeLayout pool;
 
@@ -31,6 +29,7 @@ public class SegmentMarkers {
     ArrayList<Integer> freedMarkers = new ArrayList<>();
     /** Plays all the animations together. */
     AnimatorSet trans;
+    final float posMultiplier = 1088f / 720f;
 
     /**
      * Called by C++ to update the pointers on the screen.

@@ -23,7 +23,7 @@ This component contains the following steps:
 
 #### Helper headers
 
-- [BitmapStream](bitmap_stream.hpp) : it stores image frames in BMP image format for testing in *MyCV*.
+- [BitmapStream](bitmap.hpp) : it stores image frames in BMP image format for testing in *MyCV*.
 - [Colouring](colouring.hpp) : it makes a very simple effect in the UI of the Android app,
   indicating pleasure (in green) or pain (in red). (subclass of [Criterion](../rew/criterion.hpp))
 - [Segment](segment.hpp) : it defines a Segment and type of path points in it.

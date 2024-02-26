@@ -10,7 +10,7 @@
 #include <string>
 #include <utility>
 
-#include "bitmap_stream.hpp"
+#include "bitmap.hpp"
 #include "segmentation.hpp"
 
 /** Together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone!
@@ -66,7 +66,9 @@ private:
      */
     AImageReader *reader_{};
     bool recording_{false};
+#if BITMAP_STREAM
     BitmapStream *bmp_stream_{};
+#endif
     JavaVM *jvm_;
     jobject main_;
     jmethodID jmSignal_;

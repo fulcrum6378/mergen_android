@@ -30,7 +30,7 @@ add_library(main SHARED
 
         scm/manifest.hpp
 
-        vis/bitmap_stream.hpp
+        vis/bitmap.hpp
         vis/camera.cpp
         vis/camera.hpp
         vis/colouring.hpp
