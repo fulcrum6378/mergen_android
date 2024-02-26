@@ -82,24 +82,33 @@ void Segmentation::Process(AImage *image, const bool *recording) {
         }
         if (!foundSthToAnalyse) break;
 
-        Segment seg{nextSeg};
+        Segment seg{nextSeg,
+#if SEG_BASE_COLOUR
+                &arr[thisY][thisX]
+#endif
+        };
         stack.push_back({thisY, thisX, 0u});
         nextSeg++;
         uint16_t y, x, dr;
+        uint8_t (*aa)[3];
         while ((last = static_cast<int64_t>(stack.size()) - 1) != -1) {
-            y = stack[last][0], x = stack[last][1], dr = stack[last][2];
+            y = stack[last][0], x = stack[last][1], dr = stack[last][2], aa = &arr[y][x];
             if (dr == 0) {
                 seg.p.push_back((y << 16) | x);
-#if MIN_SEG_SIZE == 1u // add colours in order to compute their mean value later
-                seg.ys += arr[y][x][0] * arr[y][x][0];
-                seg.us += arr[y][x][1] * arr[y][x][1];
-                seg.vs += arr[y][x][2] * arr[y][x][2];
+#if SEG_MIN_SIZE == 1u // add colours in order to compute their mean value later
+                seg.ys += aa[0] * aa[0];
+                seg.us += aa[1] * aa[1];
+                seg.vs += aa[2] * aa[2];
 #endif
                 status[y][x] = seg.id;
                 // left
                 stack[last][2]++;
                 if (x > 0u && status[y][x - 1u] == 0 &&
-                    CompareColours(&arr[y][x], &arr[y][x - 1u])) {
+                    CompareColours(aa, &arr[y][x - 1u]
+#if SEG_BASE_COLOUR
+                            , seg.base
+#endif
+                    )) {
                     stack.push_back({y, static_cast<uint16_t>(x - 1u), 0u});
                     continue;
                 }
@@ -107,7 +116,11 @@ void Segmentation::Process(AImage *image, const bool *recording) {
             if (dr <= 1u) { // top
                 stack[last][2]++;
                 if (y > 0u && status[y - 1u][x] == 0 &&
-                    CompareColours(&arr[y][x], &arr[y - 1u][x])) {
+                    CompareColours(aa, &arr[y - 1u][x]
+#if SEG_BASE_COLOUR
+                            , seg.base
+#endif
+                    )) {
                     stack.push_back({static_cast<uint16_t>(y - 1u), x, 0u});
                     continue;
                 }
@@ -115,7 +128,11 @@ void Segmentation::Process(AImage *image, const bool *recording) {
             if (dr <= 2u) { // right
                 stack[last][2]++;
                 if (x < (W - 1u) && status[y][x + 1u] == 0 &&
-                    CompareColours(&arr[y][x], &arr[y][x + 1u])) {
+                    CompareColours(aa, &arr[y][x + 1u]
+#if SEG_BASE_COLOUR
+                            , seg.base
+#endif
+                    )) {
                     stack.push_back({y, static_cast<uint16_t>(x + 1u), 0u});
                     continue;
                 }
@@ -123,7 +140,11 @@ void Segmentation::Process(AImage *image, const bool *recording) {
             if (dr <= 3u) { // bottom
                 stack[last][2]++;
                 if (y < (H - 1u) && status[y + 1u][x] == 0 &&
-                    CompareColours(&arr[y][x], &arr[y + 1u][x])) {
+                    CompareColours(aa, &arr[y + 1u][x]
+#if SEG_BASE_COLOUR
+                            , seg.base
+#endif
+                    )) {
                     stack.push_back({static_cast<uint16_t>(y + 1u), x, 0u});
                     continue;
                 }
@@ -137,11 +158,11 @@ void Segmentation::Process(AImage *image, const bool *recording) {
 
     // 3. dissolution
     t0 = chrono::system_clock::now();
-#if MIN_SEG_SIZE != 1u
+#if SEG_MIN_SIZE != 1u
     uint32_t absorber_i, size_bef = segments.size(), removal = 1u;
     Segment *absorber;
     for (int32_t seg = static_cast<int32_t>(size_bef) - 1; seg > -1; seg--)
-        if (segments[seg].p.size() < MIN_SEG_SIZE) {
+        if (segments[seg].p.size() < SEG_MIN_SIZE) {
             absorber_i = FindPixelOfASegmentToDissolveIn(&segments[seg]);
             if (absorber_i == 0xFFFFFFFF) continue;
             absorber = &segments[status[absorber_i >> 16][absorber_i & 0xFFFF] - 1u];
@@ -163,7 +184,7 @@ void Segmentation::Process(AImage *image, const bool *recording) {
     // 4. measurement of average colours and dimensions
     t0 = chrono::system_clock::now();
     uint32_t l_;
-#if MIN_SEG_SIZE != 1u
+#if SEG_MIN_SIZE != 1u
     array<uint8_t, 3u> *col;
     uint64_t ys, us, vs;
 #endif
@@ -172,7 +193,7 @@ void Segmentation::Process(AImage *image, const bool *recording) {
     for (Segment &seg: segments) {
         // measure average colours of each segment
         l_ = seg.p.size();
-#if MIN_SEG_SIZE != 1u
+#if SEG_MIN_SIZE != 1u
         ys = 0ull, us = 0ull, vs = 0ull;
         for (uint32_t p: seg.p) {
             col = reinterpret_cast<array<uint8_t, 3u> *>(&arr[p >> 16][p & 0xFFFF]);
@@ -332,7 +353,7 @@ void Segmentation::Process(AImage *image, const bool *recording) {
             a_v.clear();
             a_r.clear();
             if (best != -1) {
-                LOGI("SID %u == %d.", sid, best);
+                LOGI("SID %u == %d", sid, best);
                 Segment *prev_seg = &prev_segments[best];
                 diff[sid] = {
                         best, static_cast<int32_t>(nearest_dist),
@@ -402,10 +423,20 @@ void Segmentation::Process(AImage *image, const bool *recording) {
     locked = false;
 }
 
-bool Segmentation::CompareColours(uint8_t (*a)[3], uint8_t (*b)[3]) {
+bool Segmentation::CompareColours(uint8_t (*a)[3], uint8_t (*b)[3]
+#if SEG_BASE_COLOUR
+        , uint8_t(*base)[3]
+#endif
+) {
     return abs((*a)[0] - (*b)[0]) <= 4 &&
            abs((*a)[1] - (*b)[1]) <= 4 &&
-           abs((*a)[2] - (*b)[2]) <= 4;
+           abs((*a)[2] - (*b)[2]) <= 4
+#if SEG_BASE_COLOUR
+        && abs((*base)[0] - (*b)[0]) <= 40
+        && abs((*base)[1] - (*b)[1]) <= 40
+        && abs((*base)[2] - (*b)[2]) <= 40
+#endif
+            ;
 }
 
 uint32_t Segmentation::FindPixelOfASegmentToDissolveIn(Segment *seg) {

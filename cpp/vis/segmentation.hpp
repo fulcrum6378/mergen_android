@@ -18,12 +18,12 @@
 // width of an image frame
 #define W 720u
 // maximum allowed segments to be extensively analysed
-#define MAX_SEGS 30u
+#define MAX_SEGS 40u
 // radii for searching through Volatile Indices
-#define Y_RADIUS 15
-#define U_RADIUS 10
-#define V_RADIUS 10
-#define R_RADIUS 15
+#define Y_RADIUS 24
+#define U_RADIUS 16
+#define V_RADIUS 16
+#define R_RADIUS 24
 
 // debug the results using the analyses window
 #define VIS_ANALYSES true
@@ -60,7 +60,12 @@ public:
 #endif
 
 private:
-    static bool CompareColours(uint8_t (*a)[3], uint8_t (*b)[3]);
+    static bool CompareColours(
+            uint8_t (*a)[3], uint8_t (*b)[3]
+#if SEG_BASE_COLOUR
+            , uint8_t (*base)[3]
+#endif
+    );
 
     static uint32_t FindPixelOfASegmentToDissolveIn(Segment *seg);
 
@@ -88,7 +93,7 @@ private:
 
     /*** OBJECT TRACKING ***/
 
-    // incrementor of the segments IDs of the volatile indices (max: 32767u but not signed)
+    // incrementer of the segments IDs of the volatile indices (max: 32767u but not signed)
     uint16_t sidInc = 0u;
     // 8-bit volatile indices (those preceding with `_` temporarily contain indices of current frame)
     std::map<uint8_t, std::unordered_set<uint16_t>> yi, _yi, ui, _ui, vi, _vi;
