@@ -24,6 +24,6 @@ android {
     }
     externalNativeBuild { cmake { path file('../cpp/CMakeLists.txt'); version '3.22.1' } }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_20; targetCompatibility JavaVersion.VERSION_20
+        sourceCompatibility JavaVersion.VERSION_21; targetCompatibility JavaVersion.VERSION_21
     }
 }
