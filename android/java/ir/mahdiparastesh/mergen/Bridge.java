@@ -13,15 +13,15 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * A server-client approach for transferring results of analyses for debugging in another computer.
+ * A server-client approach for controlling and debugging from another computer.
  *
  * @noinspection ResultOfMethodCallIgnored, RedundantSuppression
  */
-public class RemoteDebug extends Thread {
+public class Bridge extends Thread {
     boolean active = true, recorded = true;
     final Main c;
 
-    public RemoteDebug(Main c) {
+    public Bridge(Main c) {
         this.c = c;
     }
 

@@ -37,7 +37,7 @@ public class Main extends Activity {
 
     static Handler handler;
     private Vibrator vib;
-    private RemoteDebug remoteDebug;
+    private Bridge bridge;
     private SegmentMarkers segMarker;
     private Surface previewSurface = null, analysesSurface = null;
     boolean isRecording = false, isFinished = true;
@@ -94,7 +94,7 @@ public class Main extends Activity {
                     }
                     case 1 -> { // By vis/Segmentation.cpp when it's done saving data.
                         isFinished = true;
-                        if (remoteDebug.recorded) {
+                        if (bridge.recorded) {
                             if (toast != null) toast.cancel();
                             toast = Toast.makeText(Main.this,
                                     "You can now close the app safely.", Toast.LENGTH_SHORT);
@@ -102,7 +102,7 @@ public class Main extends Activity {
                         }
                     }
                     case 2 -> { // By vis/Segmentation.cpp to stop recording.
-                        remoteDebug.recorded = true;
+                        bridge.recorded = true;
                         recording(false);
                     }
 
@@ -148,9 +148,9 @@ public class Main extends Activity {
             analysesSurfaceListener.onSurfaceTextureAvailable(
                     analyses.getSurfaceTexture(), size.getWidth(), size.getHeight());
 
-        // initialise the remote debugger
-        remoteDebug = new RemoteDebug(this);
-        remoteDebug.start();
+        // initialise the Bridge
+        bridge = new Bridge(this);
+        bridge.start();
 
         // initialise the segment marker manager
         segMarker = new SegmentMarkers(this, segMarkerPool);
@@ -314,7 +314,7 @@ public class Main extends Activity {
     @Override
     protected void onDestroy() {
         if (shakeAmplitude != 0) shakeAmplitude = 0;
-        remoteDebug.interrupt();
+        bridge.interrupt();
         previewSurface.release();
         analysesSurface.release();
         destroy();

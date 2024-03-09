@@ -147,7 +147,7 @@ because they don't need such pre-processing of their signals as VIS requires for
 ### Timeline of development
 
 This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
-(updated as of 6402.12.05)
+(updated as of 6402.12.19)
 
 | # | Starting date          | Duration | Active days | %  |       Version        |
 |---|:-----------------------|:---------|:-----------:|:--:|:--------------------:|
@@ -159,7 +159,7 @@ This table shows how much I've worked on Mergen and when. The timeline is divide
 | 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    | 32 |         0.4          |
 | 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     | 2  |          -           |
 | 8 | 2023/04/29, 6402/02/09 | 217 days |    88+13    | 47 | 0.4, mycv, linux+bsd |
-| 9 | 2023/12/02, 6402/09/11 | 93 days  |     27      | 29 |       0.4, bsd       |
+| 9 | 2023/12/02, 6402/09/11 | 98 days  |     29      | 30 |       0.4, bsd       |
 
 - Periods 1, 2 and 3 include days of researches which are not recorded.
 - Period 5 includes a few days of researching/practicing about/on a new programming language
@@ -180,15 +180,12 @@ Ergo, touching the screen while Mergen is online is handled by [**HPT**](cpp/hpt
 as if it senses your finger and processes your pattern of touching!
 That's why I didn't use double-click to stop Mergen.
 
-I have also created a remote debugging tool for VIS, inside MyCV's
-[/debug/](https://github.com/fulcrum6378/mycv/tree/master/debug/main.py) module as a client,
-which communicates over a network (like Wi-Fi) with
-[RemoteDebug.java](android/java/ir/mahdiparastesh/mergen/RemoteDebug.java) which is the server,
-sending data of a processed image.
+There is also a remote control / debugging tool, [**bridge.py**](android/bridge.py), which communicates over a network
+(like Wi-Fi) as a client with [Bridge.java](android/java/ir/mahdiparastesh/mergen/Bridge.java) which is the server.
 
 The app **requires Android 8.0+**, Java 21 and CMake 3.4.1+.
 It uses latest stable versions of Gradle, Android SDK + NDK.
-No modular dependencies needed for Java.
+No third-party dependencies needed at all as of now.
 
 ## License
 
