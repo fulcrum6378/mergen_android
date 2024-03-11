@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.graphics.SurfaceTexture;
 import android.os.Build;
 import android.os.Bundle;
@@ -186,7 +187,7 @@ public class Main extends Activity {
         public void onSurfaceTextureAvailable(SurfaceTexture st, int width, int height) {
             st.setDefaultBufferSize(width, height);
             analysesSurface = new Surface(st);
-            onAnalysesSurfaceCreated(analysesSurface);
+            onAnalysesSurfaceCreated(analysesSurface, getResources().getAssets());
         }
 
         @Override
@@ -361,7 +362,7 @@ public class Main extends Activity {
     private native void onPreviewSurfaceDestroyed();
 
     /** Lets Analyses be created. */
-    private native void onAnalysesSurfaceCreated(Surface surface);
+    private native void onAnalysesSurfaceCreated(Surface surface, AssetManager assets);
 
     /** Lets Analyses be destroyed. */
     private native void onAnalysesSurfaceDestroyed();

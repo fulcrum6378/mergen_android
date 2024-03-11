@@ -235,6 +235,10 @@ void Camera::ImageCallback(AImageReader *reader) {
     if (recording_) {
 #if BITMAP_STREAM
         used = bmp_stream_->HandleImage(image);
+#elif VIS_EDGE_DETECTION
+        used = !edgeDetection->locked;
+        if (used)
+            std::thread(&EdgeDetection::Process, edgeDetection, image).detach();
 #else
         used = !segmentation->locked;
         if (used)
@@ -251,6 +255,10 @@ Camera::~Camera() {
     // destroy objects related to image analysis
     delete segmentation;
     segmentation = nullptr;
+#if VIS_EDGE_DETECTION
+    delete edgeDetection;
+    edgeDetection = nullptr;
+#endif
 
     // destroy camera session
     if (readerWindow_) {

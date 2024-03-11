@@ -1,3 +1,4 @@
+#include <android/asset_manager_jni.h>
 #include <android/native_window_jni.h>
 #include <sys/stat.h>
 
@@ -100,8 +101,14 @@ Java_ir_mahdiparastesh_mergen_Main_onPreviewSurfaceDestroyed(JNIEnv *, jobject) 
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceCreated(JNIEnv *env, jobject, jobject surface) {
-#if VIS_ANALYSES
+Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceCreated(
+        JNIEnv *env, jobject, jobject surface, jobject assets) {
+#if VIS_EDGE_DETECTION
+    vis->edgeDetection = new EdgeDetection(AAssetManager_fromJava(env, assets),
+                                           ANativeWindow_fromSurface(env, surface));
+    ANativeWindow_setBuffersGeometry(vis->edgeDetection->analyses, W, H,
+                                     AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM);
+#elif VIS_ANALYSES
     vis->segmentation->analyses = ANativeWindow_fromSurface(env, surface);
     ANativeWindow_setBuffersGeometry(vis->segmentation->analyses, W, H,
                                      AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM);
@@ -110,7 +117,7 @@ Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceCreated(JNIEnv *env, jobject
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceDestroyed(JNIEnv *, jobject) {
-#if VIS_ANALYSES
+#if VIS_ANALYSES && !VIS_EDGE_DETECTION
     vis->segmentation->analyses = nullptr;
 #endif
 }

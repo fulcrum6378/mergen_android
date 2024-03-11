@@ -8,7 +8,7 @@ add_definitions(-DVK_USE_PLATFORM_ANDROID_KHR=1)
 add_library(main SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         global.hpp
-        #global_vk.hpp
+        global_vk.hpp
 
         aud/beeping.hpp
         aud/microphone.cpp
@@ -34,6 +34,8 @@ add_library(main SHARED
         vis/camera.cpp
         vis/camera.hpp
         vis/colouring.hpp
+        vis/edge_detection.hpp
+        vis/edge_detection.cpp
         vis/memory.cpp
         vis/memory.hpp
         vis/perception.hpp
@@ -58,7 +60,7 @@ target_link_libraries(main
         camera2ndk   # ACameraXXXXX
         log          # <android/log.h>::__android_log_assert
         mediandk     # AImageReader
-        #vulkan       # Vulkan headers
+        vulkan       # Vulkan headers
 )
 
 # Dependencies

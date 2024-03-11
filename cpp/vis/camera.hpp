@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "bitmap.hpp"
+#include "edge_detection.hpp"
 #include "segmentation.hpp"
 
 /** Together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone!
@@ -19,8 +20,10 @@
 #define IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
 // maximum image buffers
 #define MAX_BUF_COUNT 4
-// whether ot not save all image frames as a single bitmap stream, or do the segmentation instead
+// whether to save all image frames as a single bitmap stream, or do the segmentation instead
 #define BITMAP_STREAM false
+// whether to apply Edge Detection on image frames instead of Image Segmentation
+#define VIS_EDGE_DETECTION true
 
 enum class CaptureSessionState : int8_t {
     READY,      // session is ready
@@ -45,6 +48,9 @@ public:
 
 
     Segmentation *segmentation;
+#if VIS_EDGE_DETECTION
+    EdgeDetection *edgeDetection{};
+#endif
 
 private:
     void EnumerateCamera();
