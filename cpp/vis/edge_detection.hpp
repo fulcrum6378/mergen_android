@@ -57,8 +57,6 @@ private:
 
     void runCommandBuffer();
 
-    void saveRenderedImage();
-
 
     VkInstance instance;
 

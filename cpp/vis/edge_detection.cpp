@@ -305,7 +305,30 @@ void EdgeDetection::createCommandBuffer() {
 
 void EdgeDetection::Process(AImage *image) {
     runCommandBuffer();
-    saveRenderedImage();
+
+    void *mappedMemory = nullptr;
+    // Map the buffer memory, so that we can read from it on the CPU.
+    vkMapMemory(device, bufferMemory, 0, bufferSize, 0,
+                &mappedMemory);
+    auto *pmappedMemory = (Pixel *) mappedMemory;
+
+    // Get the color data from the buffer, and cast it to bytes.
+    // We save the data to a vector.
+    std::vector<unsigned char> img;
+    img.reserve(WIDTH * HEIGHT * 4);
+    for (int i = 0; i < WIDTH * HEIGHT; i += 1) {
+        img.push_back((unsigned char) (255.0f * (pmappedMemory[i].r)));
+        img.push_back((unsigned char) (255.0f * (pmappedMemory[i].g)));
+        img.push_back((unsigned char) (255.0f * (pmappedMemory[i].b)));
+        img.push_back((unsigned char) (255.0f * (pmappedMemory[i].a)));
+    }
+    // Done reading, so unmap.
+    vkUnmapMemory(device, bufferMemory);
+
+    /*unsigned error = lodepng::encode(
+            "/data/data/ir.mahdiparastesh.mergen/files/mandelbrot.png",
+            img, WIDTH, HEIGHT);
+    if (error) printf("encoder error %d: %s", error, lodepng_error_text(error));*/
 }
 
 /** Finally submit the recorded command buffer to a queue. */
@@ -333,32 +356,6 @@ void EdgeDetection::runCommandBuffer() {
             device, 1, &fence, VK_TRUE, 100000000000));
 
     vkDestroyFence(device, fence, nullptr);
-}
-
-void EdgeDetection::saveRenderedImage() {
-    void *mappedMemory = nullptr;
-    // Map the buffer memory, so that we can read from it on the CPU.
-    vkMapMemory(device, bufferMemory, 0, bufferSize, 0,
-                &mappedMemory);
-    auto *pmappedMemory = (Pixel *) mappedMemory;
-
-    // Get the color data from the buffer, and cast it to bytes.
-    // We save the data to a vector.
-    std::vector<unsigned char> image;
-    image.reserve(WIDTH * HEIGHT * 4);
-    for (int i = 0; i < WIDTH * HEIGHT; i += 1) {
-        image.push_back((unsigned char) (255.0f * (pmappedMemory[i].r)));
-        image.push_back((unsigned char) (255.0f * (pmappedMemory[i].g)));
-        image.push_back((unsigned char) (255.0f * (pmappedMemory[i].b)));
-        image.push_back((unsigned char) (255.0f * (pmappedMemory[i].a)));
-    }
-    // Done reading, so unmap.
-    vkUnmapMemory(device, bufferMemory);
-
-    /*unsigned error = lodepng::encode(
-            "/data/data/ir.mahdiparastesh.mergen/files/mandelbrot.png",
-            image, WIDTH, HEIGHT);
-    if (error) printf("encoder error %d: %s", error, lodepng_error_text(error));*/
 }
 
 EdgeDetection::~EdgeDetection() {

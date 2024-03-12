@@ -3,12 +3,12 @@ plugins { id 'com.android.application' }
 android {
     namespace 'ir.mahdiparastesh.mergen'
     compileSdk 34
-    buildToolsVersion = '34.0.0'
+    buildToolsVersion = '35.0.0-rc1'
     ndkVersion System.getenv('NDK_VERSION')
 
     defaultConfig {
         applicationId 'ir.mahdiparastesh.mergen'
-        minSdk 26
+        minSdk 29
         targetSdk 34
         versionCode 1
         versionName rootProject.ext.VERSION

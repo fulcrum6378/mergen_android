@@ -241,12 +241,8 @@ public class Main extends Activity {
             int mAct = ev.getActionMasked();
             if (mAct < 0 || mAct > 6) return false;
             int index = ev.getActionIndex();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) // THIS CHECK COSTS!
-                Main.this.onTouch(ev.getDeviceId(), mAct, ev.getPointerId(index),
-                        ev.getRawX(index), ev.getRawY(index), ev.getSize(index));
-            else
-                Main.this.onTouch(ev.getDeviceId(), mAct, ev.getPointerId(index),
-                        ev.getRawX(), ev.getRawY(), ev.getSize(index));
+            Main.this.onTouch(ev.getDeviceId(), mAct, ev.getPointerId(index),
+                    ev.getRawX(index), ev.getRawY(index), ev.getSize(index));
             return true;
         });
         isFinished = false;
