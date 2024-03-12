@@ -5,7 +5,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.AssetManager;
@@ -74,6 +73,7 @@ public class Main extends Activity {
         else onBackPressed();
     }
 
+    @SuppressLint("WrongConstant")
     private void prepare() {
         // JNI-related jobs
         handler = new Handler(Looper.getMainLooper()) {
@@ -121,7 +121,7 @@ public class Main extends Activity {
         };
         vib = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) ?
                 ((VibratorManager) getSystemService(Context.VIBRATOR_MANAGER_SERVICE))
-                        .getDefaultVibrator() : (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                        .getDefaultVibrator() : (Vibrator) getSystemService("vibrator");
 
         // initialise camera(s)
         create();
@@ -235,16 +235,18 @@ public class Main extends Activity {
      * @see <a href="https://stackoverflow.com/questions/28417492/android-multi-touch-pointers-with-
      * index-0-not-triggering-event-action-move">the problem</a>
      */
-    @SuppressLint("ObsoleteSdkInt")
-    @TargetApi(Build.VERSION_CODES.Q)
     private void onRecordingStarted() {
         root.setOnClickListener(null);
         root.setOnTouchListener((v, ev) -> {
             int mAct = ev.getActionMasked();
             if (mAct < 0 || mAct > 6) return false;
             int index = ev.getActionIndex();
-            Main.this.onTouch(ev.getDeviceId(), mAct, ev.getPointerId(index),
-                    ev.getRawX(index), ev.getRawY(index), ev.getSize(index));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) // THIS CHECK COSTS!
+                Main.this.onTouch(ev.getDeviceId(), mAct, ev.getPointerId(index),
+                        ev.getRawX(index), ev.getRawY(index), ev.getSize(index));
+            else
+                Main.this.onTouch(ev.getDeviceId(), mAct, ev.getPointerId(index),
+                        ev.getRawX(), ev.getRawY(), ev.getSize(index));
             return true;
         });
         isFinished = false;

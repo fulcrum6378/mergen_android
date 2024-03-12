@@ -4,10 +4,10 @@
 
     <uses-feature android:name="android.hardware.camera.any" />
 
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.INTERNET" /><!-- for WiFi debugging -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.CAMERA" /><!-- for VIS -->
+    <uses-permission android:name="android.permission.INTERNET" /><!-- for Bridge -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" /><!-- for AUD -->
+    <uses-permission android:name="android.permission.VIBRATE" /><!-- for MOV -->
 
     <application
         android:allowBackup="false"
@@ -17,13 +17,13 @@
         android:largeHeap="true"
         android:supportsRtl="false"
         android:theme="@style/Theme.Mergen"
-        tools:ignore="DataExtractionRules,UnusedAttribute">
+        tools:ignore="DataExtractionRules">
 
         <activity
             android:name=".Main"
             android:exported="true"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity">
+            tools:ignore="DiscouragedApi,LockedOrientationActivity">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
