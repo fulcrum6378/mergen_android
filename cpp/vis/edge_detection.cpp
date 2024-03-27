@@ -10,6 +10,16 @@ EdgeDetection::EdgeDetection(AAssetManager *assets, ANativeWindow *analyses) : a
     // Buffer size of the storage buffer that will contain the rendered mandelbrot set.
     bufferSize = sizeof(Pixel) * WIDTH * HEIGHT;
 
+#if VIS_ED_ANALYSES
+    auto *out = static_cast<uint32_t *>(analysesBuf.bits);
+    out += analysesBuf.width - 1;
+    for (int32_t yy = 0; yy < analysesBuf.height; yy++) {
+        for (int32_t xx = 0; xx < analysesBuf.width; xx++)
+            out[xx * analysesBuf.stride] = 0x000000FF; // ABGR
+        out -= 1; // move to the next column
+    }
+#endif
+
     createInstance();
 #if ENABLE_VALIDATION_LAYERS
     setupDebugMessenger();
@@ -304,6 +314,7 @@ void EdgeDetection::createCommandBuffer() {
 
 
 void EdgeDetection::Process(AImage *image) {
+    locked = true;
     runCommandBuffer();
 
     void *mappedMemory = nullptr;
@@ -325,10 +336,33 @@ void EdgeDetection::Process(AImage *image) {
     // Done reading, so unmap.
     vkUnmapMemory(device, bufferMemory);
 
-    /*unsigned error = lodepng::encode(
-            "/data/data/ir.mahdiparastesh.mergen/files/mandelbrot.png",
-            img, WIDTH, HEIGHT);
-    if (error) printf("encoder error %d: %s", error, lodepng_error_text(error));*/
+#if VIS_ED_ANALYSES
+    ANativeWindow_acquire(analyses);
+    if (ANativeWindow_lock(analyses, &analysesBuf, nullptr) == 0) {
+        auto *out = static_cast<uint8_t *>(analysesBuf.bits);
+        out += (analysesBuf.width * 4) - 4;
+        int index;
+        auto it = img.begin();
+        for (int32_t yy = 0; yy < analysesBuf.height; yy++) {
+            for (int32_t xx = 0; xx < analysesBuf.width; xx++) {
+                index = xx * analysesBuf.stride * 4;
+                out[index + 3] = *it;
+                it++;
+                out[index + 2] = *it;
+                it++;
+                out[index + 1] = *it;
+                it++;
+                out[index] = *it;
+                it++;
+            }
+            out -= 4; // move to the next column
+        }
+        ANativeWindow_unlockAndPost(analyses);
+    }
+    ANativeWindow_release(analyses);
+#endif
+    AImage_delete(image);
+    //locked = false;
 }
 
 /** Finally submit the recorded command buffer to a queue. */

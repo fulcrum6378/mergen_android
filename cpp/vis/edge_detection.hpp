@@ -1,10 +1,14 @@
 #ifndef VIS_EDGE_DETECTION_H
 #define VIS_EDGE_DETECTION_H
 
+#include <android/native_window.h>
 #include <atomic>
 #include <media/NdkImage.h>
 
 #include "../global_vk.hpp"
+
+// debug the results using the analyses window
+#define VIS_ED_ANALYSES true
 
 const int WIDTH = 720; // size of rendered mandelbrot set.
 const int HEIGHT = 720; // size of renderered mandelbrot set.
@@ -23,8 +27,10 @@ public:
     ~EdgeDetection();
 
 
-    std::atomic<bool> locked = true; // TODO false
+    std::atomic<bool> locked = false;
+#if VIS_ED_ANALYSES
     ANativeWindow *analyses = nullptr;
+#endif
 
 private:
     void createInstance();
@@ -99,6 +105,10 @@ private:
 
     /** size of `buffer` in bytes */
     uint32_t bufferSize;
+
+#if VIS_ED_ANALYSES
+    ANativeWindow_Buffer analysesBuf{};
+#endif
 };
 
 #endif //VIS_EDGE_DETECTION_H

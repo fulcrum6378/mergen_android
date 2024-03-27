@@ -3,7 +3,7 @@ plugins { id 'com.android.application' }
 android {
     namespace 'ir.mahdiparastesh.mergen'
     compileSdk 34
-    buildToolsVersion = '35.0.0-rc1'
+    buildToolsVersion = '35.0.0-rc2'
     ndkVersion System.getenv('NDK_VERSION')
 
     defaultConfig {
