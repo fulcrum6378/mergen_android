@@ -7,9 +7,6 @@
 #pragma ide diagnostic ignored "cppcoreguidelines-pro-type-member-init"
 
 EdgeDetection::EdgeDetection(AAssetManager *assets, ANativeWindow *analyses) : analyses(analyses) {
-    // Buffer size of the storage buffer that will contain the rendered mandelbrot set.
-    bufferSize = sizeof(Pixel) * WIDTH * HEIGHT;
-
 #if VIS_ED_ANALYSES
     auto *out = static_cast<uint32_t *>(analysesBuf.bits);
     out += analysesBuf.width - 1;
@@ -26,9 +23,13 @@ EdgeDetection::EdgeDetection(AAssetManager *assets, ANativeWindow *analyses) : a
 #endif
     pickPhysicalDevice();
     createLogicalDeviceAndQueue();
-    createBuffer();
+    bufferInSize = WIDTH * HEIGHT * 3u;
+    createBuffer(bufferIn, bufferInSize, bufferInMemory);
+    bufferOutSize = WIDTH * HEIGHT * sizeof(Pixel);
+    createBuffer(bufferOut, bufferOutSize, bufferOutMemory);
     createDescriptorSetLayout();
-    createDescriptorSet();
+    createDescriptorPool();
+    createDescriptorSets();
     createComputePipeline(assets);
     createCommandBuffer();
 }
@@ -92,9 +93,9 @@ void EdgeDetection::setupDebugMessenger() {
 #endif
 
 void EdgeDetection::pickPhysicalDevice() {
-    uint32_t deviceCount = 0;
+    uint32_t deviceCount = 0u;
     vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
-    assert(deviceCount > 0);
+    assert(deviceCount > 0u);
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(
             instance, &deviceCount, devices.data());
@@ -104,30 +105,30 @@ void EdgeDetection::pickPhysicalDevice() {
 }
 
 void EdgeDetection::createLogicalDeviceAndQueue() {
-    VkDeviceQueueCreateInfo queueCreateInfo = {};
+    VkDeviceQueueCreateInfo queueCreateInfo{};
     queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
     queueFamilyIndex = getComputeQueueFamilyIndex(); // find queue family with compute capability.
     queueCreateInfo.queueFamilyIndex = queueFamilyIndex;
-    queueCreateInfo.queueCount = 1; // create one queue in this family. We don't need more.
+    queueCreateInfo.queueCount = 1u; // create one queue in this family. We don't need more.
     float queuePriorities = 1.0;  // we only have one queue, so this is not that imporant.
     queueCreateInfo.pQueuePriorities = &queuePriorities;
 
-    VkDeviceCreateInfo deviceCreateInfo = {};
-    VkPhysicalDeviceFeatures deviceFeatures = {};
+    VkDeviceCreateInfo deviceCreateInfo{};
+    VkPhysicalDeviceFeatures deviceFeatures{};
     deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 #if ENABLE_VALIDATION_LAYERS // for Vulkan versions compatibility (no longer needed)
     deviceCreateInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
     deviceCreateInfo.ppEnabledLayerNames = validationLayers.data();
 #else
-    deviceCreateInfo.enabledLayerCount = 0;
+    deviceCreateInfo.enabledLayerCount = 0u;
 #endif
     deviceCreateInfo.pQueueCreateInfos = &queueCreateInfo;
-    deviceCreateInfo.queueCreateInfoCount = 1;
+    deviceCreateInfo.queueCreateInfoCount = 1u;
     deviceCreateInfo.pEnabledFeatures = &deviceFeatures;
 
     VK_CHECK(vkCreateDevice(
             physicalDevice, &deviceCreateInfo, nullptr, &device));
-    vkGetDeviceQueue(device, queueFamilyIndex, 0, &queue);
+    vkGetDeviceQueue(device, queueFamilyIndex, 0u, &queue);
 }
 
 uint32_t EdgeDetection::getComputeQueueFamilyIndex() {
@@ -139,10 +140,10 @@ uint32_t EdgeDetection::getComputeQueueFamilyIndex() {
             physicalDevice, &queueFamilyCount,
             queueFamilies.data());
 
-    uint32_t i = 0;
+    uint32_t i = 0u;
     for (; i < queueFamilies.size(); ++i) {
         VkQueueFamilyProperties props = queueFamilies[i];
-        if (props.queueCount > 0 && (props.queueFlags & VK_QUEUE_COMPUTE_BIT))
+        if (props.queueCount > 0u && (props.queueFlags & VK_QUEUE_COMPUTE_BIT))
             // found a queue with compute. We're done!
             break;
     }
@@ -150,28 +151,29 @@ uint32_t EdgeDetection::getComputeQueueFamilyIndex() {
     return i;
 }
 
-void EdgeDetection::createBuffer() {
-    VkBufferCreateInfo bufferCreateInfo = {};
-    bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferCreateInfo.size = bufferSize; // buffer size in bytes.
-    bufferCreateInfo.usage =
+void EdgeDetection::createBuffer(
+        VkBuffer &buffer, VkDeviceSize bufSize, VkDeviceMemory &bufMemory) {
+    VkBufferCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    createInfo.size = bufSize;
+    createInfo.usage =
             VK_BUFFER_USAGE_STORAGE_BUFFER_BIT; // buffer is used as a storage buffer.
-    bufferCreateInfo.sharingMode =
+    createInfo.sharingMode =
             VK_SHARING_MODE_EXCLUSIVE; // buffer is exclusive to a single queue family at a time.
     VK_CHECK(vkCreateBuffer(
-            device, &bufferCreateInfo, nullptr, &buffer));
+            device, &createInfo, nullptr, &buffer));
 
     VkMemoryRequirements memoryRequirements;
     vkGetBufferMemoryRequirements(device, buffer, &memoryRequirements);
 
-    VkMemoryAllocateInfo allocateInfo = {};
-    allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocateInfo.allocationSize = memoryRequirements.size; // specify required memory.
-    allocateInfo.memoryTypeIndex = findMemoryType(
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memoryRequirements.size; // specify required memory.
+    allocInfo.memoryTypeIndex = findMemoryType(
             memoryRequirements.memoryTypeBits);
-    VK_CHECK(vkAllocateMemory(device, &allocateInfo, nullptr, &bufferMemory));
+    VK_CHECK(vkAllocateMemory(device, &allocInfo, nullptr, &bufMemory));
 
-    VK_CHECK(vkBindBufferMemory(device, buffer, bufferMemory, 0));
+    VK_CHECK(vkBindBufferMemory(device, buffer, bufMemory, 0u));
 }
 
 /** Find memory type with desired properties. */
@@ -179,7 +181,7 @@ uint32_t EdgeDetection::findMemoryType(uint32_t memoryTypeBits) {
     VkPhysicalDeviceMemoryProperties memoryProperties;
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
 
-    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i)
+    for (uint32_t i = 0u; i < memoryProperties.memoryTypeCount; ++i)
         if ((memoryTypeBits & (1 << i)) &&
             ((memoryProperties.memoryTypes[i].propertyFlags & 6) == 6))
             return i;
@@ -187,58 +189,63 @@ uint32_t EdgeDetection::findMemoryType(uint32_t memoryTypeBits) {
 }
 
 void EdgeDetection::createDescriptorSetLayout() {
-    VkDescriptorSetLayoutBinding descriptorSetLayoutBinding = {};
-    descriptorSetLayoutBinding.binding = 0;
-    descriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    descriptorSetLayoutBinding.descriptorCount = 1;
-    descriptorSetLayoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+    std::array<VkDescriptorSetLayoutBinding, VIS_ED_N_BUFFERS> layoutBindings{};
+    for (size_t b = 0u; b < VIS_ED_N_BUFFERS; b++) {
+        layoutBindings[b].binding = b;
+        layoutBindings[b].descriptorCount = 1;
+        layoutBindings[b].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        layoutBindings[b].stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+    }
 
-    VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
-    descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    descriptorSetLayoutCreateInfo.bindingCount = 1; // only a single binding in this descriptor set layout.
-    descriptorSetLayoutCreateInfo.pBindings = &descriptorSetLayoutBinding;
+    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = layoutBindings.size();
+    layoutInfo.pBindings = layoutBindings.data();
     VK_CHECK(vkCreateDescriptorSetLayout(
-            device, &descriptorSetLayoutCreateInfo, nullptr,
-            &descriptorSetLayout));
+            device, &layoutInfo, nullptr, &descriptorSetLayout));
 }
 
-void EdgeDetection::createDescriptorSet() {
-    VkDescriptorPoolSize descriptorPoolSize = {};
-    descriptorPoolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    descriptorPoolSize.descriptorCount = 1;
+void EdgeDetection::createDescriptorPool() {
+    VkDescriptorPoolSize poolSize{};
+    poolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    poolSize.descriptorCount = VIS_ED_N_BUFFERS;
 
-    VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
-    descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    descriptorPoolCreateInfo.maxSets = 1; // we only need to allocate one descriptor set from the pool.
-    descriptorPoolCreateInfo.poolSizeCount = 1;
-    descriptorPoolCreateInfo.pPoolSizes = &descriptorPoolSize;
+    VkDescriptorPoolCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    createInfo.maxSets = VIS_ED_N_BUFFERS;
+    createInfo.poolSizeCount = 1u;
+    createInfo.pPoolSizes = &poolSize;
     VK_CHECK(vkCreateDescriptorPool(
-            device, &descriptorPoolCreateInfo, nullptr,
-            &descriptorPool));
+            device, &createInfo, nullptr, &descriptorPool));
+}
 
-    VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
-    descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    descriptorSetAllocateInfo.descriptorPool = descriptorPool; // pool to allocate from.
-    descriptorSetAllocateInfo.descriptorSetCount = 1; // allocate a single descriptor set.
-    descriptorSetAllocateInfo.pSetLayouts = &descriptorSetLayout;
+void EdgeDetection::createDescriptorSets() {
+    VkDescriptorSetAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = descriptorPool; // pool to allocate from.
+    allocInfo.descriptorSetCount = 1u;
+    allocInfo.pSetLayouts = &descriptorSetLayout;
+    descriptorSets.resize(VIS_ED_N_BUFFERS);
     VK_CHECK(vkAllocateDescriptorSets(
-            device, &descriptorSetAllocateInfo, &descriptorSet));
+            device, &allocInfo, descriptorSets.data()));
 
-    VkDescriptorBufferInfo descriptorBufferInfo = {};
-    descriptorBufferInfo.buffer = buffer;
-    descriptorBufferInfo.offset = 0;
-    descriptorBufferInfo.range = bufferSize;
+    for (size_t d = 0u; d < VIS_ED_N_BUFFERS; d++) {
+        VkDescriptorBufferInfo descriptorBufferInfo{};
+        descriptorBufferInfo.buffer = (d == 0u) ? bufferIn : bufferOut;
+        descriptorBufferInfo.offset = 0u;
+        descriptorBufferInfo.range = (d == 0u) ? bufferInSize : bufferOutSize;
 
-    VkWriteDescriptorSet writeDescriptorSet = {};
-    writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writeDescriptorSet.dstSet = descriptorSet; // write to this descriptor set.
-    writeDescriptorSet.dstBinding = 0; // write to the first, and only binding.
-    writeDescriptorSet.descriptorCount = 1; // update a single descriptor.
-    writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER; // storage buffer.
-    writeDescriptorSet.pBufferInfo = &descriptorBufferInfo;
-    vkUpdateDescriptorSets(
-            device, 1, &writeDescriptorSet, 0,
-            nullptr);
+        VkWriteDescriptorSet writeDescriptorSet{};
+        writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writeDescriptorSet.dstSet = descriptorSets[d]; // FIXME NULL
+        writeDescriptorSet.dstBinding = 0u;
+        writeDescriptorSet.descriptorCount = 1u;
+        writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        writeDescriptorSet.pBufferInfo = &descriptorBufferInfo;
+        vkUpdateDescriptorSets(
+                device, 1u, &writeDescriptorSet, 0u,
+                nullptr);
+    }
 }
 
 void EdgeDetection::createComputePipeline(AAssetManager *assets) {
@@ -246,55 +253,55 @@ void EdgeDetection::createComputePipeline(AAssetManager *assets) {
             "shaders/edge_detection.comp.spv", assets);
     VkShaderModule computeShaderModule;
 
-    VkShaderModuleCreateInfo createInfo = {};
+    VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = code.size();
     createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
     VK_CHECK(vkCreateShaderModule(
             device, &createInfo, nullptr, &computeShaderModule));
 
-    VkPipelineShaderStageCreateInfo shaderStageCreateInfo = {};
+    VkPipelineShaderStageCreateInfo shaderStageCreateInfo{};
     shaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStageCreateInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
     shaderStageCreateInfo.module = computeShaderModule;
     shaderStageCreateInfo.pName = "main";
 
-    VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
+    VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
     pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutCreateInfo.setLayoutCount = 1;
+    pipelineLayoutCreateInfo.setLayoutCount = 1u;
     pipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
     VK_CHECK(vkCreatePipelineLayout(
             device, &pipelineLayoutCreateInfo, nullptr,
             &pipelineLayout));
 
-    VkComputePipelineCreateInfo pipelineCreateInfo = {};
+    VkComputePipelineCreateInfo pipelineCreateInfo{};
     pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
     pipelineCreateInfo.stage = shaderStageCreateInfo;
     pipelineCreateInfo.layout = pipelineLayout;
 
     VK_CHECK(vkCreateComputePipelines(
-            device, VK_NULL_HANDLE, 1, &pipelineCreateInfo,
+            device, VK_NULL_HANDLE, 1u, &pipelineCreateInfo,
             nullptr, &pipeline));
     vkDestroyShaderModule(device, computeShaderModule, nullptr);
 }
 
 void EdgeDetection::createCommandBuffer() {
-    VkCommandPoolCreateInfo commandPoolCreateInfo = {};
+    VkCommandPoolCreateInfo commandPoolCreateInfo{};
     commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     commandPoolCreateInfo.flags = 0;
     commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndex;
     VK_CHECK(vkCreateCommandPool(
             device, &commandPoolCreateInfo, nullptr, &commandPool));
 
-    VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
+    VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
     commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     commandBufferAllocateInfo.commandPool = commandPool;
     commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    commandBufferAllocateInfo.commandBufferCount = 1;
+    commandBufferAllocateInfo.commandBufferCount = 1u;
     VK_CHECK(vkAllocateCommandBuffers(
             device, &commandBufferAllocateInfo, &commandBuffer));
 
-    VkCommandBufferBeginInfo beginInfo = {};
+    VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     // the buffer is only submitted and used once in this application.
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -303,8 +310,8 @@ void EdgeDetection::createCommandBuffer() {
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
     vkCmdBindDescriptorSets(
             commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipelineLayout,
-            0, 1, &descriptorSet, 0,
-            nullptr);
+            0u, descriptorSets.size(), descriptorSets.data(),
+            0u, nullptr);
 
     vkCmdDispatch(commandBuffer, (uint32_t) std::ceil(WIDTH / float(WORKGROUP_SIZE)),
                   (uint32_t) std::ceil(HEIGHT / float(WORKGROUP_SIZE)), 1);
@@ -315,18 +322,52 @@ void EdgeDetection::createCommandBuffer() {
 
 void EdgeDetection::Process(AImage *image) {
     locked = true;
-    runCommandBuffer();
+
+    /*void *data;
+    vkMapMemory(device, bufferInMemory, 0, bufferInSize, 0, &data);
+    memcpy(data, vertices.data(), bufferInSize);
+    vkUnmapMemory(device, bufferInMemory);*/
+
+
+    /**** BEGIN RUN COMMAND BUFFER ****/
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1u;
+    submitInfo.pCommandBuffers = &commandBuffer; // the command buffer to submit.
+
+    VkFence fence;
+    VkFenceCreateInfo fenceCreateInfo{};
+    fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceCreateInfo.flags = 0;
+    VK_CHECK(vkCreateFence(device, &fenceCreateInfo, nullptr, &fence));
+
+    // We submit the command buffer on the queue, at the same time giving a fence.
+    VK_CHECK(vkQueueSubmit(queue, 1u, &submitInfo, fence));
+
+    /* The command will not have finished executing until the fence is signalled.
+     * So we wait here.
+     * We will directly after this read our buffer from the GPU,
+     * and we will not be sure that the command has finished executing unless we wait for the fence.
+     * Hence, we use a fence here. */
+    VK_CHECK(vkWaitForFences(
+            device, 1, &fence, VK_TRUE, 100000000000));
+
+    vkDestroyFence(device, fence, nullptr);
+
+    /**** END RUN COMMAND BUFFER ****/
+
 
     void *mappedMemory = nullptr;
     // Map the buffer memory, so that we can read from it on the CPU.
-    vkMapMemory(device, bufferMemory, 0, bufferSize, 0,
+    vkMapMemory(device, bufferOutMemory, 0u, bufferOutSize, 0,
                 &mappedMemory);
     auto *pmappedMemory = (Pixel *) mappedMemory;
 
     // Get the color data from the buffer, and cast it to bytes.
     // We save the data to a vector.
     std::vector<unsigned char> img;
-    img.reserve(WIDTH * HEIGHT * 4);
+    img.reserve(WIDTH * HEIGHT * 4u);
     for (int i = 0; i < WIDTH * HEIGHT; i += 1) {
         img.push_back((unsigned char) (255.0f * (pmappedMemory[i].r)));
         img.push_back((unsigned char) (255.0f * (pmappedMemory[i].g)));
@@ -334,7 +375,7 @@ void EdgeDetection::Process(AImage *image) {
         img.push_back((unsigned char) (255.0f * (pmappedMemory[i].a)));
     }
     // Done reading, so unmap.
-    vkUnmapMemory(device, bufferMemory);
+    vkUnmapMemory(device, bufferOutMemory);
 
 #if VIS_ED_ANALYSES
     ANativeWindow_acquire(analyses);
@@ -365,36 +406,10 @@ void EdgeDetection::Process(AImage *image) {
     //locked = false;
 }
 
-/** Finally submit the recorded command buffer to a queue. */
-void EdgeDetection::runCommandBuffer() {
-    VkSubmitInfo submitInfo = {};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer; // the command buffer to submit.
-
-    VkFence fence;
-    VkFenceCreateInfo fenceCreateInfo = {};
-    fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fenceCreateInfo.flags = 0;
-    VK_CHECK(vkCreateFence(device, &fenceCreateInfo, nullptr, &fence));
-
-    // We submit the command buffer on the queue, at the same time giving a fence.
-    VK_CHECK(vkQueueSubmit(queue, 1, &submitInfo, fence));
-
-    /* The command will not have finished executing until the fence is signalled.
-     * So we wait here.
-     * We will directly after this read our buffer from the GPU,
-     * and we will not be sure that the command has finished executing unless we wait for the fence.
-     * Hence, we use a fence here. */
-    VK_CHECK(vkWaitForFences(
-            device, 1, &fence, VK_TRUE, 100000000000));
-
-    vkDestroyFence(device, fence, nullptr);
-}
-
 EdgeDetection::~EdgeDetection() {
-    vkFreeMemory(device, bufferMemory, nullptr);
-    vkDestroyBuffer(device, buffer, nullptr);
+    vkFreeMemory(device, bufferOutMemory, nullptr);
+    vkDestroyBuffer(device, bufferOut, nullptr);
+    vkDestroyBuffer(device, bufferIn, nullptr);
     vkDestroyDescriptorPool(device, descriptorPool, nullptr);
     vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);

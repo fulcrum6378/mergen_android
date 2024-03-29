@@ -11,7 +11,11 @@ struct Pixel{
     vec4 value;
 };
 
-layout(std140, binding = 0) buffer buf {
+layout(std140, binding = 0) readonly buffer bufIn {
+    uint arr[];
+};
+
+layout(std140, binding = 1) buffer bufOut {
     Pixel imageData[];
 };
 

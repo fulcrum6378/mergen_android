@@ -9,6 +9,7 @@
 
 // debug the results using the analyses window
 #define VIS_ED_ANALYSES true
+#define VIS_ED_N_BUFFERS 2u
 
 const int WIDTH = 720; // size of rendered mandelbrot set.
 const int HEIGHT = 720; // size of renderered mandelbrot set.
@@ -49,19 +50,19 @@ private:
 
     uint32_t getComputeQueueFamilyIndex();
 
-    void createBuffer();
+    void createBuffer(VkBuffer &buffer, VkDeviceSize bufSize, VkDeviceMemory &bufMemory);
 
     uint32_t findMemoryType(uint32_t memoryTypeBits);
 
     void createDescriptorSetLayout();
 
-    void createDescriptorSet();
+    void createDescriptorPool();
+
+    void createDescriptorSets();
 
     void createComputePipeline(AAssetManager *newManager);
 
     void createCommandBuffer();
-
-    void runCommandBuffer();
 
 
     VkInstance instance;
@@ -84,9 +85,9 @@ private:
     VkQueue queue;
     uint32_t queueFamilyIndex;
 
-    VkDescriptorPool descriptorPool;
-    VkDescriptorSet descriptorSet;
     VkDescriptorSetLayout descriptorSetLayout;
+    VkDescriptorPool descriptorPool;
+    std::vector<VkDescriptorSet> descriptorSets;
 
     /** The pipeline specifies the pipeline that all graphics and compute commands pass though
      * in Vulkan. We will be creating a simple compute pipeline in this application. */
@@ -98,13 +99,13 @@ private:
     VkCommandPool commandPool;
     VkCommandBuffer commandBuffer;
 
-    /** The mandelbrot set will be rendered to this buffer.
-     * The memory that backs the buffer is bufferMemory. */
-    VkBuffer buffer;
-    VkDeviceMemory bufferMemory;
-
-    /** size of `buffer` in bytes */
-    uint32_t bufferSize;
+    /** The memory that backs the buffer is bufferMemory. */
+    VkDeviceMemory bufferInMemory;
+    VkBuffer bufferIn;
+    uint32_t bufferInSize;
+    VkDeviceMemory bufferOutMemory;
+    VkBuffer bufferOut;
+    uint32_t bufferOutSize;
 
 #if VIS_ED_ANALYSES
     ANativeWindow_Buffer analysesBuf{};

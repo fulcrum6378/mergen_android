@@ -31,7 +31,7 @@ void Segmentation::Process(AImage *image, const bool *recording) {
     env->CallVoidMethod(main_, *jmSignal_, 0);
 
     // 1. loading; bring separate YUV data into the multidimensional array of pixels `arr`
-    auto t0 = chrono::system_clock::now();
+    auto checkPoint = chrono::system_clock::now();
     AImageCropRect srcRect;
     AImage_getCropRect(image, &srcRect);
     int32_t yStride, uvStride;
@@ -60,10 +60,10 @@ void Segmentation::Process(AImage *image, const bool *recording) {
     }
     AImage_delete(image);
     auto delta1 = chrono::duration_cast<chrono::milliseconds>(
-            chrono::system_clock::now() - t0).count();
+            chrono::system_clock::now() - checkPoint).count();
 
     // 2. segmentation
-    t0 = chrono::system_clock::now();
+    checkPoint = chrono::system_clock::now();
     uint32_t nextSeg = 1u;
     uint16_t thisY = 0u, thisX = 0u;
     int64_t last; // must be signed
@@ -154,10 +154,10 @@ void Segmentation::Process(AImage *image, const bool *recording) {
         segments.push_back(seg);
     }
     auto delta2 = chrono::duration_cast<chrono::milliseconds>(
-            chrono::system_clock::now() - t0).count();
+            chrono::system_clock::now() - checkPoint).count();
 
     // 3. dissolution
-    t0 = chrono::system_clock::now();
+    checkPoint = chrono::system_clock::now();
 #if SEG_MIN_SIZE != 1u
     uint32_t absorber_i, size_bef = segments.size(), removal = 1u;
     Segment *absorber;
@@ -179,10 +179,10 @@ void Segmentation::Process(AImage *image, const bool *recording) {
     LOGI("Total segments: %zu", segments.size());
 #endif
     auto delta3 = chrono::duration_cast<chrono::milliseconds>(
-            chrono::system_clock::now() - t0).count();
+            chrono::system_clock::now() - checkPoint).count();
 
     // 4. measurement of average colours and dimensions
-    t0 = chrono::system_clock::now();
+    checkPoint = chrono::system_clock::now();
     uint32_t l_;
 #if SEG_MIN_SIZE != 1u
     array<uint8_t, 3u> *col;
@@ -237,10 +237,10 @@ void Segmentation::Process(AImage *image, const bool *recording) {
         s_index[seg.id] = &seg;
     }
     auto delta4 = chrono::duration_cast<chrono::milliseconds>(
-            chrono::system_clock::now() - t0).count();
+            chrono::system_clock::now() - checkPoint).count();
 
     // 5. tracing border pixels
-    t0 = chrono::system_clock::now();
+    checkPoint = chrono::system_clock::now();
     for (y = 0u; y < H; y++) {
         if (y == 0u || y == H - 1u)
             for (x = 0u; x < W; x++)
@@ -273,10 +273,10 @@ void Segmentation::Process(AImage *image, const bool *recording) {
     ANativeWindow_release(analyses);
 #endif
     auto delta5 = chrono::duration_cast<chrono::milliseconds>(
-            chrono::system_clock::now() - t0).count();
+            chrono::system_clock::now() - checkPoint).count();
 
     // 6. tracking; sort segments, track them from a previous frame and measure their differences
-    t0 = chrono::system_clock::now();
+    checkPoint = chrono::system_clock::now();
     sort(segments.begin(), segments.end(),
          [](const Segment &a, const Segment &b) { return a.p.size() > b.p.size(); });
     float nearest_dist, dist;
@@ -402,7 +402,7 @@ void Segmentation::Process(AImage *image, const bool *recording) {
 #endif
     if (sidInc > 32767u) sidInc -= 32767u;
     auto delta6 = chrono::duration_cast<chrono::milliseconds>(
-            chrono::system_clock::now() - t0).count();
+            chrono::system_clock::now() - checkPoint).count();
 
     // summary: loading + segmentation + dissolution + measurement + tracing + tracking
     LOGI("Delta times: %lld + %lld + %lld + %lld + %lld + %lld => %lld",
