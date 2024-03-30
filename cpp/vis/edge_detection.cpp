@@ -183,7 +183,7 @@ uint32_t EdgeDetection::findMemoryType(uint32_t memoryTypeBits) {
 
     for (uint32_t i = 0u; i < memoryProperties.memoryTypeCount; ++i)
         if ((memoryTypeBits & (1 << i)) &&
-            ((memoryProperties.memoryTypes[i].propertyFlags & 6) == 6))
+            ((memoryProperties.memoryTypes[i].propertyFlags & 6u) == 6u))
             return i;
     return -1;
 }
@@ -240,7 +240,7 @@ void EdgeDetection::createDescriptorSet() {
     writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     writeDescriptorSet.dstSet = descriptorSet;
     writeDescriptorSet.dstBinding = 0u;
-    writeDescriptorSet.descriptorCount = 1u;
+    writeDescriptorSet.descriptorCount = 2u;
     writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     writeDescriptorSet.pBufferInfo = bufferInfos.data();
     vkUpdateDescriptorSets(
@@ -288,7 +288,7 @@ void EdgeDetection::createComputePipeline(AAssetManager *assets) {
 void EdgeDetection::createCommandBuffer() {
     VkCommandPoolCreateInfo commandPoolCreateInfo{};
     commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    commandPoolCreateInfo.flags = 0;
+    commandPoolCreateInfo.flags = 0u;
     commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndex;
     VK_CHECK(vkCreateCommandPool(
             device, &commandPoolCreateInfo, nullptr, &commandPool));
@@ -314,7 +314,7 @@ void EdgeDetection::createCommandBuffer() {
             0u, nullptr);
 
     vkCmdDispatch(commandBuffer, (uint32_t) std::ceil(WIDTH / float(WORKGROUP_SIZE)),
-                  (uint32_t) std::ceil(HEIGHT / float(WORKGROUP_SIZE)), 1);
+                  (uint32_t) std::ceil(HEIGHT / float(WORKGROUP_SIZE)), 1u);
 
     VK_CHECK(vkEndCommandBuffer(commandBuffer));
 }
@@ -324,12 +324,12 @@ void EdgeDetection::Process(AImage *image) {
     locked = true;
 
     /*void *data;
-    vkMapMemory(device, bufferInMemory, 0, bufferInSize, 0, &data);
+    vkMapMemory(device, bufferInMemory, 0u, bufferInSize, 0u, &data);
     memcpy(data, vertices.data(), bufferInSize);
     vkUnmapMemory(device, bufferInMemory);*/
 
 
-    /**** BEGIN RUN COMMAND BUFFER ****/
+    /***** BEGIN RUN COMMAND BUFFER *****/
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -339,7 +339,7 @@ void EdgeDetection::Process(AImage *image) {
     VkFence fence;
     VkFenceCreateInfo fenceCreateInfo{};
     fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fenceCreateInfo.flags = 0;
+    fenceCreateInfo.flags = 0u;
     VK_CHECK(vkCreateFence(device, &fenceCreateInfo, nullptr, &fence));
 
     // We submit the command buffer on the queue, at the same time giving a fence.
@@ -351,16 +351,15 @@ void EdgeDetection::Process(AImage *image) {
      * and we will not be sure that the command has finished executing unless we wait for the fence.
      * Hence, we use a fence here. */
     VK_CHECK(vkWaitForFences(
-            device, 1, &fence, VK_TRUE, 100000000000));
+            device, 1u, &fence, VK_TRUE, 100000000000u));
 
     vkDestroyFence(device, fence, nullptr);
 
-    /**** END RUN COMMAND BUFFER ****/
+    /***** END RUN COMMAND BUFFER *****/
 
 
     void *mappedMemory = nullptr;
-    // Map the buffer memory, so that we can read from it on the CPU.
-    vkMapMemory(device, bufferOutMemory, 0u, bufferOutSize, 0,
+    vkMapMemory(device, bufferOutMemory, 0u, bufferOutSize, 0u,
                 &mappedMemory);
     auto *pmappedMemory = (Pixel *) mappedMemory;
 
