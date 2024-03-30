@@ -1,7 +1,10 @@
+#include <chrono>
 #include <cmath>
 #include <cstring>
 
 #include "edge_detection.hpp"
+
+using namespace std;
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "cppcoreguidelines-pro-type-member-init"
@@ -37,7 +40,7 @@ EdgeDetection::EdgeDetection(AAssetManager *assets, ANativeWindow *analyses) : a
 #pragma clang diagnostic pop
 
 void EdgeDetection::createInstance() {
-    std::vector<const char *> requiredExtensions;
+    vector<const char *> requiredExtensions;
 #if ENABLE_VALIDATION_LAYERS
     assert(checkValidationLayerSupport());
     requiredExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -68,7 +71,7 @@ bool EdgeDetection::checkValidationLayerSupport() {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
-    std::vector<VkLayerProperties> availableLayers(layerCount);
+    vector<VkLayerProperties> availableLayers(layerCount);
     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
     for (const char *layerName: validationLayers) {
@@ -96,7 +99,7 @@ void EdgeDetection::pickPhysicalDevice() {
     uint32_t deviceCount = 0u;
     vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
     assert(deviceCount > 0u);
-    std::vector<VkPhysicalDevice> devices(deviceCount);
+    vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(
             instance, &deviceCount, devices.data());
     VkPhysicalDevice &first = devices[0];
@@ -135,7 +138,7 @@ uint32_t EdgeDetection::getComputeQueueFamilyIndex() {
     uint32_t queueFamilyCount;
     vkGetPhysicalDeviceQueueFamilyProperties(
             physicalDevice, &queueFamilyCount, nullptr);
-    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(
             physicalDevice, &queueFamilyCount,
             queueFamilies.data());
@@ -189,7 +192,7 @@ uint32_t EdgeDetection::findMemoryType(uint32_t memoryTypeBits) {
 }
 
 void EdgeDetection::createDescriptorSetLayout() {
-    std::array<VkDescriptorSetLayoutBinding, VIS_ED_N_BUFFERS> layoutBindings{};
+    array<VkDescriptorSetLayoutBinding, VIS_ED_N_BUFFERS> layoutBindings{};
     for (size_t b = 0u; b < VIS_ED_N_BUFFERS; b++) {
         layoutBindings[b].binding = b;
         layoutBindings[b].descriptorCount = 1;
@@ -228,7 +231,7 @@ void EdgeDetection::createDescriptorSet() {
     VK_CHECK(vkAllocateDescriptorSets(
             device, &allocInfo, &descriptorSet));
 
-    std::array<VkDescriptorBufferInfo, VIS_ED_N_BUFFERS> bufferInfos{};
+    array<VkDescriptorBufferInfo, VIS_ED_N_BUFFERS> bufferInfos{};
     bufferInfos[0].buffer = bufferIn;
     bufferInfos[0].offset = 0u;
     bufferInfos[0].range = bufferInSize;
@@ -313,8 +316,8 @@ void EdgeDetection::createCommandBuffer() {
             0u, 1u, &descriptorSet,
             0u, nullptr);
 
-    vkCmdDispatch(commandBuffer, (uint32_t) std::ceil(WIDTH / float(WORKGROUP_SIZE)),
-                  (uint32_t) std::ceil(HEIGHT / float(WORKGROUP_SIZE)), 1u);
+    vkCmdDispatch(commandBuffer, (uint32_t) ceil(WIDTH / float(WORKGROUP_SIZE)),
+                  (uint32_t) ceil(HEIGHT / float(WORKGROUP_SIZE)), 1u);
 
     VK_CHECK(vkEndCommandBuffer(commandBuffer));
 }
@@ -323,13 +326,51 @@ void EdgeDetection::createCommandBuffer() {
 void EdgeDetection::Process(AImage *image) {
     locked = true;
 
-    /*void *data;
+    // 1. loading; bring separate YUV data into the multidimensional array of pixels `arr`
+    auto checkPoint = chrono::system_clock::now();
+    AImageCropRect srcRect;
+    AImage_getCropRect(image, &srcRect);
+    int32_t yStride, uvStride;
+    uint8_t *yPixel, *uPixel, *vPixel;
+    int32_t yLen, uLen, vLen;
+    AImage_getPlaneRowStride(image, 0, &yStride);
+    AImage_getPlaneRowStride(image, 1, &uvStride);
+    AImage_getPlaneData(image, 0, &yPixel, &yLen);
+    AImage_getPlaneData(image, 1, &uPixel, &uLen);
+    AImage_getPlaneData(image, 2, &vPixel, &vLen);
+    int32_t uvPixelStride;
+    AImage_getPlanePixelStride(image, 1, &uvPixelStride);
+
+    for (uint16_t y = 0u; y < HEIGHT; y++) {
+        const uint8_t *pY = yPixel + yStride * (y + srcRect.top) + srcRect.left;
+        int32_t uv_row_start = uvStride * ((y + srcRect.top) >> 1);
+        const uint8_t *pU = uPixel + uv_row_start + (srcRect.left >> 1);
+        const uint8_t *pV = vPixel + uv_row_start + (srcRect.left >> 1);
+
+        for (uint16_t x = 0u; x < WIDTH; x++) {
+            const int32_t uv_offset = (x >> 1) * uvPixelStride;
+            arr[y][x][0] = pY[x];
+            arr[y][x][1] = pU[uv_offset];
+            arr[y][x][2] = pV[uv_offset];
+        }
+    }
+    AImage_delete(image);
+    auto delta1 = chrono::duration_cast<chrono::milliseconds>(
+            chrono::system_clock::now() - checkPoint).count();
+
+
+    // 2. input; send image data to GPU
+    checkPoint = chrono::system_clock::now();
+    void *data;
     vkMapMemory(device, bufferInMemory, 0u, bufferInSize, 0u, &data);
-    memcpy(data, vertices.data(), bufferInSize);
-    vkUnmapMemory(device, bufferInMemory);*/
+    memcpy(data, arr, bufferInSize);
+    vkUnmapMemory(device, bufferInMemory);
+    auto delta2 = chrono::duration_cast<chrono::milliseconds>(
+            chrono::system_clock::now() - checkPoint).count();
 
 
-    /***** BEGIN RUN COMMAND BUFFER *****/
+    // 3. run command buffer
+    checkPoint = chrono::system_clock::now();
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -344,7 +385,6 @@ void EdgeDetection::Process(AImage *image) {
 
     // We submit the command buffer on the queue, at the same time giving a fence.
     VK_CHECK(vkQueueSubmit(queue, 1u, &submitInfo, fence));
-
     /* The command will not have finished executing until the fence is signalled.
      * So we wait here.
      * We will directly after this read our buffer from the GPU,
@@ -352,20 +392,17 @@ void EdgeDetection::Process(AImage *image) {
      * Hence, we use a fence here. */
     VK_CHECK(vkWaitForFences(
             device, 1u, &fence, VK_TRUE, 100000000000u));
-
     vkDestroyFence(device, fence, nullptr);
+    auto delta3 = chrono::duration_cast<chrono::milliseconds>(
+            chrono::system_clock::now() - checkPoint).count();
 
-    /***** END RUN COMMAND BUFFER *****/
-
-
+    // 4. output; read processed data from GPU and process it
+    checkPoint = chrono::system_clock::now();
     void *mappedMemory = nullptr;
     vkMapMemory(device, bufferOutMemory, 0u, bufferOutSize, 0u,
                 &mappedMemory);
     auto *pmappedMemory = (Pixel *) mappedMemory;
-
-    // Get the color data from the buffer, and cast it to bytes.
-    // We save the data to a vector.
-    std::vector<unsigned char> img;
+    vector<unsigned char> img;
     img.reserve(WIDTH * HEIGHT * 4u);
     for (int i = 0; i < WIDTH * HEIGHT; i += 1) {
         img.push_back((unsigned char) (255.0f * (pmappedMemory[i].r)));
@@ -373,9 +410,12 @@ void EdgeDetection::Process(AImage *image) {
         img.push_back((unsigned char) (255.0f * (pmappedMemory[i].b)));
         img.push_back((unsigned char) (255.0f * (pmappedMemory[i].a)));
     }
-    // Done reading, so unmap.
     vkUnmapMemory(device, bufferOutMemory);
+    auto delta4 = chrono::duration_cast<chrono::milliseconds>(
+            chrono::system_clock::now() - checkPoint).count();
 
+    // 5. analyses; display the debug results in the window
+    checkPoint = chrono::system_clock::now();
 #if VIS_ED_ANALYSES
     ANativeWindow_acquire(analyses);
     if (ANativeWindow_lock(analyses, &analysesBuf, nullptr) == 0) {
@@ -401,7 +441,15 @@ void EdgeDetection::Process(AImage *image) {
     }
     ANativeWindow_release(analyses);
 #endif
-    AImage_delete(image);
+    auto delta5 = chrono::duration_cast<chrono::milliseconds>(
+            chrono::system_clock::now() - checkPoint).count();
+
+    // summary: loading + input + runCommandBuffer + output + analyses
+    LOGI("Delta times: %lld + %lld + %lld + %lld + %lld => %lld",// + %lld
+         delta1, delta2, delta3, delta4, delta5, /*delta6,*/
+         delta1 + delta2 + delta3 + delta4 + delta5/* + delta6*/);
+    LOGI("----------------------------------");
+
     //locked = false;
 }
 

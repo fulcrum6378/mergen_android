@@ -108,6 +108,9 @@ private:
     VkCommandBuffer commandBuffer;
 
 
+    // multidimensional array of pixels
+    uint8_t arr[HEIGHT][WIDTH][3]{};
+
 #if VIS_ED_ANALYSES
     ANativeWindow_Buffer analysesBuf{};
 #endif
