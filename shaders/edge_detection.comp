@@ -4,25 +4,25 @@
 #define H 720
 #define W 720
 #define WORKGROUP_SIZE 18
+// maxComputeWorkGroupInvocations in Mali G72 => 384
 
 struct Pixel{
     vec4 value;
 };
 
 layout(local_size_x = WORKGROUP_SIZE, local_size_y = WORKGROUP_SIZE, local_size_z = 1) in;
-// maxComputeWorkGroupInvocations in Mali G72 => 384
-
 layout(std140, binding = 0) readonly buffer bufI {
-    uint arr[H][W]; // FIXME it's 32-bit but we got 24-bit
+    uint arr[H][W];
 };
 layout(std140, binding = 1) buffer bufO {
     Pixel statuses[];
 };
 
-bool compareColour(uint a, uint b) {
-    return abs(float(a >> 16) - float(b >> 16)) <= 4 &&
-        abs(float(int(a >> 8) & 0xFF) - float(int(b >> 8) & 0xFF)) <= 4 &&
-        abs(float(int(a) & 0xFF) - float(int(b) & 0xFF)) <= 4;
+bool compareColours(uint a, uint b) { // FIXME ERROR IS THROWN FROM HERE
+    return (int(a) - int(b)) <= 4;
+    /*abs(float(int(a) >> 16) - float(int(b) >> 16)) <= 4.0f &&
+        abs(float(int(a >> 8) & 0xFF) - float(int(b >> 8) & 0xFF)) <= 4.0f &&
+        abs(float(int(a) & 0xFF) - float(int(b) & 0xFF)) <= 4.0f*/;
 }
 
 void main() {
@@ -34,21 +34,21 @@ void main() {
     bool b = false,
         nt = y != 0, nb = y != H - 1,
         nl = x != 0, nr = x != W - 1;
-    if (nt && compareColour(arr[y][x], arr[y - 1][x])) // top
+    if (nt && compareColours(arr[y][x], arr[y - 1][x])) // top
         b = true;
-    if (nt && nr && compareColour(arr[y][x], arr[y - 1][x + 1])) // top-right
+    if (nt && nr && compareColours(arr[y][x], arr[y - 1][x + 1])) // top-right
         b = true;
-    if (nr && compareColour(arr[y][x], arr[y][x + 1])) // right
+    if (nr && compareColours(arr[y][x], arr[y][x + 1])) // right
         b = true;
-    if (nb && nr && compareColour(arr[y][x], arr[y + 1][x + 1])) // bottom-right
+    if (nb && nr && compareColours(arr[y][x], arr[y + 1][x + 1])) // bottom-right
         b = true;
-    if (nb && compareColour(arr[y][x], arr[y + 1][x])) // bottom
+    if (nb && compareColours(arr[y][x], arr[y + 1][x])) // bottom
         b = true;
-    if (nb && nl && compareColour(arr[y][x], arr[y + 1][x - 1])) // bottom-left
+    if (nb && nl && compareColours(arr[y][x], arr[y + 1][x - 1])) // bottom-left
         b = true;
-    if (nl && compareColour(arr[y][x], arr[y][x - 1])) // left
+    if (nl && compareColours(arr[y][x], arr[y][x - 1])) // left
         b = true;
-    if (nt && nl && compareColour(arr[y][x], arr[y - 1][x - 1])) // top-left
+    if (nt && nl && compareColours(arr[y][x], arr[y - 1][x - 1])) // top-left
         b = true;
 
     statuses[W * y + x].value = vec4(1.0, 0.0, 0.0, b ? 1.0 : 0.0);

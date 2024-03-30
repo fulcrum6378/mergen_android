@@ -109,7 +109,7 @@ private:
 
 
     // multidimensional array of pixels
-    uint8_t arr[HEIGHT][WIDTH][3]{};
+    uint32_t arr[HEIGHT][WIDTH]{};
 
 #if VIS_ED_ANALYSES
     ANativeWindow_Buffer analysesBuf{};

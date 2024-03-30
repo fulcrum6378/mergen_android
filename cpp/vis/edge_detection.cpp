@@ -26,7 +26,7 @@ EdgeDetection::EdgeDetection(AAssetManager *assets, ANativeWindow *analyses) : a
 #endif
     pickPhysicalDevice();
     createLogicalDeviceAndQueue();
-    bufferInSize = WIDTH * HEIGHT * 3u;
+    bufferInSize = sizeof(arr);
     createBuffer(bufferIn, bufferInSize, bufferInMemory);
     bufferOutSize = WIDTH * HEIGHT * sizeof(Pixel);
     createBuffer(bufferOut, bufferOutSize, bufferOutMemory);
@@ -349,9 +349,7 @@ void EdgeDetection::Process(AImage *image) {
 
         for (uint16_t x = 0u; x < WIDTH; x++) {
             const int32_t uv_offset = (x >> 1) * uvPixelStride;
-            arr[y][x][0] = pY[x];
-            arr[y][x][1] = pU[uv_offset];
-            arr[y][x][2] = pV[uv_offset];
+            arr[y][x] = (pY[x] << 16) & (pU[uv_offset] << 8) & pV[uv_offset];
         }
     }
     AImage_delete(image);
@@ -384,14 +382,17 @@ void EdgeDetection::Process(AImage *image) {
     VK_CHECK(vkCreateFence(device, &fenceCreateInfo, nullptr, &fence));
 
     // We submit the command buffer on the queue, at the same time giving a fence.
+    LOGW("vkQueueSubmit");
     VK_CHECK(vkQueueSubmit(queue, 1u, &submitInfo, fence));
     /* The command will not have finished executing until the fence is signalled.
      * So we wait here.
      * We will directly after this read our buffer from the GPU,
      * and we will not be sure that the command has finished executing unless we wait for the fence.
      * Hence, we use a fence here. */
+    LOGI("Waiting for fences...");
     VK_CHECK(vkWaitForFences(
             device, 1u, &fence, VK_TRUE, 100000000000u));
+    LOGI("Fences done!");
     vkDestroyFence(device, fence, nullptr);
     auto delta3 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - checkPoint).count();
