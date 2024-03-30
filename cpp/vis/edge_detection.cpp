@@ -29,7 +29,7 @@ EdgeDetection::EdgeDetection(AAssetManager *assets, ANativeWindow *analyses) : a
     createBuffer(bufferOut, bufferOutSize, bufferOutMemory);
     createDescriptorSetLayout();
     createDescriptorPool();
-    createDescriptorSets();
+    createDescriptorSet();
     createComputePipeline(assets);
     createCommandBuffer();
 }
@@ -219,33 +219,33 @@ void EdgeDetection::createDescriptorPool() {
             device, &createInfo, nullptr, &descriptorPool));
 }
 
-void EdgeDetection::createDescriptorSets() {
+void EdgeDetection::createDescriptorSet() {
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = descriptorPool; // pool to allocate from.
     allocInfo.descriptorSetCount = 1u;
     allocInfo.pSetLayouts = &descriptorSetLayout;
-    descriptorSets.resize(VIS_ED_N_BUFFERS);
     VK_CHECK(vkAllocateDescriptorSets(
-            device, &allocInfo, descriptorSets.data()));
+            device, &allocInfo, &descriptorSet));
 
-    for (size_t d = 0u; d < VIS_ED_N_BUFFERS; d++) {
-        VkDescriptorBufferInfo descriptorBufferInfo{};
-        descriptorBufferInfo.buffer = (d == 0u) ? bufferIn : bufferOut;
-        descriptorBufferInfo.offset = 0u;
-        descriptorBufferInfo.range = (d == 0u) ? bufferInSize : bufferOutSize;
+    std::array<VkDescriptorBufferInfo, VIS_ED_N_BUFFERS> bufferInfos{};
+    bufferInfos[0].buffer = bufferIn;
+    bufferInfos[0].offset = 0u;
+    bufferInfos[0].range = bufferInSize;
+    bufferInfos[1].buffer = bufferOut;
+    bufferInfos[1].offset = 0u;
+    bufferInfos[1].range = bufferOutSize;
 
-        VkWriteDescriptorSet writeDescriptorSet{};
-        writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        writeDescriptorSet.dstSet = descriptorSets[d]; // FIXME NULL
-        writeDescriptorSet.dstBinding = 0u;
-        writeDescriptorSet.descriptorCount = 1u;
-        writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-        writeDescriptorSet.pBufferInfo = &descriptorBufferInfo;
-        vkUpdateDescriptorSets(
-                device, 1u, &writeDescriptorSet, 0u,
-                nullptr);
-    }
+    VkWriteDescriptorSet writeDescriptorSet{};
+    writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writeDescriptorSet.dstSet = descriptorSet;
+    writeDescriptorSet.dstBinding = 0u;
+    writeDescriptorSet.descriptorCount = 1u;
+    writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    writeDescriptorSet.pBufferInfo = bufferInfos.data();
+    vkUpdateDescriptorSets(
+            device, 1u, &writeDescriptorSet, 0u,
+            nullptr);
 }
 
 void EdgeDetection::createComputePipeline(AAssetManager *assets) {
@@ -310,7 +310,7 @@ void EdgeDetection::createCommandBuffer() {
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
     vkCmdBindDescriptorSets(
             commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipelineLayout,
-            0u, descriptorSets.size(), descriptorSets.data(),
+            0u, 1u, &descriptorSet,
             0u, nullptr);
 
     vkCmdDispatch(commandBuffer, (uint32_t) std::ceil(WIDTH / float(WORKGROUP_SIZE)),

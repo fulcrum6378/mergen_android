@@ -58,7 +58,7 @@ private:
 
     void createDescriptorPool();
 
-    void createDescriptorSets();
+    void createDescriptorSet();
 
     void createComputePipeline(AAssetManager *newManager);
 
@@ -85,9 +85,17 @@ private:
     VkQueue queue;
     uint32_t queueFamilyIndex;
 
+    // The memory that backs the buffer is bufferMemory.
+    VkDeviceMemory bufferInMemory;
+    VkBuffer bufferIn;
+    uint32_t bufferInSize;
+    VkDeviceMemory bufferOutMemory;
+    VkBuffer bufferOut;
+    uint32_t bufferOutSize;
+
     VkDescriptorSetLayout descriptorSetLayout;
     VkDescriptorPool descriptorPool;
-    std::vector<VkDescriptorSet> descriptorSets;
+    VkDescriptorSet descriptorSet;
 
     /** The pipeline specifies the pipeline that all graphics and compute commands pass though
      * in Vulkan. We will be creating a simple compute pipeline in this application. */
@@ -99,13 +107,6 @@ private:
     VkCommandPool commandPool;
     VkCommandBuffer commandBuffer;
 
-    /** The memory that backs the buffer is bufferMemory. */
-    VkDeviceMemory bufferInMemory;
-    VkBuffer bufferIn;
-    uint32_t bufferInSize;
-    VkDeviceMemory bufferOutMemory;
-    VkBuffer bufferOut;
-    uint32_t bufferOutSize;
 
 #if VIS_ED_ANALYSES
     ANativeWindow_Buffer analysesBuf{};
