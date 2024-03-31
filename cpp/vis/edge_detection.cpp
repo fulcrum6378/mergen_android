@@ -10,7 +10,7 @@ using namespace std;
 #pragma ide diagnostic ignored "cppcoreguidelines-pro-type-member-init"
 
 EdgeDetection::EdgeDetection(AAssetManager *assets, ANativeWindow *analyses) : analyses(analyses) {
-#if VIS_ED_ANALYSES
+#if VIS_ANALYSES
     auto *out = static_cast<uint32_t *>(analysesBuf.bits);
     out += analysesBuf.width - 1;
     for (int32_t yy = 0; yy < analysesBuf.height; yy++) {
@@ -28,7 +28,7 @@ EdgeDetection::EdgeDetection(AAssetManager *assets, ANativeWindow *analyses) : a
     createLogicalDeviceAndQueue();
     bufferInSize = sizeof(arr);
     createBuffer(bufferIn, bufferInSize, bufferInMemory);
-    bufferOutSize = WIDTH * HEIGHT * sizeof(Pixel);
+    bufferOutSize = W * H * sizeof(Pixel);
     createBuffer(bufferOut, bufferOutSize, bufferOutMemory);
     createDescriptorSetLayout();
     createDescriptorPool();
@@ -316,8 +316,8 @@ void EdgeDetection::createCommandBuffer() {
             0u, 1u, &descriptorSet,
             0u, nullptr);
 
-    vkCmdDispatch(commandBuffer, (uint32_t) ceil(WIDTH / float(WORKGROUP_SIZE)),
-                  (uint32_t) ceil(HEIGHT / float(WORKGROUP_SIZE)), 1u);
+    vkCmdDispatch(commandBuffer, (uint32_t) ceil(W / VID_ED_WORKGROUP_SIZE),
+                  (uint32_t) ceil(H / VID_ED_WORKGROUP_SIZE), 1u);
 
     VK_CHECK(vkEndCommandBuffer(commandBuffer));
 }
@@ -341,13 +341,13 @@ void EdgeDetection::Process(AImage *image) {
     int32_t uvPixelStride;
     AImage_getPlanePixelStride(image, 1, &uvPixelStride);
 
-    for (uint16_t y = 0u; y < HEIGHT; y++) {
+    for (uint16_t y = 0u; y < H; y++) {
         const uint8_t *pY = yPixel + yStride * (y + srcRect.top) + srcRect.left;
         int32_t uv_row_start = uvStride * ((y + srcRect.top) >> 1);
         const uint8_t *pU = uPixel + uv_row_start + (srcRect.left >> 1);
         const uint8_t *pV = vPixel + uv_row_start + (srcRect.left >> 1);
 
-        for (uint16_t x = 0u; x < WIDTH; x++) {
+        for (uint16_t x = 0u; x < W; x++) {
             const int32_t uv_offset = (x >> 1) * uvPixelStride;
             arr[y][x] = (pY[x] << 16) & (pU[uv_offset] << 8) & pV[uv_offset];
         }
@@ -403,8 +403,8 @@ void EdgeDetection::Process(AImage *image) {
                 &mappedMemory);
     auto *pmappedMemory = (Pixel *) mappedMemory;
     vector<unsigned char> img;
-    img.reserve(WIDTH * HEIGHT * 4u);
-    for (int i = 0; i < WIDTH * HEIGHT; i += 1) {
+    img.reserve(W * H * 4u);
+    for (int i = 0; i < W * H; i += 1) {
         img.push_back((unsigned char) (255.0f * (pmappedMemory[i].r)));
         img.push_back((unsigned char) (255.0f * (pmappedMemory[i].g)));
         img.push_back((unsigned char) (255.0f * (pmappedMemory[i].b)));
@@ -416,7 +416,7 @@ void EdgeDetection::Process(AImage *image) {
 
     // 5. analyses; display the debug results in the window
     checkPoint = chrono::system_clock::now();
-#if VIS_ED_ANALYSES
+#if VIS_ANALYSES
     ANativeWindow_acquire(analyses);
     if (ANativeWindow_lock(analyses, &analysesBuf, nullptr) == 0) {
         auto *out = static_cast<uint8_t *>(analysesBuf.bits);

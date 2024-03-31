@@ -11,12 +11,9 @@
 #include <unordered_set>
 #include <vector>
 
+#include "global.hpp"
 #include "segment.hpp"
 
-// height of an image frame
-#define H 720u
-// width of an image frame
-#define W 720u
 // maximum allowed segments to be extensively analysed
 #define MAX_SEGS 40u
 // radii for searching through Volatile Indices
@@ -24,11 +21,6 @@
 #define U_RADIUS 16
 #define V_RADIUS 16
 #define R_RADIUS 24
-
-// debug the results using the analyses window
-#define VIS_ANALYSES true
-// debug the results using SegmentMarkers.java
-#define VIS_SEG_MARKERS true
 
 /**
  * Image Segmentation, using a Region-Growing method

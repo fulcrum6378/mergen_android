@@ -6,14 +6,10 @@
 #include <media/NdkImage.h>
 
 #include "../global_vk.hpp"
+#include "global.hpp"
 
-// debug the results using the analyses window
-#define VIS_ED_ANALYSES true
 #define VIS_ED_N_BUFFERS 2u
-
-const int WIDTH = 720; // size of rendered mandelbrot set.
-const int HEIGHT = 720; // size of renderered mandelbrot set.
-const int WORKGROUP_SIZE = 18; // Workgroup size in compute shader.
+#define VID_ED_WORKGROUP_SIZE 18.0f
 
 struct Pixel {
     float r, g, b, a;
@@ -29,7 +25,7 @@ public:
 
 
     std::atomic<bool> locked = false;
-#if VIS_ED_ANALYSES
+#if VIS_ANALYSES
     ANativeWindow *analyses = nullptr;
 #endif
 
@@ -109,9 +105,11 @@ private:
 
 
     // multidimensional array of pixels
-    uint32_t arr[HEIGHT][WIDTH]{};
+    uint32_t arr[H][W]{};
+    // maps pixels to their status of being border or not
+    //uint8_t b_status[H][W]{};
 
-#if VIS_ED_ANALYSES
+#if VIS_ANALYSES
     ANativeWindow_Buffer analysesBuf{};
 #endif
 };

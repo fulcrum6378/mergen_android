@@ -52,12 +52,12 @@ struct bmpfile_dib_info {
  */
 class BitmapStream {
 public:
-    BitmapStream(std::pair<int16_t, int16_t> dimensions) {
+    explicit BitmapStream(std::pair<int16_t, int16_t> dimensions) {
         store.open((cacheDir + std::string("vis.rgb")).c_str(), std::ios::binary);
         dimensions_ = dimensions;
     }
 
-    [[maybe_unused]] void BakeMetadata() {
+    [[maybe_unused]] void BakeMetadata() const {
         int32_t width = dimensions_.first;
         int32_t height = dimensions_.second;
         std::ofstream metadata(
@@ -124,7 +124,7 @@ public:
         width = MIN(height, (srcRect.right - srcRect.left));*/
         int16_t width = dimensions_.first, height = dimensions_.second;
 
-        for (int16_t y = height - 1; y >= 0; y--) {
+        for (auto y = static_cast<int16_t>(height - 1); y >= 0; y--) {
             const uint8_t *pY = yPixel + yStride * (y + srcRect.top) + srcRect.left;
 
             int32_t uv_row_start = uvStride * ((y + srcRect.top) >> 1);
