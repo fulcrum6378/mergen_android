@@ -382,7 +382,6 @@ void EdgeDetection::Process(AImage *image) {
     VK_CHECK(vkCreateFence(device, &fenceCreateInfo, nullptr, &fence));
 
     // We submit the command buffer on the queue, at the same time giving a fence.
-    LOGW("vkQueueSubmit");
     VK_CHECK(vkQueueSubmit(queue, 1u, &submitInfo, fence));
     /* The command will not have finished executing until the fence is signalled.
      * So we wait here.

@@ -18,11 +18,11 @@ layout(std140, binding = 1) buffer bufO {
     Pixel statuses[];
 };
 
-bool compareColours(uint a, uint b) { // FIXME ERROR IS THROWN FROM HERE
-    return (int(a) - int(b)) <= 4;
-    /*abs(float(int(a) >> 16) - float(int(b) >> 16)) <= 4.0f &&
-        abs(float(int(a >> 8) & 0xFF) - float(int(b >> 8) & 0xFF)) <= 4.0f &&
-        abs(float(int(a) & 0xFF) - float(int(b) & 0xFF)) <= 4.0f*/;
+bool compareColours(uint a, uint b) {
+    abs(float(a >> 16) - float(b >> 16)) <= 4.0f &&
+    abs(float(int(a >> 8) & 0xFF) - float(int(b >> 8) & 0xFF)) <= 4.0f &&
+    abs(float(int(a) & 0xFF) - float(int(b) & 0xFF)) <= 4.0f;
+    return true;
 }
 
 void main() {
