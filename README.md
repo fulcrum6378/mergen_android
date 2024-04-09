@@ -18,9 +18,9 @@ and potentially help them have better lives and consequently a better world(s)!
 
 > Mergen was named after a [*Turkic* god](https://en.wikipedia.org/wiki/Mergen) of abundance and **wisdom**!
 
-Mergen is being written in C++ language and is temporarily mounted on Android.
-The library located in the [/cpp/](cpp), which is written in **C++ 20**, is intended to be mounted
-on real robots with the [*FreeBSD*](https://www.freebsd.org/)  operating system.
+Mergen is being written in **C++ 20** and is temporarily mounted on Android.
+The library located in the [/cpp/](cpp) is intended to be mounted on real robots with the
+[*FreeBSD*](https://www.freebsd.org/) operating system.
 
 ## Components
 
