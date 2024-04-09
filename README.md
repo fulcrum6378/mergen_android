@@ -1,43 +1,26 @@
 # Mergen
 
-Mergen is a real-time hyper-logical robot, in other words an "**Artificial Mind**",
-written in C++ language and temporarily mounted on Android.
+Mergen is a **real-time artificial intelligence**, which shall:
 
-The library located in the [/cpp/](cpp), which is written in **C++ 20**, is intended to be mounted
-on real robots with the [*FreeBSD* operating system](https://www.freebsd.org/).
+- serve as an operating system for any kind of robot.
+- process and store **vision**, **audio** and **touch** as its input data.
+- simulate the [**Reward System**](https://en.wikipedia.org/wiki/Reward_system) of the human brain.
+- simulate both the [**Conscious**](https://en.wikipedia.org/wiki/Consciousness) and
+  the [**Unconscious**](https://en.wikipedia.org/wiki/Unconscious_mind) parts of the human brain.
+- produce **speech**, **movement** commands and probably **imagination** as its output data.
 
-## Philosophy
+Emotions cloud human beings' judgements! Mergen won't be making mistakes the way human beings do
+out of their [*wishful thinking*](https://en.wikipedia.org/wiki/Wishful_thinking)
+neither in its judgements nor its decision-making.
 
-Mergen is intended to become a robot that can think more logically and wisely than human beings,
-and help them have a better life!
-
-Mergen shall differ human beings in the way of thinking, so that it won't trust anybody's words;
-it just seeks truths and to improve conditions for all living beings!
+Mergen is intended to become a robot which can think more logically and wisely than human beings,
+and potentially help them have better lives and consequently a better world(s)!
 
 > Mergen was named after a [*Turkic* god](https://en.wikipedia.org/wiki/Mergen) of abundance and **wisdom**!
 
-It is intended to serve as something like an operating system for AI robots, its job is to
-process vision, audio and touch and act logically based on them and according to its purpose,
-define by its Reward System (REW)!
-
-Mergen is intended to have 2 aspects:
-
-1. **Animal** aspect : similar to the [**Unconscious mind**](https://en.wikipedia.org/wiki/Unconscious_mind)
-   this section of Mergen is intended to be programmed to process raw image and audio inputs and touch patterns.
-2. **God** aspect : this section which contains the robot's thinking system and beliefs, will compute probabilities
-   of any logical [Theorem](https://en.wikipedia.org/wiki/Theorem) and act in accordance with the [**Probabilist**](
-   https://en.wikipedia.org/wiki/Probabilism) philosophy.
-   So this robot CANNOT be brainwashed for dirty purposes (unless you hack or reprogramme it)!
-
-> “To live alone one must be either a beast or a god, says Aristotle.
-> Leaving out the third case: one must be both - a philosopher.”
-> ― Friedrich Wilhelm Nietzsche
-
-#### Dangers & Solutions
-
-- Robots in films are shown to be stubbornly doing crazy things, but this trait shall never be acceptable in Mergen;
-  He must be programmed to always be sceptical about himself, he must be really **Indecisive**!
-  And consult everything with a human being.
+Mergen is being written in C++ language and is temporarily mounted on Android.
+The library located in the [/cpp/](cpp), which is written in **C++ 20**, is intended to be mounted
+on real robots with the [*FreeBSD*](https://www.freebsd.org/)  operating system.
 
 ## Components
 
@@ -48,7 +31,7 @@ Mergen is intended to have 2 aspects:
 | [**MOV**](cpp/mov) | controlling **Movements**                   |
 | [**REW**](cpp/rew) | simulation of the **Reward System**         |
 | [**SCM**](cpp/scm) | simulation of the **Subconscious Mind**     |
-| [**VIS**](cpp/vis) | controlling **Visual** inputs               |
+| [**VIS**](cpp/vis) | controlling **Visual** inputs (and outputs) |
 
 ## History
 
@@ -147,7 +130,7 @@ because they don't need such pre-processing of their signals as VIS requires for
 ### Timeline of development
 
 This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
-(updated as of 6403.01.12+)
+(updated as of 6403.01.21+)
 
 | # | Starting date          | Duration | Active days | %  |       Version        |
 |---|:-----------------------|:---------|:-----------:|:--:|:--------------------:|
@@ -159,7 +142,7 @@ This table shows how much I've worked on Mergen and when. The timeline is divide
 | 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    | 32 |         0.4          |
 | 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     | 2  |          -           |
 | 8 | 2023/04/29, 6402/02/09 | 217 days |    88+13    | 47 | 0.4, mycv, linux+bsd |
-| 9 | 2023/12/02, 6402/09/11 | 120 days |     35      | 29 |       0.4, bsd       |
+| 9 | 2023/12/02, 6402/09/11 | 129 days |     37      | 29 |       0.4, bsd       |
 
 - Periods 1, 2 and 3 include days of researches which are not recorded.
 - Period 5 includes a few days of researching/practicing about/on a new programming language
