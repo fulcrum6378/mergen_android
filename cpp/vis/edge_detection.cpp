@@ -316,8 +316,8 @@ void EdgeDetection::createCommandBuffer() {
             0u, 1u, &descriptorSet,
             0u, nullptr);
 
-    vkCmdDispatch(commandBuffer, (uint32_t) ceil(W / VID_ED_WORKGROUP_SIZE),
-                  (uint32_t) ceil(H / VID_ED_WORKGROUP_SIZE), 1u);
+    vkCmdDispatch(commandBuffer, (uint32_t) ceil(W / VIS_ED_WORKGROUP_SIZE),
+                  (uint32_t) ceil(H / VIS_ED_WORKGROUP_SIZE), 1u);
 
     VK_CHECK(vkEndCommandBuffer(commandBuffer));
 }

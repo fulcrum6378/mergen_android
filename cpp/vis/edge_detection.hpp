@@ -9,7 +9,7 @@
 #include "global.hpp"
 
 #define VIS_ED_N_BUFFERS 2u
-#define VID_ED_WORKGROUP_SIZE 18.0f
+#define VIS_ED_WORKGROUP_SIZE 18.0f
 
 struct Pixel {
     float r, g, b, a;

@@ -15,7 +15,7 @@ layout(std140, binding = 0) readonly buffer bufI {
     uint arr[H][W];
 };
 layout(std140, binding = 1) buffer bufO {
-    Pixel statuses[];
+    Pixel statuses[H * W];
 };
 
 bool compareColours(uint a, uint b) {
@@ -50,5 +50,5 @@ void main() {
     if (nt && nl && compareColours(arr[y][x], arr[y - 1][x - 1])) // top-left
         b = true;
 
-    statuses[W * y + x].value = vec4(1.0, 0.0, 0.0, /*b ? 1.0 : 0.0*/1.0);
+    statuses[W * y + x].value = vec4(1.0, 0.0, 0.0, b ? 1.0 : 0.0);
 }
