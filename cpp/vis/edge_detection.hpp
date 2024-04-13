@@ -12,10 +12,6 @@
 /** W /= WORKGROUP_SIZE */
 #define VIS_ED_WORKGROUP_COUNT 40u
 
-struct Pixel {
-    float r, g, b, a;
-};
-
 class EdgeDetection {
 public:
     EdgeDetection(AAssetManager *assets, ANativeWindow *analyses);

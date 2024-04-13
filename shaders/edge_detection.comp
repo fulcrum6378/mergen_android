@@ -6,16 +6,12 @@
 #define WORKGROUP_SIZE 18u
 // maxComputeWorkGroupInvocations in Mali G72 => 384
 
-struct Pixel{
-    vec4 value;
-};
-
 layout(local_size_x = WORKGROUP_SIZE, local_size_y = WORKGROUP_SIZE, local_size_z = 1u) in;
 layout(std140, binding = 0) readonly buffer bufI {
     uint arr[H][W];
 };
 layout(std140, binding = 1) buffer bufO {
-    Pixel statuses[H * W];
+    uint statuses[H][W];
 };
 
 bool compareColours(uint a, uint b) {
@@ -50,5 +46,10 @@ void main() {
     if (nt && nl && compareColours(arr[y][x], arr[y - 1][x - 1])) // top-left
         b = true;
 
-    statuses[W * y + x].value = vec4(1.0, 0.0, 0.0, b ? 1.0 : 0.0);
+    //statuses[y][x] = b ? 1u : 0u;
+    /*if (b)
+        statuses[y][x] = 1u;
+    else
+        statuses[y][x] = 0u;*/
+    statuses[y][x] = 0u;
 }

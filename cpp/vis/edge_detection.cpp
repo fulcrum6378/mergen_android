@@ -28,7 +28,7 @@ EdgeDetection::EdgeDetection(AAssetManager *assets, ANativeWindow *analyses) : a
     createLogicalDeviceAndQueue();
     bufferInSize = sizeof(arr);
     createBuffer(bufferIn, bufferInSize, bufferInMemory);
-    bufferOutSize = W * H * sizeof(Pixel);
+    bufferOutSize = W * H * 4;
     createBuffer(bufferOut, bufferOutSize, bufferOutMemory);
     createDescriptorSetLayout();
     createDescriptorPool();
@@ -401,14 +401,14 @@ void EdgeDetection::Process(AImage *image) {
     void *mappedMemory = nullptr;
     vkMapMemory(device, bufferOutMemory, 0u, bufferOutSize, 0u,
                 &mappedMemory);
-    auto *pmappedMemory = (Pixel *) mappedMemory;
+    auto *pmappedMemory = (uint32_t *) mappedMemory;
     vector<unsigned char> img;
     img.reserve(W * H * 4u);
     for (int i = 0; i < W * H; i += 1) {
-        img.push_back((unsigned char) (255.0f * (pmappedMemory[i].r)));
-        img.push_back((unsigned char) (255.0f * (pmappedMemory[i].g)));
-        img.push_back((unsigned char) (255.0f * (pmappedMemory[i].b)));
-        img.push_back((unsigned char) (255.0f * (pmappedMemory[i].a)));
+        img.push_back((unsigned char) 255u); // TODO move to the constructor
+        img.push_back((unsigned char) 0u);
+        img.push_back((unsigned char) 0u);
+        img.push_back((unsigned char) (255u * pmappedMemory[i]));
     }
     vkUnmapMemory(device, bufferOutMemory);
     auto delta4 = chrono::duration_cast<chrono::milliseconds>(
