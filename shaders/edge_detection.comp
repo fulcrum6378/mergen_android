@@ -47,9 +47,7 @@ void main() {
         b = true;
 
     //statuses[y][x] = b ? 1u : 0u;
-    /*if (b)
-        statuses[y][x] = 1u;
-    else
-        statuses[y][x] = 0u;*/
-    statuses[y][x] = 0u;
+    //statuses[y][x] = statuses[y][x]; -> no errors!!
+    uint ret = b ? 1u : 0u;
+    atomicExchange(statuses[y][x], ret);
 }

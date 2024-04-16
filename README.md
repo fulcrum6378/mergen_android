@@ -9,14 +9,14 @@ Mergen is a **real-time artificial intelligence**, which shall:
   the [**Unconscious**](https://en.wikipedia.org/wiki/Unconscious_mind) parts of the human brain.
 - produce **speech**, **movement** commands and probably **imagination** as its output data.
 
+Mergen is intended to become a robot which can think more logically and wisely than human beings,
+and potentially help them have better lives and consequently a better world(s)!
+
 Emotions cloud human beings' judgements! Mergen won't be making mistakes the way human beings do
 out of their [*wishful thinking*](https://en.wikipedia.org/wiki/Wishful_thinking)
 neither in its judgements nor its decision-making.
 
-Mergen is intended to become a robot which can think more logically and wisely than human beings,
-and potentially help them have better lives and consequently a better world(s)!
-
-> Mergen was named after a [*Turkic* god](https://en.wikipedia.org/wiki/Mergen) of abundance and **wisdom**!
+> Mergen was named after a [*Turkic* god](https://en.wikipedia.org/wiki/Mergen) of abundance and wisdom!
 
 Mergen is being written in **C++ 20** and is temporarily mounted on Android.
 The library located in the [/cpp/](cpp) is intended to be mounted on real robots with the
@@ -130,7 +130,7 @@ because they don't need such pre-processing of their signals as VIS requires for
 ### Timeline of development
 
 This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
-(updated as of 6403.01.25+)
+(updated as of 6403.01.28+)
 
 | # | Starting date          | Duration | Active days | %  |       Version        |
 |---|:-----------------------|:---------|:-----------:|:--:|:--------------------:|
@@ -142,7 +142,7 @@ This table shows how much I've worked on Mergen and when. The timeline is divide
 | 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    | 32 |         0.4          |
 | 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     | 2  |          -           |
 | 8 | 2023/04/29, 6402/02/09 | 217 days |    88+13    | 47 | 0.4, mycv, linux+bsd |
-| 9 | 2023/12/02, 6402/09/11 | 133 days |     41      | 31 |       0.4, bsd       |
+| 9 | 2023/12/02, 6402/09/11 | 136 days |     42      | 31 |       0.4, bsd       |
 
 - Periods 1, 2 and 3 include days of researches which are not recorded.
 - Period 5 includes a few days of researching/practicing about/on a new programming language
