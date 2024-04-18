@@ -1,5 +1,6 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
+//https://registry.khronos.org/OpenGL/extensions/ARB/ARB_separate_shader_objects.txt
 
 #define H 720u
 #define W 720u
@@ -11,7 +12,7 @@ layout(std140, binding = 0) readonly buffer bufI {
     uint arr[H][W];
 };
 layout(std140, binding = 1) buffer bufO {
-    uint statuses[H][W];
+    uint statuses[H * W];
 };
 
 bool compareColours(uint a, uint b) {
@@ -46,8 +47,9 @@ void main() {
     if (nt && nl && compareColours(arr[y][x], arr[y - 1][x - 1])) // top-left
         b = true;
 
-    //statuses[y][x] = b ? 1u : 0u;
+    uint index = W * y + x; // 260607u(no errors), 260608u(crashes!)
+    if (index > 260607u) return; // max 518400
+    statuses[index] = 0u;//b ? 1u : 0u;// (errors even on the 0th index)
     //statuses[y][x] = statuses[y][x]; -> no errors!!
-    uint ret = b ? 1u : 0u;
-    atomicExchange(statuses[y][x], ret);
+    //atomicExchange(statuses[y][x], ret);
 }
