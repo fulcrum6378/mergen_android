@@ -28,7 +28,7 @@ EdgeDetection::EdgeDetection(AAssetManager *assets, ANativeWindow *analyses) : a
     createLogicalDeviceAndQueue();
     bufferInSize = sizeof(arr);
     createBuffer(bufferIn, bufferInSize, bufferInMemory);
-    bufferOutSize = W * H * 4;
+    bufferOutSize = W * H * 16u;
     createBuffer(bufferOut, bufferOutSize, bufferOutMemory);
     createDescriptorSetLayout();
     createDescriptorPool();
