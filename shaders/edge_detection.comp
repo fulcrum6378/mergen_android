@@ -12,7 +12,7 @@ layout(std140, binding = 0) readonly buffer bufI {
     uint arr[H][W];
 };
 layout(std140, binding = 1) buffer bufO {
-    uint statuses[H * W];
+    bool statuses[H * W];
 };
 
 bool compareColours(uint a, uint b) {
@@ -47,9 +47,17 @@ void main() {
     if (nt && nl && compareColours(arr[y][x], arr[y - 1][x - 1])) // top-left
         b = true;
 
-    uint index = W * y + x; // 260607u(no errors), 260608u(crashes!)
-    if (index > 260607u) return; // max 518400
-    statuses[index] = 0u;//b ? 1u : 0u;// (errors even on the 0th index)
-    //statuses[y][x] = statuses[y][x]; -> no errors!!
+    uint index = W * y + x;
+    //if (index > 260168u) return; // max 518400
+    //statuses[index] = 0u;
+    //uint ret = 0u;
+    //if (b) ret = 1u; // no problem on its own but when I put it in the buffer it crashes!!!
+    // (b ? 1u : 0u), b: errors even on the 0th index, plus tested on the 1000th
+    // 0u: 260607u(ok), 260608u(crash!)        same results in "false"
+    // 1u: 260167u(ok), 260168u(crash!) -440   same results in "true"
+    // 2u: 260167u(ok), 260168u(crash!) ==
+    // 3u: 260167u(ok), 260168u(crash!) ==
+    //statuses[y][x] = statuses[y][x]; // ok in all indices
+    statuses[index] = statuses[index]; // crashes!!!!!
     //atomicExchange(statuses[y][x], ret);
 }
