@@ -262,11 +262,11 @@ void Segmentation::Process(AImage *image, const bool *recording) {
     ANativeWindow_acquire(analyses);
     if (ANativeWindow_lock(analyses, &analysesBuf, nullptr) == 0) {
         auto *out = static_cast<uint8_t *>(analysesBuf.bits);
-        out += (analysesBuf.width * 4) - 4;
+        out += (analysesBuf.width * 4u) - 4u;
         for (int32_t yy = 0; yy < analysesBuf.height; yy++) {
             for (int32_t xx = 0; xx < analysesBuf.width; xx++)
-                out[xx * analysesBuf.stride * 4] = (b_status[yy][xx] == 1) ? 0xFF : 0x00;
-            out -= 4; // move to the next column
+                out[xx * analysesBuf.stride * 4] = (b_status[yy][xx] == 1u) ? 0xFF : 0x00;
+            out -= 4u; // move to the next column
         }
         ANativeWindow_unlockAndPost(analyses);
     }

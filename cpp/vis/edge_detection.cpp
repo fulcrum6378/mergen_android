@@ -28,7 +28,7 @@ EdgeDetection::EdgeDetection(AAssetManager *assets, ANativeWindow *analyses) : a
     createLogicalDeviceAndQueue();
     bufferInSize = sizeof(arr);
     createBuffer(bufferIn, bufferInSize, bufferInMemory);
-    bufferOutSize = W * H * 16u;
+    bufferOutSize = W * H;
     createBuffer(bufferOut, bufferOutSize, bufferOutMemory);
     createDescriptorSetLayout();
     createDescriptorPool();
@@ -306,8 +306,7 @@ void EdgeDetection::createCommandBuffer() {
 
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    // the buffer is only submitted and used once in this application.
-    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
     VK_CHECK(vkBeginCommandBuffer(commandBuffer, &beginInfo));
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
@@ -401,15 +400,7 @@ void EdgeDetection::Process(AImage *image) {
     void *mappedMemory = nullptr;
     vkMapMemory(device, bufferOutMemory, 0u, bufferOutSize, 0u,
                 &mappedMemory);
-    auto *pmappedMemory = (uint32_t *) mappedMemory;
-    vector<unsigned char> img;
-    img.reserve(W * H * 4u);
-    for (int i = 0; i < W * H; i += 1) {
-        img.push_back((unsigned char) 255u); // TODO move to the constructor
-        img.push_back((unsigned char) 0u);
-        img.push_back((unsigned char) 0u);
-        img.push_back((unsigned char) (255u * pmappedMemory[i]));
-    }
+    memcpy(statuses, mappedMemory, bufferOutSize);
     vkUnmapMemory(device, bufferOutMemory);
     auto delta4 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - checkPoint).count();
@@ -420,22 +411,11 @@ void EdgeDetection::Process(AImage *image) {
     ANativeWindow_acquire(analyses);
     if (ANativeWindow_lock(analyses, &analysesBuf, nullptr) == 0) {
         auto *out = static_cast<uint8_t *>(analysesBuf.bits);
-        out += (analysesBuf.width * 4) - 4;
-        int index;
-        auto it = img.begin();
+        out += (analysesBuf.width * 4u) - 4u;
         for (int32_t yy = 0; yy < analysesBuf.height; yy++) {
-            for (int32_t xx = 0; xx < analysesBuf.width; xx++) {
-                index = xx * analysesBuf.stride * 4;
-                out[index + 3] = *it;
-                it++;
-                out[index + 2] = *it;
-                it++;
-                out[index + 1] = *it;
-                it++;
-                out[index] = *it;
-                it++;
-            }
-            out -= 4; // move to the next column
+            for (int32_t xx = 0; xx < analysesBuf.width; xx++)
+                out[xx * analysesBuf.stride * 4] = statuses[yy][xx] ? 0xFF : 0x00;
+            out -= 4u; // move to the next column
         }
         ANativeWindow_unlockAndPost(analyses);
     }
@@ -450,7 +430,7 @@ void EdgeDetection::Process(AImage *image) {
          delta1 + delta2 + delta3 + delta4 + delta5/* + delta6*/);
     LOGI("----------------------------------");
 
-    //locked = false;
+    locked = false;
 }
 
 EdgeDetection::~EdgeDetection() {

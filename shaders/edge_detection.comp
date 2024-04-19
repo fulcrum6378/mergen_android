@@ -26,7 +26,7 @@ void main() {
     // in order to fit the work into workgroups, some unnecessary threads are launched.
     // we terminate those threads here.
     if (x >= W || y >= H) return;
-    if ((W * y + x) > 100000u) return; // max 518400
+    if ((W * y + x) > 120000u) return; // max 518400
 
     bool nt = y != 0, nb = y != H - 1,
          nl = x != 0, nr = x != W - 1;
@@ -62,7 +62,5 @@ void main() {
         statuses[y][x] = true;
         return;
     }
-    //bool kir = b;//true;
-    //statuses[y][x] = kir; // what the fuck is the difference between "kir" and "b"?!?!?
     statuses[y][x] = false;
 }
