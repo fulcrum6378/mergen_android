@@ -348,7 +348,7 @@ void EdgeDetection::Process(AImage *image) {
 
         for (uint16_t x = 0u; x < W; x++) {
             const int32_t uv_offset = (x >> 1) * uvPixelStride;
-            arr[y][x] = (pY[x] << 16) & (pU[uv_offset] << 8) & pV[uv_offset];
+            arr[y][x] = (pY[x] << 16) | (pU[uv_offset] << 8) | pV[uv_offset];
         }
     }
     AImage_delete(image);

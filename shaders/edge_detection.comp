@@ -19,7 +19,6 @@ bool compareColours(uint a, uint b) {
     return abs(float(a >> 16) - float(b >> 16)) <= 4.0f &&
         abs(float(int(a >> 8) & 0xFF) - float(int(b >> 8) & 0xFF)) <= 4.0f &&
         abs(float(int(a) & 0xFF) - float(int(b) & 0xFF)) <= 4.0f;
-    //return a > 100u; // TODO I think `arr` is all zeroed instead!
 }
 
 void main() {
@@ -27,7 +26,7 @@ void main() {
     // in order to fit the work into workgroups, some unnecessary threads are launched.
     // we terminate those threads here.
     if (x >= W || y >= H) return;
-    if ((W * y + x) > 130047u) return; // max 518400
+    if ((W * y + x) > 110000u) return; // max 518400
 
     bool nt = y != 0, nb = y != H - 1,
          nl = x != 0, nr = x != W - 1;
