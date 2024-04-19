@@ -355,8 +355,7 @@ void EdgeDetection::Process(AImage *image) {
     auto delta1 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - checkPoint).count();
 
-
-    // 2. input; send image data to GPU
+    // 2. input; send image data (`arr`) to GPU
     checkPoint = chrono::system_clock::now();
     void *data;
     vkMapMemory(device, bufferInMemory, 0u, bufferInSize, 0u, &data);
@@ -365,37 +364,27 @@ void EdgeDetection::Process(AImage *image) {
     auto delta2 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - checkPoint).count();
 
-
-    // 3. run command buffer
+    // 3. GPU; run the command buffer
     checkPoint = chrono::system_clock::now();
-
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.commandBufferCount = 1u;
-    submitInfo.pCommandBuffers = &commandBuffer; // the command buffer to submit.
-
+    submitInfo.pCommandBuffers = &commandBuffer;
     VkFence fence;
     VkFenceCreateInfo fenceCreateInfo{};
     fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceCreateInfo.flags = 0u;
     VK_CHECK(vkCreateFence(device, &fenceCreateInfo, nullptr, &fence));
-
-    // We submit the command buffer on the queue, at the same time giving a fence.
     VK_CHECK(vkQueueSubmit(queue, 1u, &submitInfo, fence));
-    /* The command will not have finished executing until the fence is signalled.
-     * So we wait here.
-     * We will directly after this read our buffer from the GPU,
-     * and we will not be sure that the command has finished executing unless we wait for the fence.
-     * Hence, we use a fence here. */
     LOGI("Waiting for fences...");
     VK_CHECK(vkWaitForFences(
-            device, 1u, &fence, VK_TRUE, 100000000000u));
+            device, 1u, &fence, VK_TRUE, 100000000000u));// FIXME
     LOGI("Fences done!");
     vkDestroyFence(device, fence, nullptr);
     auto delta3 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - checkPoint).count();
 
-    // 4. output; read processed data from GPU and process it
+    // 4. output; read processed data (`statuses`) from GPU and process it
     checkPoint = chrono::system_clock::now();
     void *mappedMemory = nullptr;
     vkMapMemory(device, bufferOutMemory, 0u, bufferOutSize, 0u,
@@ -424,7 +413,7 @@ void EdgeDetection::Process(AImage *image) {
     auto delta5 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - checkPoint).count();
 
-    // summary: loading + input + runCommandBuffer + output + analyses
+    // summary: loading + input + GPU + output + analyses
     LOGI("Delta times: %lld + %lld + %lld + %lld + %lld => %lld",// + %lld
          delta1, delta2, delta3, delta4, delta5, /*delta6,*/
          delta1 + delta2 + delta3 + delta4 + delta5/* + delta6*/);
