@@ -9,19 +9,9 @@ using namespace std;
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "cppcoreguidelines-pro-type-member-init"
 
-EdgeDetection::EdgeDetection(AAssetManager *assets, ANativeWindow *analyses) : analyses(analyses) {
-#if VIS_ANALYSES
-    auto *out = static_cast<uint32_t *>(analysesBuf.bits);
-    out += analysesBuf.width - 1;
-    for (int32_t y = 0; y < analysesBuf.height; y++) {
-        for (int32_t x = 0; x < analysesBuf.width; x++)
-            out[x * analysesBuf.stride] = 0x000000FF; // ABGR
-        out -= 1; // move to the next column
-    }
-#endif
-
+EdgeDetection::EdgeDetection(AAssetManager *assets) {
     createInstance();
-#if ENABLE_VALIDATION_LAYERS
+#if VK_VALIDATION_LAYERS
     setupDebugMessenger();
 #endif
     pickPhysicalDevice();
@@ -39,7 +29,7 @@ EdgeDetection::EdgeDetection(AAssetManager *assets, ANativeWindow *analyses) : a
 
 void EdgeDetection::createInstance() {
     vector<const char *> requiredExtensions;
-#if ENABLE_VALIDATION_LAYERS
+#if VK_VALIDATION_LAYERS
     assert(checkValidationLayerSupport());
     requiredExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
@@ -50,7 +40,7 @@ void EdgeDetection::createInstance() {
     createInfo.enabledExtensionCount = (uint32_t) requiredExtensions.size();
     createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
-#if ENABLE_VALIDATION_LAYERS
+#if VK_VALIDATION_LAYERS
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
     createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
     createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -63,7 +53,7 @@ void EdgeDetection::createInstance() {
     VK_CHECK(vkCreateInstance(&createInfo, nullptr, &instance));
 }
 
-#if ENABLE_VALIDATION_LAYERS
+#if VK_VALIDATION_LAYERS
 
 bool EdgeDetection::checkValidationLayerSupport() {
     uint32_t layerCount;
@@ -117,7 +107,7 @@ void EdgeDetection::createLogicalDeviceAndQueue() {
     VkDeviceCreateInfo deviceCreateInfo{};
     VkPhysicalDeviceFeatures deviceFeatures{};
     deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-#if ENABLE_VALIDATION_LAYERS // for Vulkan versions compatibility (no longer needed)
+#if VK_VALIDATION_LAYERS // for Vulkan versions compatibility (no longer needed)
     deviceCreateInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
     deviceCreateInfo.ppEnabledLayerNames = validationLayers.data();
 #else
@@ -374,10 +364,10 @@ void EdgeDetection::Process(AImage *image) {
     fenceCreateInfo.flags = 0u;
     VK_CHECK(vkCreateFence(device, &fenceCreateInfo, nullptr, &fence));
     VK_CHECK(vkQueueSubmit(queue, 1u, &submitInfo, fence));
-    LOGI("Waiting for fences...");
+    //LOGI("Waiting for fences...");
     VK_CHECK(vkWaitForFences(
             device, 1u, &fence, VK_TRUE, 100000000000u));// FIXME
-    LOGI("Fences done!");
+    //LOGI("Fences done!");
     vkDestroyFence(device, fence, nullptr);
     auto delta3 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - checkPoint).count();
@@ -395,18 +385,17 @@ void EdgeDetection::Process(AImage *image) {
     // 5. analyses; display the debug results in the window
     checkPoint = chrono::system_clock::now();
 #if VIS_ANALYSES
-    ANativeWindow_acquire(analyses);
-    if (ANativeWindow_lock(analyses, &analysesBuf, nullptr) == 0) {
-        auto *out = static_cast<uint8_t *>(analysesBuf.bits);
-        out += (analysesBuf.width * 4) - 4;
+    int wLockStatus = ANativeWindow_lock(analyses, &analysesBuf, nullptr);
+    if (wLockStatus == 0 || wLockStatus == -38) { // initially locked by onAnalysesSurfaceCreated()
+        auto *out = static_cast<uint32_t *>(analysesBuf.bits);
+        out += analysesBuf.width - 1; // images are upside down
         for (int32_t y = 0; y < analysesBuf.height; y++) {
             for (int32_t x = 0; x < analysesBuf.width; x++)
-                out[x * analysesBuf.stride * 4] = (statuses[y][x] == 1u) ? 0xFF : 0x00;
-            out -= 4; // move to the next column
+                out[x * analysesBuf.stride] = (statuses[y][x] == 1u) ? 0xFF00FF00u : 0x00000000u;
+            out--; // move to the next line in memory
         }
         ANativeWindow_unlockAndPost(analyses);
     }
-    ANativeWindow_release(analyses);
 #endif
     auto delta5 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - checkPoint).count();
@@ -415,7 +404,7 @@ void EdgeDetection::Process(AImage *image) {
     LOGI("Delta times: %lld + %lld + %lld + %lld + %lld => %lld",// + %lld
          delta1, delta2, delta3, delta4, delta5, /*delta6,*/
          delta1 + delta2 + delta3 + delta4 + delta5/* + delta6*/);
-    LOGI("----------------------------------");
+    //LOGI("----------------------------------");
 
     locked = false;
 }
@@ -430,7 +419,7 @@ EdgeDetection::~EdgeDetection() {
     vkDestroyPipeline(device, pipeline, nullptr);
     vkDestroyCommandPool(device, commandPool, nullptr);
     vkDestroyDevice(device, nullptr);
-#if ENABLE_VALIDATION_LAYERS
+#if VK_VALIDATION_LAYERS
     DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
 #endif
     vkDestroyInstance(instance, nullptr);

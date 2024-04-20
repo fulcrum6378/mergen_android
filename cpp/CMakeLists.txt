@@ -30,20 +30,20 @@ add_library(main SHARED
 
         scm/manifest.hpp
 
-        vis/bitmap.hpp
+        #vis/bitmap.hpp
         vis/camera.cpp
         vis/camera.hpp
         vis/colouring.hpp
         vis/edge_detection.hpp
         vis/edge_detection.cpp
-        vis/memory.cpp
-        vis/memory.hpp
+        #vis/memory.cpp
+        #vis/memory.hpp
         vis/perception.hpp
-        vis/segment.hpp
-        vis/segmentation.cpp
-        vis/segmentation.hpp
-        vis/visual_stm.cpp
-        vis/visual_stm.hpp
+        #vis/segment.hpp
+        #vis/segmentation.cpp
+        #vis/segmentation.hpp
+        #vis/visual_stm.cpp
+        #vis/visual_stm.hpp
 )
 
 # Paths

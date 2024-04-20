@@ -1,4 +1,3 @@
-#include <android/asset_manager_jni.h>
 #include <android/native_window_jni.h>
 #include <sys/stat.h>
 
@@ -19,7 +18,7 @@ static Vibrator *mov;
 static Camera *vis;
 
 extern "C" JNIEXPORT void JNICALL
-Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
+Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main, jobject assets) {
     // retrieve necessary JNI references (don't put them in static variables)
     JavaVM *jvm = nullptr;
     env->GetJavaVM(&jvm);
@@ -38,7 +37,11 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main) {
     aud_out = new Speaker();
     hpt = new Touchscreen();
     mov = new Vibrator(jvm, gMain);
-    vis = new Camera(jvm, gMain);
+    vis = new Camera(jvm, gMain
+#if VIS_METHOD == 2
+            , assets
+#endif
+    );
 
     // initialise high-level components
     rew = new Rewarder(aud_out, mov, jvm, gMain);
@@ -100,27 +103,46 @@ Java_ir_mahdiparastesh_mergen_Main_onPreviewSurfaceDestroyed(JNIEnv *, jobject) 
     vis = nullptr;
 }
 
+
+static ANativeWindow **analyses;
+static ANativeWindow_Buffer *analysesBuf;
+
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceCreated(
-        JNIEnv *env, jobject, jobject surface, jobject assets) {
-#if VIS_EDGE_DETECTION
-    vis->edgeDetection = new EdgeDetection(AAssetManager_fromJava(env, assets),
-                                           ANativeWindow_fromSurface(env, surface));
-    ANativeWindow_setBuffersGeometry(vis->edgeDetection->analyses, W, H,
-                                     AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM);
-#elif VIS_ANALYSES
-    vis->segmentation->analyses = ANativeWindow_fromSurface(env, surface);
-    ANativeWindow_setBuffersGeometry(vis->segmentation->analyses, W, H,
-                                     AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM);
-#endif
+        JNIEnv *env, jobject, jobject surface) {
+#if VIS_ANALYSES
+#if VIS_METHOD == 1
+    analyses = &vis->segmentation->analyses;
+    analysesBuf = &vis->segmentation->analysesBuf;
+#elif VIS_METHOD == 2
+    analyses = &vis->edgeDetection->analyses;
+    analysesBuf = &vis->edgeDetection->analysesBuf;
+#endif //VIS_METHOD
+    *analyses = ANativeWindow_fromSurface(env, surface);
+    ANativeWindow_setBuffersGeometry(
+            *analyses, W, H, AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM);
+    ANativeWindow_acquire(*analyses);
+    /*if (ANativeWindow_lock(*analyses, analysesBuf, nullptr) == 0) {
+        auto *out = static_cast<uint32_t *>(analysesBuf->bits);
+        out += analysesBuf->width - 1;
+        for (int32_t y = 0; y < analysesBuf->height; y++) {
+            for (int32_t x = 0; x < analysesBuf->width; x++)
+                out[x * analysesBuf->stride] = 0x00FF0000u; // ABGR
+            out--; // move to the next column
+        }
+        ANativeWindow_unlockAndPost(*analyses);
+    }*/
+#endif //VIS_ANALYSES
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceDestroyed(JNIEnv *, jobject) {
-#if VIS_ANALYSES && !VIS_EDGE_DETECTION
-    vis->segmentation->analyses = nullptr;
+#if VIS_ANALYSES
+    ANativeWindow_release(*analyses);
+    *analyses = nullptr;
 #endif
 }
+
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onTouch(

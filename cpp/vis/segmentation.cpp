@@ -9,17 +9,7 @@
 using namespace std;
 
 Segmentation::Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal) :
-        jvm_(jvm), main_(main), jmSignal_(jmSignal) {
-#if VIS_ANALYSES
-    auto *out = static_cast<uint32_t *>(analysesBuf.bits);
-    out += analysesBuf.width - 1;
-    for (int32_t y = 0; y < analysesBuf.height; y++) {
-        for (int32_t x = 0; x < analysesBuf.width; x++)
-            out[x * analysesBuf.stride] = 0x000000FF; // ABGR
-        out -= 1u; // move to the next column
-    }
-#endif
-}
+        jvm_(jvm), main_(main), jmSignal_(jmSignal) {}
 
 void Segmentation::Process(AImage *image, const bool *recording) {
     locked = true;
@@ -258,19 +248,18 @@ void Segmentation::Process(AImage *image, const bool *recording) {
                 CheckIfBorder(y, x, y + 1u, x - 1u); // south-western
             }
     }
-#if VIS_ANALYSES // it takes 8~13 milliseconds! TODO move them to another thread anyway...
-    ANativeWindow_acquire(analyses);
-    if (ANativeWindow_lock(analyses, &analysesBuf, nullptr) == 0) {
+#if VIS_ANALYSES // it takes 8~13 milliseconds! TO-DO move them to another thread anyway...
+    int wLockStatus = ANativeWindow_lock(analyses, &analysesBuf, nullptr);
+    if (wLockStatus == 0 || wLockStatus == -38) { // initially locked by onAnalysesSurfaceCreated()
         auto *out = static_cast<uint8_t *>(analysesBuf.bits);
         out += (analysesBuf.width * 4) - 4;
         for (int32_t yy = 0; yy < analysesBuf.height; yy++) {
             for (int32_t xx = 0; xx < analysesBuf.width; xx++)
-                out[xx * analysesBuf.stride * 4] = (b_status[yy][xx] == 1u) ? 0xFF : 0x00;
+                out[xx * analysesBuf.stride * 4] = (b_status[yy][xx] == 1u) ? 0xFFu : 0x00u;
             out -= 4; // move to the next column
         }
         ANativeWindow_unlockAndPost(analyses);
     }
-    ANativeWindow_release(analyses);
 #endif
     auto delta5 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - checkPoint).count();
@@ -290,7 +279,7 @@ void Segmentation::Process(AImage *image, const bool *recording) {
 #endif
         if (sdx >= l_) {
 #if VIS_SEG_MARKERS
-            best = -2; // FIXME futile exercise in the subsequent loops
+            best = -2; // FIX-ME futile exercise in the subsequent loops
             memcpy(&marker[0], &best, 4u);
             continue;
 #else
@@ -347,7 +336,7 @@ void Segmentation::Process(AImage *image, const bool *recording) {
                         best = static_cast<int16_t>(can);
                     } // else {don't set `best` here}
                 }
-            // TODO what if the colour and/or ratio have/has changed?
+            // TO-DO what if the colour and/or ratio have/has changed?
             a_y.clear();
             a_u.clear();
             a_v.clear();

@@ -50,7 +50,7 @@ struct bmpfile_dib_info {
  * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/vis/rgb_to_bitmap.py">
  * RGB to Bitmap</a>
  */
-class BitmapStream {
+class [[deprecated]] BitmapStream {
 public:
     explicit BitmapStream(std::pair<int16_t, int16_t> dimensions) {
         store.open((cacheDir + std::string("vis.rgb")).c_str(), std::ios::binary);

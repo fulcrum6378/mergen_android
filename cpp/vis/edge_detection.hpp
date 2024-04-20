@@ -14,7 +14,7 @@
 
 class EdgeDetection {
 public:
-    EdgeDetection(AAssetManager *assets, ANativeWindow *analyses);
+    explicit EdgeDetection(AAssetManager *assets);
 
     void Process(AImage *image);
 
@@ -24,12 +24,13 @@ public:
     std::atomic<bool> locked = false;
 #if VIS_ANALYSES
     ANativeWindow *analyses = nullptr;
+    ANativeWindow_Buffer analysesBuf;
 #endif
 
 private:
     void createInstance();
 
-#if ENABLE_VALIDATION_LAYERS
+#if VK_VALIDATION_LAYERS
 
     bool checkValidationLayerSupport();
 
@@ -60,7 +61,7 @@ private:
 
     VkInstance instance;
 
-#if ENABLE_VALIDATION_LAYERS
+#if VK_VALIDATION_LAYERS
     const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
     VkDebugUtilsMessengerEXT debugMessenger;
 #endif
@@ -105,10 +106,6 @@ private:
     uint32_t arr[H][W]{};
     // maps pixels to their status of being border or not
     uint32_t statuses[H][W]{};
-
-#if VIS_ANALYSES
-    ANativeWindow_Buffer analysesBuf{};
-#endif
 };
 
 #endif //VIS_EDGE_DETECTION_H

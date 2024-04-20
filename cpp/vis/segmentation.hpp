@@ -23,7 +23,7 @@
 #define R_RADIUS 24
 
 /**
- * Image Segmentation, using a Region-Growing method
+ * Image Segmentation, using a Region-Growing method (DEPRECATED)
  *
  * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/segmentation/region_growing_4.py">
  * Region Growing 4 (image segmentation)</a>
@@ -32,7 +32,7 @@
  * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/perception/tracking.py">
  * Tracking (object tracking)</a>
  */
-class Segmentation {
+class [[deprecated]] Segmentation {
 public:
     Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal);
 
@@ -46,6 +46,7 @@ public:
     std::atomic<bool> locked = false;
 #if VIS_ANALYSES
     ANativeWindow *analyses = nullptr;
+    ANativeWindow_Buffer analysesBuf;
 #endif
 #if VIS_SEG_MARKERS
     jmethodID jmSegMarker = nullptr;
@@ -101,9 +102,6 @@ private:
     JavaVM *jvm_;
     jobject main_;
     jmethodID *jmSignal_;
-#if VIS_ANALYSES
-    ANativeWindow_Buffer analysesBuf{};
-#endif
 #if VIS_SEG_MARKERS
     // data to be sent to SegmentMarkers.java
     jlong segMarkers[MAX_SEGS]{};

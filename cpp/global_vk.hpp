@@ -14,7 +14,7 @@
  * Vulkan-ValidationLayers</a> into `android/jniLibs` (`app/src/main/jniLibs`),
  * in order to be able to change this value to "true".
  */
-#define ENABLE_VALIDATION_LAYERS true
+#define VK_VALIDATION_LAYERS false
 
 /** Global struct for creating Vulkan instances. */
 inline static VkApplicationInfo vkAppInfo{
@@ -48,7 +48,7 @@ static std::vector<uint8_t> LoadShaderCode(
     return file_content;
 }
 
-#if ENABLE_VALIDATION_LAYERS
+#if VK_VALIDATION_LAYERS
 
 static android_LogPriority toStringMessageSeverity(VkDebugUtilsMessageSeverityFlagBitsEXT s) {
     switch (s) {

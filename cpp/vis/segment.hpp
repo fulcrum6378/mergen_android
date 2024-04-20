@@ -17,7 +17,7 @@
 #define SHAPE_POINT_EACH_BITS 16u  // 8u,        16u
 #define SHAPE_POINT_MAX 65535.0f   // 256.0f,    65535.0f
 
-struct Segment {
+struct [[deprecated]] Segment {
     // starting from 1
     uint32_t id;
 #if SEG_BASE_COLOUR

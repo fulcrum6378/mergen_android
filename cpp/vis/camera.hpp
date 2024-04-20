@@ -10,20 +10,28 @@
 #include <string>
 #include <utility>
 
-#include "bitmap.hpp"
-#include "edge_detection.hpp"
-#include "segmentation.hpp"
-
 /** Together with AIMAGE_FORMAT_JPEG, these are the only supported options for my phone!
  * @see <a href="https://developer.android.com/reference/android/graphics/ImageFormat#YUV_420_888">
  * YUV_420_888</a> */
 #define IMAGE_FORMAT AIMAGE_FORMAT_YUV_420_888
 // maximum image buffers
 #define MAX_BUF_COUNT 4
-// whether to save all image frames as a single bitmap stream, or do the segmentation instead
-#define BITMAP_STREAM false
-// whether to apply Edge Detection on image frames instead of Image Segmentation
-#define VIS_EDGE_DETECTION true
+// image processing method: 0 => BitmapStream, 1 => Segmentation, 2 => EdgeDetection.
+#define VIS_METHOD 2
+
+#if VIS_METHOD == 0
+
+#include "bitmap.hpp"
+
+#elif VIS_METHOD == 1
+
+#include "segmentation.hpp"
+
+#elif VIS_METHOD == 2
+
+#include "edge_detection.hpp"
+
+#endif
 
 enum class CaptureSessionState : int8_t {
     READY,      // session is ready
@@ -36,9 +44,11 @@ class CameraId;
 
 class Camera {
 public:
-    std::pair<int16_t, int16_t> dimensions;
-
-    Camera(JavaVM *jvm, jobject main);
+    Camera(JavaVM *jvm, jobject main
+#if VIS_METHOD == 2
+            , jobject assets
+#endif
+    );
 
     void CreateSession(ANativeWindow *displayWindow);
 
@@ -47,9 +57,13 @@ public:
     ~Camera();
 
 
+    std::pair<int16_t, int16_t> dimensions;
+#if VIS_METHOD == 0
+    BitmapStream *bmp_stream_{};
+#elif VIS_METHOD == 1
     Segmentation *segmentation;
-#if VIS_EDGE_DETECTION
-    EdgeDetection *edgeDetection{};
+#elif VIS_METHOD == 2
+    EdgeDetection *edgeDetection;
 #endif
 
 private:
@@ -72,9 +86,6 @@ private:
      */
     AImageReader *reader_{};
     bool recording_{false};
-#if BITMAP_STREAM
-    BitmapStream *bmp_stream_{};
-#endif
     JavaVM *jvm_;
     jobject main_;
     jmethodID jmSignal_;

@@ -22,7 +22,7 @@
  * @see <a href="https://github.com/fulcrum6378/mycv/blob/master/storage/sequence_files_2.py">
  * Sequence Files 2</a>
  */
-class VisualSTM {
+class [[deprecated]] [[maybe_unused]] VisualSTM {
 public:
     VisualSTM();
 

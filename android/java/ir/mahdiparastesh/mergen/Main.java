@@ -124,7 +124,7 @@ public class Main extends Activity {
                         .getDefaultVibrator() : (Vibrator) getSystemService("vibrator");
 
         // initialise camera(s)
-        create();
+        create(getResources().getAssets());
         Size size = getCameraDimensions();
         onRecordingStopped();
         ViewGroup.LayoutParams previewLP = previewBox.getLayoutParams();
@@ -187,7 +187,7 @@ public class Main extends Activity {
         public void onSurfaceTextureAvailable(SurfaceTexture st, int width, int height) {
             st.setDefaultBufferSize(width, height);
             analysesSurface = new Surface(st);
-            onAnalysesSurfaceCreated(analysesSurface, getResources().getAssets());
+            onAnalysesSurfaceCreated(analysesSurface);
         }
 
         @Override
@@ -335,7 +335,7 @@ public class Main extends Activity {
 
 
     /** Structs utilities required for recording. */
-    private native void create();
+    private native void create(AssetManager assets);
 
     /** Starts recording. */
     private native byte start();
@@ -360,7 +360,7 @@ public class Main extends Activity {
     private native void onPreviewSurfaceDestroyed();
 
     /** Lets Analyses be created. */
-    private native void onAnalysesSurfaceCreated(Surface surface, AssetManager assets);
+    private native void onAnalysesSurfaceCreated(Surface surface);
 
     /** Lets Analyses be destroyed. */
     private native void onAnalysesSurfaceDestroyed();
