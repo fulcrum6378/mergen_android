@@ -1,10 +1,8 @@
-#version 450
-#extension GL_ARB_separate_shader_objects : enable
+#version 460
 
 #define H 720u
 #define W 720u
-#define WORKGROUP_SIZE 18u
-// maxComputeWorkGroupInvocations in Mali G72 => 384
+#define WORKGROUP_SIZE 18u // maxComputeWorkGroupInvocations in Mali G72 => 384
 
 layout(local_size_x = WORKGROUP_SIZE, local_size_y = WORKGROUP_SIZE, local_size_z = 1u) in;
 // use `std430` instead of `std140` for the data structure to match that of C++.
@@ -20,9 +18,9 @@ uint dif(uint a, uint b) {
 }
 
 bool compareColours(uint a, uint b) {
-    return dif(a >> 16, b >> 16) > 8u ||
-        dif((a >> 8) & 0xFFu, (b >> 8) & 0xFFu) > 8u ||
-        dif(a & 0xFFu, b & 0xFFu) > 8u;
+    return dif(a >> 16, b >> 16) > 9u ||
+        dif((a >> 8) & 0xFFu, (b >> 8) & 0xFFu) > 9u ||
+        dif(a & 0xFFu, b & 0xFFu) > 9u;
 }
 
 void main() {

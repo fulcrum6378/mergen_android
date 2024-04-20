@@ -363,10 +363,10 @@ void EdgeDetection::Process(AImage *image) {
     fenceCreateInfo.flags = 0u;
     VK_CHECK(vkCreateFence(device, &fenceCreateInfo, nullptr, &fence));
     VK_CHECK(vkQueueSubmit(queue, 1u, &submitInfo, fence));
-    //LOGI("Waiting for fences...");
+    //LOGI("Fence submitted.");
     VK_CHECK(vkWaitForFences(
-            device, 1u, &fence, VK_TRUE, 100000000000u));// FIXME
-    //LOGI("Fences done!");
+            device, 1u, &fence, VK_TRUE, 1000000000u)); // 1 second
+    //LOGI("Fence done.");
     vkDestroyFence(device, fence, nullptr);
     auto delta3 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - checkPoint).count();
@@ -395,6 +395,8 @@ void EdgeDetection::Process(AImage *image) {
 #endif
     auto delta5 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - checkPoint).count();
+
+    //TODO
 
     // summary: loading + input + GPU + output + analyses
     LOGI("EdgeDetection: %02lld + %02lld + %02lld + %02lld + %02lld => %04lld",// + %lld
