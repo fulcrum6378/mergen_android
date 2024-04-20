@@ -122,16 +122,6 @@ Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceCreated(
     ANativeWindow_setBuffersGeometry(
             *analyses, W, H, AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM);
     ANativeWindow_acquire(*analyses);
-    /*if (ANativeWindow_lock(*analyses, analysesBuf, nullptr) == 0) {
-        auto *out = static_cast<uint32_t *>(analysesBuf->bits);
-        out += analysesBuf->width - 1;
-        for (int32_t y = 0; y < analysesBuf->height; y++) {
-            for (int32_t x = 0; x < analysesBuf->width; x++)
-                out[x * analysesBuf->stride] = 0x00FF0000u; // ABGR
-            out--; // move to the next column
-        }
-        ANativeWindow_unlockAndPost(*analyses);
-    }*/
 #endif //VIS_ANALYSES
 }
 

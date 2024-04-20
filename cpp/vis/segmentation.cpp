@@ -249,14 +249,13 @@ void Segmentation::Process(AImage *image, const bool *recording) {
             }
     }
 #if VIS_ANALYSES // it takes 8~13 milliseconds! TO-DO move them to another thread anyway...
-    int wLockStatus = ANativeWindow_lock(analyses, &analysesBuf, nullptr);
-    if (wLockStatus == 0 || wLockStatus == -38) { // initially locked by onAnalysesSurfaceCreated()
-        auto *out = static_cast<uint8_t *>(analysesBuf.bits);
-        out += (analysesBuf.width * 4) - 4;
+    if (ANativeWindow_lock(analyses, &analysesBuf, nullptr) == 0) {
+        auto *out = static_cast<uint32_t *>(analysesBuf.bits);
+        out += analysesBuf.width - 1; // images are upside down
         for (int32_t yy = 0; yy < analysesBuf.height; yy++) {
             for (int32_t xx = 0; xx < analysesBuf.width; xx++)
-                out[xx * analysesBuf.stride * 4] = (b_status[yy][xx] == 1u) ? 0xFFu : 0x00u;
-            out -= 4; // move to the next column
+                out[xx * analysesBuf.stride] = (b_status[yy][xx] == 1u) ? 0xFF0000FFu : 0x00000000u;
+            out--; // move to next line in memory
         }
         ANativeWindow_unlockAndPost(analyses);
     }

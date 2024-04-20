@@ -345,9 +345,8 @@ void EdgeDetection::Process(AImage *image) {
 
     // 2. input; send image data (`arr`) to GPU
     checkPoint = chrono::system_clock::now();
-    void *data;
-    vkMapMemory(device, bufferInMemory, 0u, bufferInSize, 0u, &data);
-    memcpy(data, arr, bufferInSize);
+    vkMapMemory(device, bufferInMemory, 0u, bufferInSize, 0u, &gpuData);
+    memcpy(gpuData, arr, bufferInSize);
     vkUnmapMemory(device, bufferInMemory);
     auto delta2 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - checkPoint).count();
@@ -374,10 +373,8 @@ void EdgeDetection::Process(AImage *image) {
 
     // 4. output; read processed data (`statuses`) from GPU and process it
     checkPoint = chrono::system_clock::now();
-    void *mappedMemory = nullptr;
-    vkMapMemory(device, bufferOutMemory, 0u, bufferOutSize, 0u,
-                &mappedMemory);
-    memcpy(statuses, mappedMemory, bufferOutSize);
+    vkMapMemory(device, bufferOutMemory, 0u, bufferOutSize, 0u, &gpuData);
+    memcpy(statuses, gpuData, bufferOutSize);
     vkUnmapMemory(device, bufferOutMemory);
     auto delta4 = chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - checkPoint).count();
@@ -385,14 +382,13 @@ void EdgeDetection::Process(AImage *image) {
     // 5. analyses; display the debug results in the window
     checkPoint = chrono::system_clock::now();
 #if VIS_ANALYSES
-    int wLockStatus = ANativeWindow_lock(analyses, &analysesBuf, nullptr);
-    if (wLockStatus == 0 || wLockStatus == -38) { // initially locked by onAnalysesSurfaceCreated()
+    if (ANativeWindow_lock(analyses, &analysesBuf, nullptr) == 0) {
         auto *out = static_cast<uint32_t *>(analysesBuf.bits);
         out += analysesBuf.width - 1; // images are upside down
         for (int32_t y = 0; y < analysesBuf.height; y++) {
             for (int32_t x = 0; x < analysesBuf.width; x++)
                 out[x * analysesBuf.stride] = (statuses[y][x] == 1u) ? 0xFF00FF00u : 0x00000000u;
-            out--; // move to the next line in memory
+            out--; // move to next line in memory
         }
         ANativeWindow_unlockAndPost(analyses);
     }
@@ -401,10 +397,9 @@ void EdgeDetection::Process(AImage *image) {
             chrono::system_clock::now() - checkPoint).count();
 
     // summary: loading + input + GPU + output + analyses
-    LOGI("Delta times: %lld + %lld + %lld + %lld + %lld => %lld",// + %lld
+    LOGI("EdgeDetection: %02lld + %02lld + %02lld + %02lld + %02lld => %04lld",// + %lld
          delta1, delta2, delta3, delta4, delta5, /*delta6,*/
          delta1 + delta2 + delta3 + delta4 + delta5/* + delta6*/);
-    //LOGI("----------------------------------");
 
     locked = false;
 }
