@@ -81,10 +81,10 @@ private:
     // The memory that backs the buffer is bufferMemory.
     VkDeviceMemory bufferInMemory;
     VkBuffer bufferIn;
-    uint32_t bufferInSize;
+    size_t bufferInSize = sizeof(arr);
     VkDeviceMemory bufferOutMemory;
     VkBuffer bufferOut;
-    uint32_t bufferOutSize;
+    size_t bufferOutSize = sizeof(statuses);
 
     VkDescriptorSetLayout descriptorSetLayout;
     VkDescriptorPool descriptorPool;
@@ -104,7 +104,7 @@ private:
     // multidimensional array of pixels
     uint32_t arr[H][W]{};
     // maps pixels to their status of being border or not
-    uint32_t statuses[H][W];
+    uint32_t statuses[H][W]{};
 
 #if VIS_ANALYSES
     ANativeWindow_Buffer analysesBuf{};

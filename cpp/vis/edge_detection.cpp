@@ -13,9 +13,9 @@ EdgeDetection::EdgeDetection(AAssetManager *assets, ANativeWindow *analyses) : a
 #if VIS_ANALYSES
     auto *out = static_cast<uint32_t *>(analysesBuf.bits);
     out += analysesBuf.width - 1;
-    for (int32_t yy = 0; yy < analysesBuf.height; yy++) {
-        for (int32_t xx = 0; xx < analysesBuf.width; xx++)
-            out[xx * analysesBuf.stride] = 0x000000FF; // ABGR
+    for (int32_t y = 0; y < analysesBuf.height; y++) {
+        for (int32_t x = 0; x < analysesBuf.width; x++)
+            out[x * analysesBuf.stride] = 0x000000FF; // ABGR
         out -= 1; // move to the next column
     }
 #endif
@@ -26,9 +26,7 @@ EdgeDetection::EdgeDetection(AAssetManager *assets, ANativeWindow *analyses) : a
 #endif
     pickPhysicalDevice();
     createLogicalDeviceAndQueue();
-    bufferInSize = sizeof(arr);
     createBuffer(bufferIn, bufferInSize, bufferInMemory);
-    bufferOutSize = W * H;
     createBuffer(bufferOut, bufferOutSize, bufferOutMemory);
     createDescriptorSetLayout();
     createDescriptorPool();
@@ -400,11 +398,11 @@ void EdgeDetection::Process(AImage *image) {
     ANativeWindow_acquire(analyses);
     if (ANativeWindow_lock(analyses, &analysesBuf, nullptr) == 0) {
         auto *out = static_cast<uint8_t *>(analysesBuf.bits);
-        out += (analysesBuf.width * 4u) - 4u;
-        for (int32_t yy = 0; yy < analysesBuf.height; yy++) {
-            for (int32_t xx = 0; xx < analysesBuf.width; xx++)
-                out[xx * analysesBuf.stride * 4] = statuses[yy][xx] ? 0xFF : 0x00;
-            out -= 4u; // move to the next column
+        out += (analysesBuf.width * 4) - 4;
+        for (int32_t y = 0; y < analysesBuf.height; y++) {
+            for (int32_t x = 0; x < analysesBuf.width; x++)
+                out[x * analysesBuf.stride * 4] = (statuses[y][x] == 1u) ? 0xFF : 0x00;
+            out -= 4; // move to the next column
         }
         ANativeWindow_unlockAndPost(analyses);
     }

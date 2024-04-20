@@ -13,10 +13,10 @@ Segmentation::Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal) :
 #if VIS_ANALYSES
     auto *out = static_cast<uint32_t *>(analysesBuf.bits);
     out += analysesBuf.width - 1;
-    for (int32_t yy = 0; yy < analysesBuf.height; yy++) {
-        for (int32_t xx = 0; xx < analysesBuf.width; xx++)
-            out[xx * analysesBuf.stride] = 0x000000FF; // ABGR
-        out -= 1; // move to the next column
+    for (int32_t y = 0; y < analysesBuf.height; y++) {
+        for (int32_t x = 0; x < analysesBuf.width; x++)
+            out[x * analysesBuf.stride] = 0x000000FF; // ABGR
+        out -= 1u; // move to the next column
     }
 #endif
 }
@@ -262,11 +262,11 @@ void Segmentation::Process(AImage *image, const bool *recording) {
     ANativeWindow_acquire(analyses);
     if (ANativeWindow_lock(analyses, &analysesBuf, nullptr) == 0) {
         auto *out = static_cast<uint8_t *>(analysesBuf.bits);
-        out += (analysesBuf.width * 4u) - 4u;
+        out += (analysesBuf.width * 4) - 4;
         for (int32_t yy = 0; yy < analysesBuf.height; yy++) {
             for (int32_t xx = 0; xx < analysesBuf.width; xx++)
                 out[xx * analysesBuf.stride * 4] = (b_status[yy][xx] == 1u) ? 0xFF : 0x00;
-            out -= 4u; // move to the next column
+            out -= 4; // move to the next column
         }
         ANativeWindow_unlockAndPost(analyses);
     }

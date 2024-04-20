@@ -13,13 +13,17 @@ layout(std430, binding = 0) readonly buffer bufI {
     uint arr[H][W];
 };
 layout(std430, binding = 1) buffer bufO {
-    bool statuses[H][W];
+    uint statuses[H][W];
 };
 
+uint dif(uint a, uint b) {
+    return a > b ? a - b : b - a;
+}
+
 bool compareColours(uint a, uint b) {
-    return abs(float(a >> 16) - float(b >> 16)) <= 4.0f &&
-        abs(float(int(a >> 8) & 0xFF) - float(int(b >> 8) & 0xFF)) <= 4.0f &&
-        abs(float(int(a) & 0xFF) - float(int(b) & 0xFF)) <= 4.0f;
+    return dif(a >> 16, b >> 16) > 8u ||
+        dif((a >> 8) & 0xFFu, (b >> 8) & 0xFFu) > 8u ||
+        dif(a & 0xFFu, b & 0xFFu) > 8u;
 }
 
 void main() {
@@ -27,45 +31,40 @@ void main() {
     // in order to fit the work into workgroups, some unnecessary threads are launched.
     // we terminate those threads here.
     if (x >= W || y >= H) return;
-    // std140:
-    //if ((W * y + x) > 130046u) return; // max 518400
-    // weird that the maximum safe index changed from 130047u to 130046u when I fixed that bug;
-    // making `arr` have different values rather than all zero.
-    // changing the data type to `uint` didn't change the maximum!
 
     bool nt = y != 0, nb = y != H - 1,
          nl = x != 0, nr = x != W - 1;
     if (nt && compareColours(arr[y][x], arr[y - 1][x])) { // top
-        statuses[y][x] = true;
+        statuses[y][x] = 1u;
         return;
     }
     if (nt && nr && compareColours(arr[y][x], arr[y - 1][x + 1])) { // top-right
-        statuses[y][x] = true;
+        statuses[y][x] = 1u;
         return;
     }
     if (nr && compareColours(arr[y][x], arr[y][x + 1])) { // right
-        statuses[y][x] = true;
+        statuses[y][x] = 1u;
         return;
     }
     if (nb && nr && compareColours(arr[y][x], arr[y + 1][x + 1])) { // bottom-right
-        statuses[y][x] = true;
+        statuses[y][x] = 1u;
         return;
     }
     if (nb && compareColours(arr[y][x], arr[y + 1][x])) { // bottom
-        statuses[y][x] = true;
+        statuses[y][x] = 1u;
         return;
     }
     if (nb && nl && compareColours(arr[y][x], arr[y + 1][x - 1])) { // bottom-left
-        statuses[y][x] = true;
+        statuses[y][x] = 1u;
         return;
     }
     if (nl && compareColours(arr[y][x], arr[y][x - 1])) { // left
-        statuses[y][x] = true;
+        statuses[y][x] = 1u;
         return;
     }
     if (nt && nl && compareColours(arr[y][x], arr[y - 1][x - 1])) { // top-left
-        statuses[y][x] = true;
+        statuses[y][x] = 1u;
         return;
     }
-    statuses[y][x] = false;
+    statuses[y][x] = 0u;
 }
