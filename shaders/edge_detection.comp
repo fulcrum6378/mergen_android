@@ -8,10 +8,11 @@
 // maxComputeWorkGroupInvocations in Mali G72 => 384
 
 layout(local_size_x = WORKGROUP_SIZE, local_size_y = WORKGROUP_SIZE, local_size_z = 1u) in;
-layout(std140, binding = 0) readonly buffer bufI {
+// use `std430` instead of `std140` for the data structure to match that of C++.
+layout(std430, binding = 0) readonly buffer bufI {
     uint arr[H][W];
 };
-layout(std140, binding = 1) buffer bufO {
+layout(std430, binding = 1) buffer bufO {
     bool statuses[H][W];
 };
 
@@ -26,7 +27,11 @@ void main() {
     // in order to fit the work into workgroups, some unnecessary threads are launched.
     // we terminate those threads here.
     if (x >= W || y >= H) return;
-    if ((W * y + x) > 110000u) return; // max 518400
+    // std140:
+    //if ((W * y + x) > 130046u) return; // max 518400
+    // weird that the maximum safe index changed from 130047u to 130046u when I fixed that bug;
+    // making `arr` have different values rather than all zero.
+    // changing the data type to `uint` didn't change the maximum!
 
     bool nt = y != 0, nb = y != H - 1,
          nl = x != 0, nr = x != W - 1;

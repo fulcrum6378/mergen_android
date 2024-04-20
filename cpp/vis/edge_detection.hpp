@@ -104,7 +104,7 @@ private:
     // multidimensional array of pixels
     uint32_t arr[H][W]{};
     // maps pixels to their status of being border or not
-    bool statuses[H][W];
+    uint32_t statuses[H][W];
 
 #if VIS_ANALYSES
     ANativeWindow_Buffer analysesBuf{};
