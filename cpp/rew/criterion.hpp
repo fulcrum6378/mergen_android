@@ -13,7 +13,8 @@ public:
     Criterion(uint8_t _id, int8_t _interactionId, float _weight) :
             id(_id), interactionId(_interactionId), weight(_weight) {}
 
-    virtual void CheckForRewards(void **data) {}
+    //virtual void CheckForRewards(std::vector<void *> data) {}
+    // we better don't hardcode this function.
 
     virtual ~Criterion() = default;
 

@@ -10,7 +10,7 @@ int gitCount(String dir) {
 }
 
 ext {
-    VERSION = '0.4.' + String.format("%03d", gitCount(rootDir.toString()) + gitCount('D:\\Programming\\MyCV'))
+    VERSION = '0.4.' + String.format("%03d", gitCount(rootDir.toString()) + 175) // MyCV
 }
 
 tasks.register('clean', Delete) {

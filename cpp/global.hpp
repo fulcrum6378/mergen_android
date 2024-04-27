@@ -1,5 +1,5 @@
-#ifndef GLOBAL_H
-#define GLOBAL_H
+#ifndef MERGEN_GLOBAL_H
+#define MERGEN_GLOBAL_H
 
 #include <android/log.h>
 #include <string>
@@ -21,4 +21,4 @@ static const std::string
 
 // JNI references can't be put here statically.
 
-#endif //GLOBAL_H
+#endif //MERGEN_GLOBAL_H

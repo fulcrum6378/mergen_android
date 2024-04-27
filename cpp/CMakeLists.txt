@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.4.1)
 project(Mergen VERSION ${VERSION})
 
 set(CMAKE_VERBOSE_MAKEFILE on)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -Wpedantic")
 add_definitions(-DVK_USE_PLATFORM_ANDROID_KHR=1)
 
 add_library(main SHARED
@@ -36,14 +36,14 @@ add_library(main SHARED
         vis/colouring.hpp
         vis/edge_detection.hpp
         vis/edge_detection.cpp
-        #vis/memory.cpp
-        #vis/memory.hpp
+        #[[vis/memory.cpp
+        vis/memory.hpp]]
         vis/perception.hpp
-        #vis/segment.hpp
-        #vis/segmentation.cpp
-        #vis/segmentation.hpp
-        #vis/visual_stm.cpp
-        #vis/visual_stm.hpp
+        #[[vis/segment.hpp
+        vis/segmentation.cpp
+        vis/segmentation.hpp
+        vis/visual_stm.cpp
+        vis/visual_stm.hpp]]
 )
 
 # Paths

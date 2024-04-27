@@ -1,5 +1,5 @@
-#ifndef GLOBAL_VK_H
-#define GLOBAL_VK_H
+#ifndef MERGEN_GLOBAL_VK_H
+#define MERGEN_GLOBAL_VK_H
 
 #include <android/asset_manager.h>
 #include <cassert>
@@ -134,4 +134,4 @@ static void DestroyDebugUtilsMessengerEXT(
 
 #endif //ENABLE_VALIDATION_LAYERS
 
-#endif //GLOBAL_VK_H
+#endif //MERGEN_GLOBAL_VK_H

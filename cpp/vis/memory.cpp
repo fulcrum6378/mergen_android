@@ -32,7 +32,7 @@ VisMemory::VisMemory() {
 
     // put data in a buffer
     uint64_t off = 21ull;
-    char buf[off + (SHAPE_POINT_BYTES * (*path).size())];
+    char *buf = new char[off + (SHAPE_POINT_BYTES * (*path).size())];
     memcpy(&buf[0], m, 3u); // Mean Colour
     memcpy(&buf[3], &r, 2u); // Ratio
     memcpy(&buf[5], &nextFrameId, 8u); // Frame ID
@@ -40,7 +40,7 @@ VisMemory::VisMemory() {
     memcpy(&buf[15], h, 2u); // Height
     memcpy(&buf[17], &cx, 2u); // Centre (X)
     memcpy(&buf[19], &cy, 2u); // Centre (Y)
-    for (uint16_t p: *path) {
+    for (SHAPE_POINT_T p: *path) {
         memcpy(&buf[off], &p, SHAPE_POINT_BYTES); // Point {X, Y}
         off += SHAPE_POINT_BYTES;
     }
@@ -49,6 +49,7 @@ VisMemory::VisMemory() {
     ofstream shf(dirShapes + to_string(nextShapeId), ios::binary);
     shf.write(buf, static_cast<streamsize>(sizeof(buf)));
     shf.close();
+    delete[] buf;
 
     // update Y indexes
     ofstream y_f((dirY + to_string((*m)[0])).c_str(), ios::app | ios::binary);
@@ -113,7 +114,7 @@ VisMemory::VisMemory() {
     SaveIndexes<uint8_t>(&vm, &dirV);
     SaveIndexes<uint16_t>(&rm, &dirR);
 
-    firstFrameId += 1;
+    firstFrameId++;
     LOGI("Forgetting time: %lld", chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now() - t).count());
 }
@@ -121,7 +122,7 @@ VisMemory::VisMemory() {
 void VisMemory::IterateIndex(const char *path, void onEach(VisMemory *, uint16_t)) {
     struct stat sb{}; // never make it a class member!
     stat(path, &sb);
-    char buf[sb.st_size];
+    char *buf = new char[sb.st_size];
     ifstream sff(path, ios::binary);
     sff.read(buf, sb.st_size);
     sff.close();
@@ -130,12 +131,13 @@ void VisMemory::IterateIndex(const char *path, void onEach(VisMemory *, uint16_t
         memcpy(&i, &buf[off], 2u);
         onEach(this, i);
     }
+    delete[] buf;
 }
 
 list<uint16_t> VisMemory::ReadIndex(const char *path) {
     struct stat sb{};
     stat(path, &sb);
-    char buf[sb.st_size];
+    char *buf = new char[sb.st_size];
     ifstream sff(path, ios::binary);
     sff.read(buf, sb.st_size);
     sff.close();
@@ -145,6 +147,7 @@ list<uint16_t> VisMemory::ReadIndex(const char *path) {
         memcpy(&i, &buf[off], 2u);
         l.push_back(i);
     }
+    delete[] buf;
     return l;
 }
 
@@ -166,7 +169,7 @@ void VisMemory::SaveIndexes(unordered_map<INT, list<uint16_t>> *indexes, string 
     uint32_t off;
     for (pair<const INT, list<uint16_t>> &index: (*indexes)) {
         if (!index.second.empty()) {
-            char buf[index.second.size() * 2u];
+            char *buf = new char[index.second.size() * 2u];
             off = 0u;
             for (uint16_t sid: index.second) {
                 memcpy(&buf[off], &sid, 2u);
@@ -176,6 +179,7 @@ void VisMemory::SaveIndexes(unordered_map<INT, list<uint16_t>> *indexes, string 
             ofstream sff(path, ios::binary);
             sff.write(buf, sizeof(buf));
             sff.close();
+            delete[] buf;
         } else remove(path.c_str());
     }
     indexes->clear();

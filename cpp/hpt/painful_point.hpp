@@ -14,17 +14,15 @@ public:
     explicit PainfulPoint(float weight) :
             Criterion(CRITERION_ID_PAINFUL_POINT, INPUT_ID_TOUCH, weight) {}
 
-    void CheckForRewards(void **data) override {
+    void CheckForRewards(std::unordered_map<int16_t, bool> *on, float x_, float y_) {
         bool anyOn = false;
-        for (auto o: *static_cast<std::unordered_map<int16_t, bool> *>(data[0]))
+        for (auto o: *on)
             if (o.second) anyOn = true;
         auto screen = Manifest::interactions[INPUT_ID_TOUCH];
         bool inRange = false;
         if (anyOn) {
-            float xM = screen.width / 2.0f, yM = 10.0f * (screen.height / 100.0f),
-                    x_ = *static_cast<float *>(data[1]),
-                    y_ = *static_cast<float *>(data[2]);
-            float distance = sqrt(std::pow(x_ - xM, 2) + pow(y_ - yM, 2));
+            float xM = screen.width / 2.0f, yM = 10.0f * (screen.height / 100.0f);
+            float distance = sqrt(std::pow(x_ - xM, 2) + std::pow(y_ - yM, 2));
             if (distance < 150.0f) inRange = true;
         }
         if (inRange) {

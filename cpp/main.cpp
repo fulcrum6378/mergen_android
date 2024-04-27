@@ -26,8 +26,9 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main, jobject ass
 
     // ensure that /files/ and its required subdirectories exist
     struct stat sb{};
+    const char *dir;
     for (std::string dirN: {""/*, "aud"*//*, "hpt"*/, "vis"}) {
-        const char *dir = (filesDir + dirN).c_str();
+        dir = (filesDir + dirN).c_str();
         if (stat(dir, &sb) != 0)
             mkdir(dir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     }
@@ -105,7 +106,6 @@ Java_ir_mahdiparastesh_mergen_Main_onPreviewSurfaceDestroyed(JNIEnv *, jobject) 
 
 
 static ANativeWindow **analyses;
-static ANativeWindow_Buffer *analysesBuf;
 
 extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceCreated(
@@ -113,10 +113,8 @@ Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceCreated(
 #if VIS_ANALYSES
 #if VIS_METHOD == 1
     analyses = &vis->segmentation->analyses;
-    analysesBuf = &vis->segmentation->analysesBuf;
 #elif VIS_METHOD == 2
     analyses = &vis->edgeDetection->analyses;
-    analysesBuf = &vis->edgeDetection->analysesBuf;
 #endif //VIS_METHOD
     *analyses = ANativeWindow_fromSurface(env, surface);
     ANativeWindow_setBuffersGeometry(
