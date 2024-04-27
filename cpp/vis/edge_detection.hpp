@@ -106,7 +106,7 @@ private:
     uint32_t arr[H][W]{};
     // maps pixels to their status of being border or not
     uint32_t statuses[H][W]{};
-    // virtual memory for tranferring data into and out of GPU
+    // virtual memory for transferring data into and out of GPU
     void *gpuData;
 };
 

@@ -8,7 +8,7 @@
 
 // minimum allowed number of pixels for a segment to contain (only 1 or higher)
 #define SEG_MIN_SIZE 10u
-// segment accoring to first detected colour as base
+// segment according to first detected colour as base
 #define SEG_BASE_COLOUR false
 
 // Shapes' paths can be saved as:     8-bit   or 16-bit

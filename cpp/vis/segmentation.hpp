@@ -36,8 +36,7 @@ class [[deprecated]] Segmentation {
 public:
     Segmentation(JavaVM *jvm, jobject main, jmethodID *jmSignal);
 
-    /** Main processing function of Segmentation which execute all the necessary jobs.
-     * do NOT refer to `debugMode_` in Camera. */
+    /** Main processing function of Segmentation which execute all the necessary jobs. */
     void Process(AImage *image, const bool *recording);
 
     ~Segmentation();

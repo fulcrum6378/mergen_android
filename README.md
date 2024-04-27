@@ -19,8 +19,7 @@ neither in its judgements nor its decision-making.
 > Mergen was named after a [*Turkic* god](https://en.wikipedia.org/wiki/Mergen) of abundance and wisdom!
 
 Mergen is being written in **C++ 20** and is temporarily mounted on Android.
-The library located in the [/cpp/](cpp) is intended to be mounted on real robots with the
-[*FreeBSD*](https://www.freebsd.org/) operating system.
+The library located in the [/cpp/](cpp) is intended to be mounted on real robots with a Unix-like operating system.
 
 ## Components
 
@@ -117,7 +116,7 @@ with a CPU of Intel Core i7!!
 At 16 October 2023, I started another subproject, called it [**MergenLinux**](
 https://github.com/fulcrum6378/mergen_linux), which runs Mergen on the Linux OS,
 so that I could learn how to implement them in a more difficult and lesser known OS, such as *FreeBSD*.
-But ironically, with few modifications it could run it on FreeBSD at 1 November!
+But surprisingly, with few modifications it could run it on FreeBSD at 1 November!
 
 At 3 November 2023, I started another subproject, this time for the audio processing/sound recognition (AUD) component
 (in Python again like *MyCV*) and named it [Echo](https://github.com/fulcrum6378/echo).
@@ -127,10 +126,14 @@ and then forked it as [**Mergen4BSD**](https://github.com/fulcrum6378/mergen4bsd
 At 28 December 2023, concluded that creating subprojects for AUD and HPT is useless;
 because they don't need such pre-processing of their signals as VIS requires for its image frames!
 
+After I realised that FreeBSD has so limited support for Vulkan, OpenCL and CUDA,
+I was disappointed with FreeBSD and archived Mergen4BSD at 21 April 2024!
+And decided to continue MergenLinux, but not so simultaneously.
+
 ### Timeline of development
 
 This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
-(updated as of 6403.02.01+)
+(updated as of 6403.02.08+)
 
 | # | Starting date          | Duration | Active days | %  |       Version        |
 |---|:-----------------------|:---------|:-----------:|:--:|:--------------------:|
@@ -142,7 +145,7 @@ This table shows how much I've worked on Mergen and when. The timeline is divide
 | 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    | 32 |         0.4          |
 | 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     | 2  |          -           |
 | 8 | 2023/04/29, 6402/02/09 | 217 days |    88+13    | 47 | 0.4, mycv, linux+bsd |
-| 9 | 2023/12/02, 6402/09/11 | 140 days |     46      | 33 |       0.4, bsd       |
+| 9 | 2023/12/02, 6402/09/11 | 147 days |     49      | 33 |    0.4, bsd+linux    |
 
 - Periods 1, 2 and 3 include days of researches which are not recorded.
 - Period 5 includes a few days of researching/practicing about/on a new programming language
