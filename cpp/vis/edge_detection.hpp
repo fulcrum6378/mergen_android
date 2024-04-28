@@ -1,10 +1,6 @@
 #ifndef VIS_EDGE_DETECTION_H
 #define VIS_EDGE_DETECTION_H
 
-#include <android/native_window.h>
-#include <atomic>
-#include <media/NdkImage.h>
-
 #include "../global_vk.hpp"
 #include "global.hpp"
 
@@ -14,18 +10,11 @@
 
 class EdgeDetection {
 public:
-    explicit EdgeDetection(AAssetManager *assets);
+    EdgeDetection(AAssetManager *assets, uint32_t *img, uint32_t *edges);
 
-    void Process(AImage *image);
+    void runCommandBuffer();
 
     ~EdgeDetection();
-
-
-    std::atomic<bool> locked = false;
-#if VIS_ANALYSES
-    ANativeWindow *analyses = nullptr;
-    ANativeWindow_Buffer analysesBuf;
-#endif
 
 private:
     void createInstance();
@@ -82,10 +71,10 @@ private:
     // The memory that backs the buffer is bufferMemory.
     VkDeviceMemory bufferInMemory;
     VkBuffer bufferIn;
-    size_t bufferInSize = sizeof(arr);
+    size_t bufferInSize;
     VkDeviceMemory bufferOutMemory;
     VkBuffer bufferOut;
-    size_t bufferOutSize = sizeof(statuses);
+    size_t bufferOutSize;
 
     VkDescriptorSetLayout descriptorSetLayout;
     VkDescriptorPool descriptorPool;
@@ -101,11 +90,10 @@ private:
     VkCommandPool commandPool;
     VkCommandBuffer commandBuffer;
 
-
     // multidimensional array of pixels
-    uint32_t arr[H][W]{};
+    uint32_t *img_;
     // maps pixels to their status of being border or not
-    uint32_t statuses[H][W]{};
+    uint32_t *edges_;
     // virtual memory for transferring data into and out of GPU
     void *gpuData;
 };

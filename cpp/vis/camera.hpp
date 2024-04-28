@@ -25,11 +25,11 @@
 
 #elif VIS_METHOD == 1
 
-#include "segmentation.hpp"
+#include "segmentation_a.hpp"
 
 #elif VIS_METHOD == 2
 
-#include "edge_detection.hpp"
+#include "segmentation_b.hpp"
 
 #endif
 
@@ -44,8 +44,10 @@ class CameraId;
 
 class Camera {
 public:
-    Camera(JavaVM *jvm, jobject main
-#if VIS_METHOD == 2
+    Camera(JavaVM *jvm
+#if VIS_METHOD == 1
+            , jobject main
+#elif VIS_METHOD == 2
             , jobject assets
 #endif
     );
@@ -60,10 +62,8 @@ public:
     std::pair<int16_t, int16_t> dimensions;
 #if VIS_METHOD == 0
     BitmapStream *bmp_stream_{};
-#elif VIS_METHOD == 1
+#else
     Segmentation *segmentation;
-#elif VIS_METHOD == 2
-    EdgeDetection *edgeDetection;
 #endif
 
 private:
@@ -87,8 +87,10 @@ private:
     AImageReader *reader_{};
     bool recording_{false};
     JavaVM *jvm_;
+#if VIS_METHOD == 1
     jobject main_;
     jmethodID jmSignal_;
+#endif
 
     // Managing cameras
     ACameraManager *cameraMgr_;

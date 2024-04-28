@@ -1,5 +1,5 @@
-#ifndef VIS_SEGMENTATION_H
-#define VIS_SEGMENTATION_H
+#ifndef VIS_SEGMENTATION_A_H
+#define VIS_SEGMENTATION_A_H
 
 #include <android/native_window.h>
 #include <array>
@@ -107,4 +107,4 @@ private:
 #endif
 };
 
-#endif //VIS_SEGMENTATION_H
+#endif //VIS_SEGMENTATION_A_H

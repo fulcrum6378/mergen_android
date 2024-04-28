@@ -4,11 +4,16 @@
 #include "../global.hpp"
 #include "camera.hpp"
 
-Camera::Camera(JavaVM *jvm, jobject main
-#if VIS_METHOD == 2
+Camera::Camera(JavaVM *jvm
+#if VIS_METHOD == 1
+        , jobject main
+#elif VIS_METHOD == 2
         , jobject assets
 #endif
-) : jvm_(jvm), main_(main), captureSessionState_(CaptureSessionState::MAX_STATE) {
+) : jvm_(jvm), captureSessionState_(CaptureSessionState::MAX_STATE) {
+#if VIS_METHOD == 1
+    main_ = main;
+#endif
 
     // initialise ACameraManager and get ACameraDevice instances
     cameraMgr_ = ACameraManager_create();
@@ -71,16 +76,16 @@ Camera::Camera(JavaVM *jvm, jobject main
     // prepare for image analysis
     JNIEnv *env;
     jvm_->GetEnv((void **) &env, JNI_VERSION_1_6);
+#if VIS_METHOD == 1
     jmSignal_ = env->GetMethodID(
             env->FindClass("ir/mahdiparastesh/mergen/Main"), "signal", "(B)V");
-#if VIS_METHOD == 1
     segmentation = new Segmentation(jvm, main_, &jmSignal_);
 #if VIS_SEG_MARKERS
     segmentation->jmSegMarker = env->GetMethodID(
             env->FindClass("ir/mahdiparastesh/mergen/Main"), "updateSegMarkers", "([J)V");
 #endif //VIS_SEG_MARKERS
 #elif VIS_METHOD == 2
-    edgeDetection = new EdgeDetection(AAssetManager_fromJava(env, assets));
+    segmentation = new Segmentation(AAssetManager_fromJava(env, assets));
 #endif //VIS_METHOD
 }
 
@@ -243,14 +248,14 @@ void Camera::ImageCallback(AImageReader *reader) {
     if (recording_) {
 #if VIS_METHOD == 0
         used = bmp_stream_->HandleImage(image);
-#elif VIS_METHOD == 1
+#else
         used = !segmentation->locked;
         if (used)
-            std::thread(&Segmentation::Process, segmentation, image, &recording_).detach();
-#elif VIS_METHOD == 2
-        used = !edgeDetection->locked;
-        if (used)
-            std::thread(&EdgeDetection::Process, edgeDetection, image).detach();
+            std::thread(&Segmentation::Process, segmentation, image
+#if VIS_METHOD == 1
+                    , &recording_
+#endif
+            ).detach();
 #endif
     }
     if (!used) AImage_delete(image);
@@ -261,12 +266,9 @@ Camera::~Camera() {
     ACameraCaptureSession_close(captureSession_);
 
     // destroy objects related to image analysis
-#if VIS_METHOD == 1
+#if VIS_METHOD >= 1
     delete segmentation;
     segmentation = nullptr;
-#elif VIS_METHOD == 2
-    delete edgeDetection;
-    edgeDetection = nullptr;
 #endif
 
     // destroy camera session

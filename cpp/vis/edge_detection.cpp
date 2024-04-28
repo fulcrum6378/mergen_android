@@ -1,4 +1,4 @@
-#include <chrono>
+#include <array>
 #include <cmath>
 #include <cstring>
 
@@ -9,14 +9,17 @@ using namespace std;
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "cppcoreguidelines-pro-type-member-init"
 
-EdgeDetection::EdgeDetection(AAssetManager *assets) {
+EdgeDetection::EdgeDetection(AAssetManager *assets, uint32_t *img, uint32_t *edges) : img_(img), edges_(edges) {
+
     createInstance();
 #if VK_VALIDATION_LAYERS
     setupDebugMessenger();
 #endif
     pickPhysicalDevice();
     createLogicalDeviceAndQueue();
+    bufferInSize = H * W * 4;
     createBuffer(bufferIn, bufferInSize, bufferInMemory);
+    bufferOutSize = H * W * 4;
     createBuffer(bufferOut, bufferOutSize, bufferOutMemory);
     createDescriptorSetLayout();
     createDescriptorPool();
@@ -310,100 +313,37 @@ void EdgeDetection::createCommandBuffer() {
 }
 
 
-void EdgeDetection::Process(AImage *image) {
-    locked = true;
+void EdgeDetection::runCommandBuffer() {
 
-    // 1. loading; bring separate YUV data into the multidimensional array of pixels `arr`
-    auto checkPoint = chrono::system_clock::now();
-    AImageCropRect srcRect;
-    AImage_getCropRect(image, &srcRect);
-    int32_t yStride, uvStride;
-    uint8_t *yPixel, *uPixel, *vPixel;
-    int32_t yLen, uLen, vLen;
-    AImage_getPlaneRowStride(image, 0, &yStride);
-    AImage_getPlaneRowStride(image, 1, &uvStride);
-    AImage_getPlaneData(image, 0, &yPixel, &yLen);
-    AImage_getPlaneData(image, 1, &uPixel, &uLen);
-    AImage_getPlaneData(image, 2, &vPixel, &vLen);
-    int32_t uvPixelStride;
-    AImage_getPlanePixelStride(image, 1, &uvPixelStride);
-
-    for (uint16_t y = 0u; y < H; y++) {
-        const uint8_t *pY = yPixel + yStride * (y + srcRect.top) + srcRect.left;
-        int32_t uv_row_start = uvStride * ((y + srcRect.top) >> 1);
-        const uint8_t *pU = uPixel + uv_row_start + (srcRect.left >> 1);
-        const uint8_t *pV = vPixel + uv_row_start + (srcRect.left >> 1);
-
-        for (uint16_t x = 0u; x < W; x++) {
-            const int32_t uv_offset = (x >> 1) * uvPixelStride;
-            arr[y][x] = (pY[x] << 16) | (pU[uv_offset] << 8) | pV[uv_offset];
-        }
-    }
-    AImage_delete(image);
-    auto delta1 = chrono::duration_cast<chrono::milliseconds>(
-            chrono::system_clock::now() - checkPoint).count();
-
-    // 2. input; send image data (`arr`) to GPU
-    checkPoint = chrono::system_clock::now();
+    // write image data `img` to the GPU memory
     vkMapMemory(device, bufferInMemory, 0u, bufferInSize, 0u, &gpuData);
-    memcpy(gpuData, arr, bufferInSize);
+    memcpy(gpuData, img_, bufferInSize);
     vkUnmapMemory(device, bufferInMemory);
-    auto delta2 = chrono::duration_cast<chrono::milliseconds>(
-            chrono::system_clock::now() - checkPoint).count();
 
-    // 3. GPU; run the command buffer
-    checkPoint = chrono::system_clock::now();
+    // prepare for submission
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.commandBufferCount = 1u;
     submitInfo.pCommandBuffers = &commandBuffer;
+
     VkFence fence;
     VkFenceCreateInfo fenceCreateInfo{};
     fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceCreateInfo.flags = 0u;
     VK_CHECK(vkCreateFence(device, &fenceCreateInfo, nullptr, &fence));
+
+    // submit the work and wait for it
     VK_CHECK(vkQueueSubmit(queue, 1u, &submitInfo, fence));
     //LOGI("Fence submitted.");
     VK_CHECK(vkWaitForFences(
             device, 1u, &fence, VK_TRUE, 1000000000u)); // 1 second
     //LOGI("Fence done.");
     vkDestroyFence(device, fence, nullptr);
-    auto delta3 = chrono::duration_cast<chrono::milliseconds>(
-            chrono::system_clock::now() - checkPoint).count();
 
-    // 4. output; read processed data (`statuses`) from GPU and process it
-    checkPoint = chrono::system_clock::now();
+    // read processed data `edges` from the GPU memory
     vkMapMemory(device, bufferOutMemory, 0u, bufferOutSize, 0u, &gpuData);
-    memcpy(statuses, gpuData, bufferOutSize);
+    memcpy(edges_, gpuData, bufferOutSize);
     vkUnmapMemory(device, bufferOutMemory);
-    auto delta4 = chrono::duration_cast<chrono::milliseconds>(
-            chrono::system_clock::now() - checkPoint).count();
-
-    // 5. analyses; display the debug results in the window
-    checkPoint = chrono::system_clock::now();
-#if VIS_ANALYSES
-    if (ANativeWindow_lock(analyses, &analysesBuf, nullptr) == 0) {
-        auto *out = static_cast<uint32_t *>(analysesBuf.bits);
-        out += analysesBuf.width - 1; // images are upside down
-        for (int32_t y = 0; y < analysesBuf.height; y++) {
-            for (int32_t x = 0; x < analysesBuf.width; x++)
-                out[x * analysesBuf.stride] = (statuses[y][x] == 1u) ? 0xFF00FF00u : 0x00000000u;
-            out--; // move to next line in memory
-        }
-        ANativeWindow_unlockAndPost(analyses);
-    }
-#endif
-    auto delta5 = chrono::duration_cast<chrono::milliseconds>(
-            chrono::system_clock::now() - checkPoint).count();
-
-    //TODO
-
-    // summary: loading + input + GPU + output + analyses
-    LOGI("EdgeDetection: %02lld + %02lld + %02lld + %02lld + %02lld => %04lld",// + %lld
-         delta1, delta2, delta3, delta4, delta5, /*delta6,*/
-         delta1 + delta2 + delta3 + delta4 + delta5/* + delta6*/);
-
-    locked = false;
 }
 
 EdgeDetection::~EdgeDetection() {

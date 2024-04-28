@@ -40,9 +40,11 @@ add_library(main SHARED
         vis/memory.hpp]]
         vis/perception.hpp
         #[[vis/segment.hpp
-        vis/segmentation.cpp
-        vis/segmentation.hpp
-        vis/visual_stm.cpp
+        vis/segmentation_a.cpp
+        vis/segmentation_a.hpp]]
+        vis/segmentation_b.cpp
+        vis/segmentation_b.hpp
+        #[[vis/visual_stm.cpp
         vis/visual_stm.hpp]]
 )
 

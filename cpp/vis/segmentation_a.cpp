@@ -4,7 +4,7 @@
 #include <cstring>
 
 #include "../global.hpp"
-#include "segmentation.hpp"
+#include "segmentation_a.hpp"
 
 using namespace std;
 

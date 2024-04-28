@@ -38,8 +38,10 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main, jobject ass
     aud_out = new Speaker();
     hpt = new Touchscreen();
     mov = new Vibrator(jvm, gMain);
-    vis = new Camera(jvm, gMain
-#if VIS_METHOD == 2
+    vis = new Camera(jvm
+#if VIS_METHOD == 1
+            , gMain
+#elif VIS_METHOD == 2
             , assets
 #endif
     );
@@ -111,10 +113,8 @@ extern "C" JNIEXPORT void JNICALL
 Java_ir_mahdiparastesh_mergen_Main_onAnalysesSurfaceCreated(
         JNIEnv *env, jobject, jobject surface) {
 #if VIS_ANALYSES
-#if VIS_METHOD == 1
+#if VIS_METHOD >= 1
     analyses = &vis->segmentation->analyses;
-#elif VIS_METHOD == 2
-    analyses = &vis->edgeDetection->analyses;
 #endif //VIS_METHOD
     *analyses = ANativeWindow_fromSurface(env, surface);
     ANativeWindow_setBuffersGeometry(
