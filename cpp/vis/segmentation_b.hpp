@@ -25,7 +25,7 @@ public:
 private:
     // multidimensional array of pixels
     uint32_t img[H][W]{};
-    // maps pixels to their status of being border or not
+    // a map that highlights marginal pixels
     uint32_t edges[H][W]{};
     // pointer to the only instance of EdgeDetection
     EdgeDetection *edgeDetection;

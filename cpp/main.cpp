@@ -33,7 +33,7 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main, jobject ass
             mkdir(dir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     }
 
-    // initialise low-level components
+    // initialise the low-level components
     aud_in = new Microphone();
     aud_out = new Speaker();
     hpt = new Touchscreen();
@@ -46,7 +46,7 @@ Java_ir_mahdiparastesh_mergen_Main_create(JNIEnv *env, jobject main, jobject ass
 #endif
     );
 
-    // initialise high-level components
+    // initialise the high-level components
     rew = new Rewarder(aud_out, mov, jvm, gMain);
     Manifest::init();
 }

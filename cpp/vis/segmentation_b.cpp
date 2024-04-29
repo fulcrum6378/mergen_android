@@ -11,7 +11,7 @@ Segmentation::Segmentation(AAssetManager *assets) : edgeDetection(
 void Segmentation::Process(AImage *image) {
     locked = true;
 
-    // 1. loading; bring separate YUV data into the multidimensional array of pixels `arr`
+    // 1. loading; bring separate YUV data into the multidimensional array of pixels `img`
     auto checkPoint = chrono::system_clock::now();
     AImageCropRect srcRect;
     AImage_getCropRect(image, &srcRect);
@@ -67,7 +67,7 @@ void Segmentation::Process(AImage *image) {
     //TODO
 
     // summary: loading + edge_detection + analyses
-    LOGI("EdgeDetection: %02lld + %02lld + %02lld => %04lld",
+    LOGI("Segmentation: %02lld + %02lld + %02lld => %04lld",
          delta1, delta2, delta3,
          delta1 + delta2 + delta3);
 

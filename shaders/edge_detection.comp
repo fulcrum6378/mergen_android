@@ -7,10 +7,10 @@
 layout(local_size_x = WORKGROUP_SIZE, local_size_y = WORKGROUP_SIZE, local_size_z = 1u) in;
 // use `std430` instead of `std140` for the data structure to match that of C++.
 layout(std430, binding = 0) readonly buffer bufI {
-    uint arr[H][W];
+    uint img[H][W];
 };
 layout(std430, binding = 1) buffer bufO {
-    uint statuses[H][W];
+    uint edges[H][W];
 };
 
 uint dif(uint a, uint b) {
@@ -29,23 +29,23 @@ void main() {
     // we terminate those threads here.
     if (x >= W || y >= H) return;
 
-    statuses[y][x] = 0u;
+    edges[y][x] = 0u;
     bool nt = y != 0, nb = y != H - 1,
          nl = x != 0, nr = x != W - 1;
-    if (nt && compareColours(arr[y][x], arr[y - 1][x])) // top
-        statuses[y][x] |= 1u;
-    if (nt && nr && compareColours(arr[y][x], arr[y - 1][x + 1])) // top-right
-        statuses[y][x] |= 2u;
-    if (nr && compareColours(arr[y][x], arr[y][x + 1])) // right
-        statuses[y][x] |= 4u;
-    if (nb && nr && compareColours(arr[y][x], arr[y + 1][x + 1])) // bottom-right
-        statuses[y][x] |= 8u;
-    if (nb && compareColours(arr[y][x], arr[y + 1][x])) // bottom
-        statuses[y][x] |= 16u;
-    if (nb && nl && compareColours(arr[y][x], arr[y + 1][x - 1])) // bottom-left
-        statuses[y][x] |= 32u;
-    if (nl && compareColours(arr[y][x], arr[y][x - 1])) // left
-        statuses[y][x] |= 64u;
-    if (nt && nl && compareColours(arr[y][x], arr[y - 1][x - 1])) // top-left
-        statuses[y][x] |= 128u;
+    if (nt && compareColours(img[y][x], img[y - 1][x])) // top
+        edges[y][x] |= 1u;
+    if (nt && nr && compareColours(img[y][x], img[y - 1][x + 1])) // top-right
+        edges[y][x] |= 2u;
+    if (nr && compareColours(img[y][x], img[y][x + 1])) // right
+        edges[y][x] |= 4u;
+    if (nb && nr && compareColours(img[y][x], img[y + 1][x + 1])) // bottom-right
+        edges[y][x] |= 8u;
+    if (nb && compareColours(img[y][x], img[y + 1][x])) // bottom
+        edges[y][x] |= 16u;
+    if (nb && nl && compareColours(img[y][x], img[y + 1][x - 1])) // bottom-left
+        edges[y][x] |= 32u;
+    if (nl && compareColours(img[y][x], img[y][x - 1])) // left
+        edges[y][x] |= 64u;
+    if (nt && nl && compareColours(img[y][x], img[y - 1][x - 1])) // top-left
+        edges[y][x] |= 128u;
 }

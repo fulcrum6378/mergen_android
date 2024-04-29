@@ -92,7 +92,7 @@ private:
 
     // multidimensional array of pixels
     uint32_t *img_;
-    // maps pixels to their status of being border or not
+    // a map that highlights marginal pixels
     uint32_t *edges_;
     // virtual memory for transferring data into and out of GPU
     void *gpuData;
