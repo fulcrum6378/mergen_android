@@ -130,10 +130,13 @@ After I realised that FreeBSD has so limited support for Vulkan, OpenCL and CUDA
 I was disappointed with FreeBSD and archived Mergen4BSD at 21 April 2024!
 And decided to continue MergenLinux, but not so simultaneously.
 
+At 30 April 2024, started another subproject called [**MyPR**](https://github.com/fulcrum6378/mypr)
+for *Pattern Recognition*.
+
 ### Timeline of development
 
 This table shows how much I've worked on Mergen and when. The timeline is divided into multiple consecutive periods.
-(updated as of 6403.02.09+)
+(updated as of 6403.02.28+)
 
 | # | Starting date          | Duration | Active days | %  |       Version        |
 |---|:-----------------------|:---------|:-----------:|:--:|:--------------------:|
@@ -145,7 +148,7 @@ This table shows how much I've worked on Mergen and when. The timeline is divide
 | 6 | 2022/11/12, 6401/08/21 | 126 days |    13+27    | 32 |         0.4          |
 | 7 | 2023/03/18, 6401/12/27 | 42 days  |     0+1     | 2  |          -           |
 | 8 | 2023/04/29, 6402/02/09 | 217 days |    88+13    | 47 | 0.4, mycv, linux+bsd |
-| 9 | 2023/12/02, 6402/09/11 | 148 days |     50      | 34 |    0.4, bsd+linux    |
+| 9 | 2023/12/02, 6402/09/11 | 167 days |    58+1     | 35 | 0.4, bsd+linux, mypr |
 
 - Periods 1, 2 and 3 include days of researches which are not recorded.
 - Period 5 includes a few days of researching/practicing about/on a new programming language
@@ -153,6 +156,7 @@ This table shows how much I've worked on Mergen and when. The timeline is divide
 - Periods 6, 7 and 8 include a few days when I was learning/evaluating Vulkan (18-0-0 days),
   OpenBSD (2-0-0 days), FreeBSD (1-0-4 days), TensorFlow (3-0-0 days), PyTorch (3-1-0/5 days),
   Statistics (Data Science, 0-0-3/5 days) and Machine Learning (0-0-5 days).
+- Period 9 includes 1 day for configuring *clspv*.
 
 ## Android app
 

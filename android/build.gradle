@@ -3,7 +3,7 @@ plugins { id 'com.android.application' }
 android {
     namespace 'ir.mahdiparastesh.mergen'
     compileSdk 34
-    buildToolsVersion = '35.0.0-rc2'
+    buildToolsVersion = '35.0.0-rc4'
     ndkVersion System.getenv('NDK_VERSION')
 
     defaultConfig {
@@ -12,8 +12,10 @@ android {
         targetSdk 34
         versionCode 1
         versionName rootProject.ext.VERSION
-        externalNativeBuild { cmake { cppFlags ''; arguments "-DVERSION=${rootProject.ext.VERSION}" } }
-        shaders { glslcArgs.addAll(['-c']) } // invokes Shaderc to compile shaders into SPIR-V
+        externalNativeBuild {
+            cmake { cppFlags ''; arguments "-DVERSION=${rootProject.ext.VERSION}" }
+        }
+        shaders { glslcArgs.addAll(['-c']) } // invoke `shaderc` to compile GLSL into SPIR-V
     }
     sourceSets.main {
         manifest.srcFile 'AndroidManifest.xml'
@@ -22,7 +24,9 @@ android {
         jniLibs.srcDirs = ['jniLibs']
         shaders.srcDirs = ['../shaders']
     }
-    externalNativeBuild { cmake { path file('../cpp/CMakeLists.txt'); version '3.22.1' } }
+    externalNativeBuild {
+        cmake { path file('../cpp/CMakeLists.txt'); version '3.22.1' }
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_21; targetCompatibility JavaVersion.VERSION_21
     }
