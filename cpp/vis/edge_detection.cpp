@@ -243,8 +243,7 @@ void EdgeDetection::createDescriptorSet() {
 }
 
 void EdgeDetection::createComputePipeline(AAssetManager *assets) {
-    auto code = LoadShaderCode(
-            "shaders/edge_detection.comp.spv", assets);
+    auto code = LoadShaderCode("edge_detection.spv", assets);
     VkShaderModule computeShaderModule;
 
     VkShaderModuleCreateInfo createInfo{};
