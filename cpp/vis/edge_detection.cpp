@@ -257,7 +257,7 @@ void EdgeDetection::createComputePipeline(AAssetManager *assets) {
     shaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStageCreateInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
     shaderStageCreateInfo.module = computeShaderModule;
-    shaderStageCreateInfo.pName = "main";
+    shaderStageCreateInfo.pName = "detect";
 
     VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
     pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
