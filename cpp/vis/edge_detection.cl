@@ -1,9 +1,6 @@
 #define H 720u
 #define W 720u
-#define WORKGROUP_SIZE 18u
-
-global uint img[H][W];
-global uint edges[H][W];
+#define WORKGROUP_SIZE 18
 
 static uint dif(uint a, uint b) {
     return a > b ? a - b : b - a;
@@ -16,7 +13,7 @@ static bool compareColours(uint a, uint b) {
 }
 
 kernel __attribute__((work_group_size_hint(WORKGROUP_SIZE, WORKGROUP_SIZE, 1)))
-void detect() {
+void detect(global uint img[H][W], global uint edges[H][W]) {
     uint x = get_global_id(0u), y = get_global_id(1u);
     if (x >= W || y >= H) return;
 
