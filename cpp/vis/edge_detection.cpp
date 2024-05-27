@@ -242,8 +242,8 @@ void EdgeDetection::createDescriptorSet() {
             nullptr);
 }
 
-void EdgeDetection::createComputePipeline(AAssetManager *assets) {
-    auto code = LoadShaderCode("edge_detection.spv", assets);
+void EdgeDetection::createComputePipeline(AAssetManager *assets) { // edge_detection.spv
+    auto code = LoadShaderCode("shaders/edge_detection.comp.spv", assets);
     VkShaderModule computeShaderModule;
 
     VkShaderModuleCreateInfo createInfo{};
@@ -257,7 +257,7 @@ void EdgeDetection::createComputePipeline(AAssetManager *assets) {
     shaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStageCreateInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
     shaderStageCreateInfo.module = computeShaderModule;
-    shaderStageCreateInfo.pName = "detect";
+    shaderStageCreateInfo.pName = "main";
 
     VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
     pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

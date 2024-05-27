@@ -3,7 +3,7 @@ plugins { id 'com.android.application' }
 android {
     namespace 'ir.mahdiparastesh.mergen'
     compileSdk 34
-    buildToolsVersion = '35.0.0-rc4'
+    buildToolsVersion = System.getenv("ANDROID_BUILD_TOOLS_VERSION")
     ndkVersion System.getenv('NDK_VERSION')
 
     defaultConfig {
@@ -15,6 +15,7 @@ android {
         externalNativeBuild {
             cmake { cppFlags ''; arguments "-DVERSION=${rootProject.ext.VERSION}" }
         }
+        shaders { glslcArgs.addAll(['-c']) }
     }
     sourceSets.main {
         manifest.srcFile 'AndroidManifest.xml'
@@ -22,6 +23,7 @@ android {
         res.srcDirs = ['res']
         assets.srcDirs = ['assets']
         jniLibs.srcDirs = ['jniLibs']
+        shaders.srcDirs = ['../shaders']
     }
     externalNativeBuild {
         cmake { path file('../cpp/CMakeLists.txt'); version '3.22.1' }

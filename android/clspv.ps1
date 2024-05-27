@@ -19,3 +19,5 @@ spirv-opt `
 
 Remove-Item  android/assets/edge_detection_with_reflect.spv
 
+# the problem is that the StorageBuffer class is not present in Galaxy A50 (not storage buffers).
+# https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_KHR_storage_buffer_storage_class.html
